@@ -3,6 +3,7 @@
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require('vscode');
 
+
 function maxWidth (lines) {
     let result = 0;
 
@@ -60,18 +61,15 @@ function activate(context) {
         let clearAroundText = configuration.get("textToEdgeSpace")
         
         let selection = editor.selection;
-        let text = ""
         
         if (extendSelection) {
             // Let's extend the selection from the first character of the first line
-            // to the first character of the line after the last
+            // to the last character of the last line
             let last = editor.document.lineAt(selection.end.line).range.end.character
-            let extendSel = new (vscode.Range)(selection.start.line, 0, selection.end.line, last)
-            text = document.getText(extendSel)
-        } else {
-            // Use the current selection, but add a new line at the start
-            text = document.getText(selection)
+            selection = new (vscode.Range)(selection.start.line, 0, selection.end.line, last)
         }
+
+        let text = document.getText(selection)
 
         if (capitalize) text = text.toUpperCase()
 
