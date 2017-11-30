@@ -1,0 +1,107 @@
+{
+    "name": "comment-box",
+    "displayName": "Comment Box",
+    "description": "Command that transforms one or multiple lines of text into a comment box.",
+    "version": "0.0.1",
+    "publisher": "SlySherZ",
+    "engines": {
+        "vscode": "^1.17.0"
+    },
+    "categories": [
+        "Formatters"
+    ],
+    "activationEvents": [
+        "onCommand:extension.commentBox"
+    ],
+    "main": "./extension",
+    "contributes": {
+        "commands": [
+            {
+                "command": "extension.commentBox",
+                "title": "Transform to Comment Box"
+            }
+        ],
+        "configuration": {
+            "type": "object",
+            "title": "Comment Box",
+            "properties": {
+                "commentBox.capitalize": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Capitalizes the text."
+                },
+                "commentBox.textAlignment": {
+                    "type": "string",
+                    "oneOf": ["center", "left"],
+                    "default": "center",
+                    "description": "When using a fixed width, controls how the text should be aligned. Can be: \n'- center' or \n'- left'."
+                },
+                "commentBox.extendSelection": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "When 'true' the whole line is replaced, not just the selected part."
+                },
+                "commentBox.commentStartToken": {
+                    "type": "string",
+                    "default": "/*",
+                    "description": "Characters that start a multi-line comment for your current language."
+                },
+                "commentBox.commentEndToken": {
+                    "type": "string",
+                    "default": "/",
+                    "description": "Characters that end a multi-line comment for your current language."
+                },
+                "commentBox.topEdgeToken": {
+                    "type": "string",
+                    "default": "*",
+                    "description": "Characters that are used to draw top edge of the box."
+                },
+                "commentBox.bottomEdgeToken": {
+                    "type": "string",
+                    "default": "*",
+                    "description": "Characters that are used to draw bottom edge of the box."
+                },
+                "commentBox.leftEdgeToken": {
+                    "type": "string",
+                    "default": " *",
+                    "description": "Characters that are used to draw left edge of the box."
+                },
+                "commentBox.rightEdgeToken": {
+                    "type": "string",
+                    "default": "*",
+                    "description": "Characters that are used to draw right edge of the box."
+                },
+                "commentBox.boxWidth": {
+                    "type": "number",
+                    "default": 0,
+                    "description": "The width of the comment box. When set to 0, it will automatically pick the smallest possible value."
+                },
+                "commentBox.fillingToken": {
+                    "type": "string",
+                    "default": " ",
+                    "description": "When using a fixed width, controls the characters that are used to fill the extra space available."
+                },
+                "commentBox.textToEdgeSpace": {
+                    "type": "number",
+                    "default": 1,
+                    "description": "The amount of spaces (empty characters) that are used to separate the text from the side edges."
+                }
+            }
+        }
+    },
+    "scripts": {
+        "postinstall": "node ./node_modules/vscode/bin/install",
+        "test": "node ./node_modules/vscode/bin/test"
+    },
+    "devDependencies": {
+        "typescript": "^2.5.2",
+        "vscode": "^1.1.5",
+        "mocha": "^3.5.0",
+        "eslint": "^4.6.1",
+        "@types/node": "^7.0.0",
+        "@types/mocha": "^2.2.42"
+    },
+    "dependencies": {
+        "vsce": "^1.32.0"
+    }
+}
