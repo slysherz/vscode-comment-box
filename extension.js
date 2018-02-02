@@ -66,7 +66,7 @@ function activate(context) {
             // Let's extend the selection from the first character of the first line
             // to the last character of the last line
             let last = editor.document.lineAt(selection.end.line).range.end.character
-            selection = new (vscode.Range)(selection.start.line, 0, selection.end.line, last)
+            selection = new (vscode.Selection)(selection.start.line, 0, selection.end.line, last)
         }
 
         let text = document.getText(selection)
@@ -99,15 +99,18 @@ function activate(context) {
 
         text = padRight(startToken, width, firstFillToken) + "\n" + 
             lineStartToken + lines.join(lineFlip) + lineEndToken + "\n" + 
-            padRight(lineStartToken, width, lastFillToken) + endToken + "\n"
+            padRight(lineStartToken, width, lastFillToken) + endToken
 
-        if (!extendSelection) {
-            text = "\n" + text
-        }
+        let resultLines = text.split(/\n/g)
+        let newLineSpan = resultLines.length - 1
+        let endLine = selection.start.line + newLineSpan
+        let finalAnchor = new (vscode.Position)(endLine, resultLines[newLineSpan].length)
 
         editor.edit(builder => {
             builder.replace(selection, text);
         })
+
+        editor.selection = new vscode.Selection(finalAnchor, finalAnchor)
     });
 
     context.subscriptions.push(commentBox);
