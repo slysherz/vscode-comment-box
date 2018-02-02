@@ -2,8 +2,11 @@
     "name": "comment-box",
     "displayName": "Comment Box",
     "description": "Command that transforms one or multiple lines of text into a comment box.",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "publisher": "SlySherZ",
+    "repository": {
+        "url": "https://github.com/SlySherZ/vscode-comment-box"
+    },
     "engines": {
         "vscode": "^1.17.0"
     },
@@ -32,7 +35,10 @@
                 },
                 "commentBox.textAlignment": {
                     "type": "string",
-                    "oneOf": ["center", "left"],
+                    "oneOf": [
+                        "center",
+                        "left"
+                    ],
                     "default": "center",
                     "description": "When using a fixed width, controls how the text should be aligned. Can be: \n'- center' or \n'- left'."
                 },
@@ -102,6 +108,6 @@
         "@types/mocha": "^2.2.42"
     },
     "dependencies": {
-        "vsce": "^1.32.0"
+        "vsce": "^1.36.1"
     }
 }
