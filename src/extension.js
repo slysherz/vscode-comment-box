@@ -1,38 +1,15 @@
 // @ts-check
+"use strict"
+
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require('vscode');
+const {
+    maxWidth,
+    padRight,
+    padToCenter
+} = require('./comment-box')
 
-
-function maxWidth (lines) {
-    let result = 0;
-
-    for (let line of lines) {
-        let width = line.length
-
-        result = Math.max(result, width)
-    }
-
-    return result;
-}
-
-function padRight (string, width, token = " ") {
-    let position = 0
-    let str = string
-
-    while (str.length < width) {
-        str += token[position++ % token.length]
-    }
-
-    return str
-}
-
-function padToCenter (string, width, token = " ") {
-    let difference = width - string.length
-    let str = padRight("", Math.floor(difference / 2), token) + string
-
-    return padRight(str, width, token)
-}
 
 // When the extension is activated
 function activate(context) {

@@ -16,7 +16,7 @@
     "activationEvents": [
         "onCommand:extension.commentBox"
     ],
-    "main": "./extension",
+    "main": "./src/extension",
     "contributes": {
         "commands": [
             {
