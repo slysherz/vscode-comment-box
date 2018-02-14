@@ -16,7 +16,8 @@ suite("Helper Functions Tests", function () {
     const {
         maxWidth,
         padRight,
-        padToCenter
+        padToCenter,
+        convertToCommentBox
     } = require('../src/comment-box');
 
     // Defines a Mocha unit test
@@ -50,6 +51,73 @@ suite("Helper Functions Tests", function () {
         assert.equal(padToCenter("-", 5, "*+"), "*+-*+", "Works with multi-character tokens 2.")
         assert.equal(padToCenter("-", 4, "*+"), "*-*+", "Works with multi-character tokens 3.")
     });
+
+    test("convertToCommentBox", function () {
+        const styleA = {
+            startToken: "/*",
+            endToken: "/",
+            topEdgeToken: "*",
+            bottomEdgeToken: "*",
+            leftEdgeToken: " *",
+            rightEdgeToken: "*",
+            fillingToken: " ",
+            width: 0,
+            clearAroundText: 1,
+            align: "left",
+        }
+        //convertToCommentBox(" \t with multiple lines \t \n \t test \t ", styleA)
+        assert.equal(convertToCommentBox("test", styleA), "\
+/********\n\
+ * test *\n\
+ ********/\
+", "StyleA works.")
+
+        assert.equal(convertToCommentBox("test\nwith multiple lines", styleA), "\
+/***********************\n\
+ * test                *\n\
+ * with multiple lines *\n\
+ ***********************/\
+", "StyleA works with multiple lines.")
+
+        assert.equal(convertToCommentBox("with multiple lines\ntest", styleA), "\
+/***********************\n\
+ * with multiple lines *\n\
+ * test                *\n\
+ ***********************/\
+", "StyleA works with multiple lines in reverse order.")
+
+        assert.equal(
+            convertToCommentBox("with multiple lines\ntest", styleA), 
+            convertToCommentBox(" \t with multiple lines \t \n \t test \t ", styleA),
+            "StyleA correctly strips empty space.")
+
+        
+        const styleB = {
+            startToken: "/*",
+            endToken: "*/",
+            topEdgeToken: "=",
+            bottomEdgeToken: "=",
+            leftEdgeToken: " |",
+            rightEdgeToken: "|",
+            fillingToken: "~",
+            width: 50,
+            clearAroundText: 1,
+            align: "center",
+        }
+
+        assert.equal(convertToCommentBox("test", styleB), "\
+/*================================================\n\
+ |~~~~~~~~~~~~~~~~~~~~ test ~~~~~~~~~~~~~~~~~~~~~|\n\
+ |================================================*/\
+", "StyleB works.")
+
+        assert.equal(convertToCommentBox("test\nwith multiple lines", styleB), "\
+/*================================================\n\
+ |~~~~~~~~~~~~~        test         ~~~~~~~~~~~~~|\n\
+ |~~~~~~~~~~~~~ with multiple lines ~~~~~~~~~~~~~|\n\
+ |================================================*/\
+", "StyleB works.")
+    })
 });
 
 /** END **/
