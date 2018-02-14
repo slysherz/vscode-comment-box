@@ -1,6 +1,8 @@
+//@ts-check
 "use strict"
 
-function maxWidth (lines) {
+// Calculates the maximum width in a list of strings
+function maxWidth(lines) {
     let result = 0;
 
     for (let line of lines) {
@@ -12,7 +14,8 @@ function maxWidth (lines) {
     return result;
 }
 
-function padRight (string, width, token = " ") {
+// Extends a string up to 'width' by filling with the token characters from the right
+function padRight(string, width, token = " ") {
     let position = 0
     let str = string
 
@@ -23,7 +26,8 @@ function padRight (string, width, token = " ") {
     return str
 }
 
-function padToCenter (string, width, token = " ") {
+// Extends a string up to 'width' by filling with the token characters from both sides
+function padToCenter(string, width, token = " ") {
     // TODO: Find a better way to handle the cut in the middle
     let difference = width - string.length
 
@@ -36,10 +40,71 @@ function padToCenter (string, width, token = " ") {
     return padRight(str, width, token)
 }
 
+function convertToCommentBox(text = "", {
+    startToken,
+    endToken,
+    topEdgeToken,
+    bottomEdgeToken,
+    leftEdgeToken,
+    rightEdgeToken,
+    fillingToken,
+    width,
+    clearAroundText,
+    align
+} = {
+    startToken: "/",
+    endToken: "/",
+    topEdgeToken: "*",
+    bottomEdgeToken: "*",
+    leftEdgeToken: " *",
+    rightEdgeToken: "*",
+    fillingToken: " ",
+    width: 0,
+    clearAroundText: 1,
+    align: "left",
+}) {
+    let lines = text
+        .replace(/^\s*/, "")    // Remove empty space at the beginning
+        .replace(/\s*$/, "")    // Remove empty space at the end
+        .split(/\s*\n\s*/)      // Cut by newline, and remove empty space
+    let maxLineWidth = maxWidth(lines)
+
+    let edgesWidth = leftEdgeToken.length + rightEdgeToken.length
+
+    // Calculate width of the box
+    if (!width) 
+        width = maxLineWidth + edgesWidth + 2 * clearAroundText
+
+    let alignmentStyle = {
+        center: padToCenter,
+        left: padRight
+    }[align]
+
+    lines = lines
+        // Make sure all lines have the same width
+        .map(line => alignmentStyle(line, maxLineWidth, " "))
+
+        // Add space to separate from edges
+        .map(line => padToCenter(line, maxLineWidth + 2 * clearAroundText, " "))
+
+        // Extend lines to match desired with, using the choosen filling token
+        .map(line => padToCenter(line, width - edgesWidth, fillingToken))
+
+    let lineFlip = rightEdgeToken + "\n" + leftEdgeToken
+
+    let result = ""
+    result += padRight(startToken, width, topEdgeToken) + "\n"
+    result += leftEdgeToken + lines.join(lineFlip) + rightEdgeToken + "\n"
+    result += padRight(leftEdgeToken, width, bottomEdgeToken) + endToken
+
+    return result
+}
+
 module.exports = {
     maxWidth,
     padRight,
-    padToCenter
+    padToCenter,
+    convertToCommentBox
 }
 
 /** END **/
