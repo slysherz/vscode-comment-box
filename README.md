@@ -53,3 +53,7 @@ my comment
 
 * Improved cursor handling: the cursor is now moved to the end of the comment box.
 
+### 0.0.3
+
+* Added support for multi-selection comment boxes.
+

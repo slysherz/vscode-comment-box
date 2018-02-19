@@ -2,7 +2,7 @@
     "name": "comment-box",
     "displayName": "Comment Box",
     "description": "Command that transforms one or multiple lines of text into a comment box.",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "publisher": "SlySherZ",
     "repository": {
         "url": "https://github.com/SlySherZ/vscode-comment-box"
