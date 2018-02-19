@@ -39,14 +39,14 @@ function activate(context) {
         const clearAroundText   = configuration.get("textToEdgeSpace")
         const width             = configuration.get("boxWidth")
 
-        let editOperations = editor.selections.map((selection, selectionID) => {
+        const editOperations = editor.selections.map((selection) => {
             if (extendSelection) {
                 // Let's extend the selection from the first character of the first line
                 // to the last character of the last line
                 let last = editor.document.lineAt(selection.end.line).range.end.character
                 selection = new(vscode.Selection)(selection.start.line, 0, selection.end.line, last)
             }
-            
+
             let text = document.getText(selection)
 
             if (capitalize) text = text.toUpperCase()
@@ -64,14 +64,23 @@ function activate(context) {
                 align,
             });
 
-            const resultLines = text.split(/\n/g)
-            const newLineSpan = resultLines.length - 1
-            const endLine = selection.start.line + newLineSpan
-            const finalAnchor = new(vscode.Position)(endLine, resultLines[newLineSpan].length)
+            return {
+                text: text,
+                selection: selection,
+            }
+        })
 
-            editor.edit(builder => builder.replace(selection, text));
-            editor.selection[selectionID] = new vscode.Selection(finalAnchor, finalAnchor)
-        })        
+        editor.edit(builder => {
+            editOperations.forEach(({
+                text,
+                selection
+            }) => {
+                // We use insert + delete instead of replace so that the selection automatically
+                // jumps to the end of the comment box
+                builder.delete(selection)
+                builder.insert(selection.anchor, text)
+            });
+        })
     });
 
     context.subscriptions.push(commentBox);
