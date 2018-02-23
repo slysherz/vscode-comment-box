@@ -35,12 +35,12 @@
                 },
                 "commentBox.textAlignment": {
                     "type": "string",
-                    "oneOf": [
+                    "enum": [
                         "center",
                         "left"
                     ],
                     "default": "center",
-                    "description": "When using a fixed width, controls how the text should be aligned. Can be: \n'- center' or \n'- left'."
+                    "description": "When using a fixed width, controls how the text should be aligned. Can be: \n- \"center\" or \n- \"left\"."
                 },
                 "commentBox.extendSelection": {
                     "type": "boolean",
@@ -60,27 +60,27 @@
                 "commentBox.topEdgeToken": {
                     "type": "string",
                     "default": "*",
-                    "description": "Characters that are used to draw top edge of the box."
+                    "description": "Characters that are used to draw the top edge of the box."
                 },
                 "commentBox.bottomEdgeToken": {
                     "type": "string",
                     "default": "*",
-                    "description": "Characters that are used to draw bottom edge of the box."
+                    "description": "Characters that are used to draw the bottom edge of the box."
                 },
                 "commentBox.leftEdgeToken": {
                     "type": "string",
                     "default": " *",
-                    "description": "Characters that are used to draw left edge of the box."
+                    "description": "Characters that are used to draw the left edge of the box."
                 },
                 "commentBox.rightEdgeToken": {
                     "type": "string",
                     "default": "*",
-                    "description": "Characters that are used to draw right edge of the box."
+                    "description": "Characters that are used to draw the right edge of the box."
                 },
                 "commentBox.boxWidth": {
                     "type": "number",
                     "default": 0,
-                    "description": "The width of the comment box. When set to 0, it will automatically pick the smallest possible value."
+                    "description": "The width of the comment box. When set to 0, it will automatically pick the smallest possible value that wraps the selected text."
                 },
                 "commentBox.fillingToken": {
                     "type": "string",
