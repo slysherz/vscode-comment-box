@@ -3,7 +3,7 @@
 
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
-const vscode = require('vscode');
+const vscode = require('vscode')
 const {
     maxWidth,
     padRight,
@@ -16,8 +16,8 @@ const {
 function activate(context) {
     // Register comment box command
     let commentBox = vscode.commands.registerCommand('extension.commentBox', function () {
-        let editor = vscode.window.activeTextEditor;
-        let document = editor.document;
+        let editor = vscode.window.activeTextEditor
+        let document = editor.document
 
         if (!editor) {
             // No open text editor
@@ -38,6 +38,8 @@ function activate(context) {
         const align             = configuration.get("textAlignment")
         const clearAroundText   = configuration.get("textToEdgeSpace")
         const width             = configuration.get("boxWidth")
+
+        console.assert(fillingToken.length !== 0, "Filling token configuration cannot be empty.")
 
         const editOperations = editor.selections.map((selection) => {
             if (extendSelection) {
@@ -62,7 +64,7 @@ function activate(context) {
                 width,
                 clearAroundText,
                 align,
-            });
+            })
 
             return {
                 text: text,
@@ -79,11 +81,11 @@ function activate(context) {
                 // jumps to the end of the comment box
                 builder.delete(selection)
                 builder.insert(selection.anchor, text)
-            });
+            })
         })
-    });
+    })
 
-    context.subscriptions.push(commentBox);
+    context.subscriptions.push(commentBox)
 }
 exports.activate = activate;
 
