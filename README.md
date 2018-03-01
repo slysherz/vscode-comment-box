@@ -4,19 +4,51 @@
 
 This extension creates a configurable `Transform to Comment Box` command that transforms any piece of text into a pretty comment box.
 
+### Usage
+Select the text that you want to transform, call the command bar with:
 
-### Example:
+`Ctrl+Shift+P`
+
+And run the command:
+
+\> Transform to Comment Box
+
+Alternatively, you can bind the command to a shortcut by adding something like this to your `keybindings.json`:
+```
+{ "key": "shift+alt+c", "command": "extension.commentBox", "when": "editorTextFocus"}
+```
+
+
+### Examples:
+#### Transforming a simple comment (with default settings)
 
 ```
 my comment
 ```
 
-\> Transform to Comment Box
+turns into:
 
 ```
 /**************
  * MY COMMENT *
  **************/
+```
+
+
+#### Transforming a multiple line comment (with default settings)
+```
+could you
+comment box this?
+pretty please (*.*)
+```
+turns into:
+
+```
+/***********************
+ *      COULD YOU      *
+ *  COMMENT BOX THIS?  *
+ * PRETTY PLEASE (*.*) *
+ ***********************/
 ```
 
 ## Extension Settings
@@ -35,13 +67,12 @@ my comment
 * `commentBox.textToEdgeSpace`: the amount of spaces (empty characters) that are used to separate the text from the side edges.
 
 ## Todo
-* Cleanup situations where newlines are added.
-* Add regression tests.
+* Add more regression tests.
 * Consider implenting different box styles.
 
 ## Known Issues
 
-* `textAlignment` setting is not declared properly. 
+* None at the moment :)
 
 ## Release Notes
 
