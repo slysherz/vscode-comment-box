@@ -90,12 +90,13 @@ function convertToCommentBox(text = "", {
         // Extend lines to match desired with, using the choosen filling token
         .map(line => padToCenter(line, width - edgesWidth, fillingToken))
 
-    let lineFlip = rightEdgeToken + "\n" + leftEdgeToken
+    const lineFlip = rightEdgeToken + "\n" + leftEdgeToken
+    const widthWithoutRightEdge = width - rightEdgeToken.length
 
     let result = ""
-    result += padRight(startToken, width, topEdgeToken) + "\n"
-    result += leftEdgeToken + lines.join(lineFlip) + rightEdgeToken + "\n"
-    result += padRight(leftEdgeToken, width, bottomEdgeToken) + endToken
+    result += padRight(startToken, widthWithoutRightEdge, topEdgeToken) + lineFlip
+    result += lines.join(lineFlip) + rightEdgeToken + "\n"
+    result += padRight(leftEdgeToken, widthWithoutRightEdge, bottomEdgeToken) + endToken
 
     return result
 }

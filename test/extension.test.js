@@ -55,7 +55,7 @@ suite("Helper Functions Tests", function () {
     test("convertToCommentBox", function () {
         const styleA = {
             startToken: "/*",
-            endToken: "/",
+            endToken: "*/",
             topEdgeToken: "*",
             bottomEdgeToken: "*",
             leftEdgeToken: " *",
@@ -106,16 +106,16 @@ suite("Helper Functions Tests", function () {
         }
 
         assert.equal(convertToCommentBox("test", styleB), "\
-/*================================================\n\
+/*===============================================|\n\
  |~~~~~~~~~~~~~~~~~~~~ test ~~~~~~~~~~~~~~~~~~~~~|\n\
- |================================================*/\
+ |===============================================*/\
 ", "StyleB works.")
 
         assert.equal(convertToCommentBox("test\nwith multiple lines", styleB), "\
-/*================================================\n\
+/*===============================================|\n\
  |~~~~~~~~~~~~~        test         ~~~~~~~~~~~~~|\n\
  |~~~~~~~~~~~~~ with multiple lines ~~~~~~~~~~~~~|\n\
- |================================================*/\
+ |===============================================*/\
 ", "StyleB works.")
     })
 });
