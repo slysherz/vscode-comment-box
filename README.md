@@ -67,6 +67,7 @@ Alternatively, you can bind the command to a shortcut by adding something like t
 * `commentBox.textToEdgeSpace`: the amount of spaces (empty characters) that are used to separate the text from the side edges.
 
 ## Todo
+* Find a better way to handle malformed configuration styles.
 * Add more regression tests.
 * Consider implenting different box styles.
 

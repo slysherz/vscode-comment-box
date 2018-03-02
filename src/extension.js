@@ -39,7 +39,7 @@ function activate(context) {
         const clearAroundText   = configuration.get("textToEdgeSpace")
         const width             = configuration.get("boxWidth")
 
-        console.assert(fillingToken.length !== 0, "Filling token configuration cannot be empty.")
+        // console.assert(fillingToken.length !== 0, "Filling token configuration cannot be empty.")
 
         const editOperations = editor.selections.map((selection) => {
             if (extendSelection) {
