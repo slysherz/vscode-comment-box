@@ -5,52 +5,86 @@
 //
 
 // The module 'assert' provides assertion methods from node
-const assert = require('assert');
+const assert = require('assert')
 
 // You can import and use all API from the 'vscode' module
 // as well as import your extension to test it
-const vscode = require('vscode');
+// const vscode = require('vscode')
 
 // Defines a Mocha test suite to group tests of similar kind together
 suite("Helper Functions Tests", function () {
     const {
         maxWidth,
         padRight,
-        padToCenter,
+        padToCenterFromEdges,
+        padToCenterFromMiddle,
         convertToCommentBox
-    } = require('../src/comment-box');
+    } = require('../src/comment-box')
 
     // Defines a Mocha unit test
     test("maxWidth", function () {
-        assert.equal(maxWidth([]), 0, "With no lines, the maximum length is 0.");
-        assert.equal(maxWidth([""]), 0, "With an empty line the max length is 0.");
-        assert.equal(maxWidth(["single non empty"]), 16);
+        assert.equal(maxWidth([]), 0, "With no lines, the maximum length is 0.")
+        assert.equal(maxWidth([""]), 0, "With an empty line the max length is 0.")
+        assert.equal(maxWidth(["single non empty"]), 16)
         assert.equal(maxWidth([
             "multiple",
             "lines"
-        ]), 8);
+        ]), 8)
         assert.equal(maxWidth([
             "lines",
             "multiple"
-        ]), 8);
-    });
+        ]), 8)
+    })
 
     test("padRight", function () {
         assert.equal(padRight("", 3, "*"), "***", "Creates a string with the appropriate symbols and length.")
         assert.equal(padRight("-", 3, "*"), "-**", "Extends a string with the appropriate symbols and length.")
         assert.equal(padRight("---", 3, "*"), "---", "Doesn't extend strings with the right size.")
         assert.equal(padRight("", 3, "*+"), "*+*", "Works with multi-character tokens.")
-    });
+    })
 
     test("padToCenter", function () {
-        assert.equal(padToCenter("", 3, "*"), "***", "Creates a string with the appropriate symbols and length.")
-        assert.equal(padToCenter("-", 3, "*"), "*-*", "Extends a string with the appropriate symbols and length.")
-        assert.equal(padToCenter("---", 3, "*"), "---", "Doesn't extend strings with the right size.")
-        assert.equal(padToCenter("--", 5, "*"), "*--**", "Works when the string can't be exactly centered.")
-        assert.equal(padToCenter("", 3, "*+"), "**+", "Works with multi-character tokens 1.")
-        assert.equal(padToCenter("-", 5, "*+"), "*+-*+", "Works with multi-character tokens 2.")
-        assert.equal(padToCenter("-", 4, "*+"), "*-*+", "Works with multi-character tokens 3.")
-    });
+        // Make sure both versions of padToCenter work correctly on simple cases
+        const possibilities = {
+            fromEdges: padToCenterFromEdges,
+            fromMiddle: padToCenterFromMiddle
+        }
+
+        for (const possibility in possibilities) {
+            assert.equal(possibilities[possibility]("", 2, "*"), "**",
+                possibility + ": Creates a string with the appropriate symbols and length.")
+            assert.equal(possibilities[possibility]("", 3, "*"), "* *",
+                possibility + ": Creates a string with the appropriate symbols and length.")
+            assert.equal(possibilities[possibility]("-", 3, "*"), "*-*",
+                possibility + ": Extends a string with the appropriate symbols and length.")
+            assert.equal(possibilities[possibility]("---", 3, "*"), "---",
+                possibility + ": Doesn't extend strings with the right size.")
+            assert.equal(possibilities[possibility]("--", 5, "*"), "*-- *",
+                possibility + ": Works when the string can't be exactly centered.")
+            assert.equal(possibilities[possibility]("", 3, "*+"), "* *",
+                "Works with multi-character tokens 1.")
+            assert.equal(possibilities[possibility]("O", 4, "*+"), "*O *",
+                "Works with multi-character tokens 2.")
+        }
+    })
+
+    // "¸.•'´`'•.¸"
+    test("padToCenterFromEdges", function () {
+        assert.equal(padToCenterFromEdges("O", 5, "*+"), "*+O+*",
+            "Starts filling from the edges.")
+        assert.equal(padToCenterFromEdges(" Hi ", 15, "¸.•'´`'•.¸"), "¸.•'´ Hi  ´'•.¸",
+            "Works with complicated pattern 1.")
+        assert.equal(padToCenterFromEdges(" Hi ", 16, "¸.•'´`'•.¸"), "¸.•'´` Hi `´'•.¸",
+            "Works with complicated pattern 2.")
+    })
+
+    test("padToCenterFromMiddle", function () {
+        assert.equal(padToCenterFromMiddle("O", 5, "*+"), "+*O*+", "Starts filling from the middle.")
+        assert.equal(padToCenterFromMiddle(" Hi ", 15, "¸.•'´`'•.¸"), "´'•.¸ Hi  ¸.•'´",
+            "Works with complicated pattern 1.")
+        assert.equal(padToCenterFromMiddle(" Hi ", 16, "¸.•'´`'•.¸"), "`´'•.¸ Hi ¸.•'´`",
+            "Works with complicated pattern 2.")
+    })
 
     test("convertToCommentBox", function () {
         const styleA = {
@@ -87,11 +121,11 @@ suite("Helper Functions Tests", function () {
 ", "StyleA works with multiple lines in reverse order.")
 
         assert.equal(
-            convertToCommentBox("with multiple lines\ntest", styleA), 
+            convertToCommentBox("with multiple lines\ntest", styleA),
             convertToCommentBox(" \t with multiple lines \t \n \t test \t ", styleA),
             "StyleA correctly strips empty space.")
 
-        
+
         const styleB = {
             startToken: "/*",
             endToken: "*/",
@@ -105,9 +139,10 @@ suite("Helper Functions Tests", function () {
             align: "center",
         }
 
+        // TODO: Take a look at this test's behaviour
         assert.equal(convertToCommentBox("test", styleB), "\
 /*===============================================|\n\
- |~~~~~~~~~~~~~~~~~~~~ test ~~~~~~~~~~~~~~~~~~~~~|\n\
+ |~~~~~~~~~~~~~~~~~~~~ test  ~~~~~~~~~~~~~~~~~~~~|\n\
  |===============================================*/\
 ", "StyleB works.")
 
@@ -117,7 +152,37 @@ suite("Helper Functions Tests", function () {
  |~~~~~~~~~~~~~ with multiple lines ~~~~~~~~~~~~~|\n\
  |===============================================*/\
 ", "StyleB works.")
+
+        // No box, just a bar to the left
+        const styleC = {
+            startToken: "/*",
+            endToken: "\n */",
+            topEdgeToken: "",
+            bottomEdgeToken: "",
+            leftEdgeToken: " *",
+            rightEdgeToken: "",
+            fillingToken: " ",
+            width: 0,
+            clearAroundText: 1,
+            align: "left",
+        }
+        assert.equal(convertToCommentBox("test", styleC), "\
+/* test \n\
+ */\
+", "When 'topEdgeToken' or 'bottomEdgeToken' is set to an empty string, the first or last line is skipped.")
+
+        assert.equal(convertToCommentBox("test\nwith multiple lines", styleC), "\
+/* test                \n\
+ * with multiple lines \n\
+ */\
+", "StyleC works with multiple lines.")
+
+        assert.equal(convertToCommentBox("with multiple lines\ntest", styleC), "\
+/* with multiple lines \n\
+ * test                \n\
+ */\
+", "StyleC works with multiple lines in reverse order.")
     })
-});
+})
 
 /** END **/

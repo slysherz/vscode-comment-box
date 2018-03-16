@@ -1,7 +1,21 @@
 //@ts-check
 "use strict"
 
-// Calculates the maximum width in a list of strings
+function reverseString (string) {
+    let result = "";
+
+    for (let i = string.length - 1; i >= 0; i--) {
+        result += string[i]
+    }
+
+    return result
+}
+
+/**
+ * Calculates the maximum width in a list of strings
+ * @param {string[]} lines  List with the strings
+ * @returns {number}
+ */
 function maxWidth(lines) {
     let result = 0;
 
@@ -14,11 +28,16 @@ function maxWidth(lines) {
     return result;
 }
 
-// Extends a string up to 'width' by filling with the token characters from the right
-function padRight(string, width, token = " ") {
+/**
+ * Extends a string up to 'width' characters, by filling it with the token characters from the right
+ * @param {string} string   The string which will be extended
+ * @param {number} width    The width we want the new string to have
+ * @param {string} token    The characters that will be used to extend the string
+ */
+function padRight(string, width, token) {
     let position = 0
     let str = string
-
+    
     while (str.length < width) {
         str += token[position++ % token.length]
     }
@@ -26,56 +45,90 @@ function padRight(string, width, token = " ") {
     return str
 }
 
-// Extends a string up to 'width' by filling with the token characters from both sides
-function padToCenter(string, width, token = " ") {
-    // TODO: Find a better way to handle the cut in the middle
-    let difference = width - string.length
+/**
+ * Extends a string up to 'width' characters, by filling it with the token characters from both sides
+ * The token characters are inserted from the middle to the edges, so that the middle always look the same
+ * @param {string} string   The string which will be extended
+ * @param {number} width    The width we want the new string to have
+ * @param {string} token    The characters that will be used to extend the string
+ */
+function padToCenterFromMiddle(string, width, token) {
+    const difference = width - string.length
 
     if (difference <= 0) {
         return string
     }
 
-    let str = padRight("", Math.floor(difference / 2), token) + string
-
-    return padRight(str, width, token)
+    const padding = padRight("", Math.floor(difference / 2), token)
+    return string.length + 2 * padding.length < width ?
+        reverseString(padding) + string + " " + padding :
+        reverseString(padding) + string + padding
 }
 
-function convertToCommentBox(text = "", {
-    startToken,
-    endToken,
-    topEdgeToken,
-    bottomEdgeToken,
-    leftEdgeToken,
-    rightEdgeToken,
-    fillingToken,
-    width,
-    clearAroundText,
-    align
-} = {
-    startToken: "/",
-    endToken: "/",
-    topEdgeToken: "*",
-    bottomEdgeToken: "*",
-    leftEdgeToken: " *",
-    rightEdgeToken: "*",
-    fillingToken: " ",
-    width: 0,
-    clearAroundText: 1,
-    align: "left",
-}) {
-    let lines = text
-        .replace(/^\s*/, "")    // Remove empty space at the beginning
-        .replace(/\s*$/, "")    // Remove empty space at the end
-        .split(/\s*\n\s*/)      // Cut by newline, and remove empty space
-    let maxLineWidth = maxWidth(lines)
+/**
+ * Extends a string up to 'width' characters, by filling it with the token characters from both sides
+ * The token characters are inserted from the edges to the middle, so that the edges always look the same
+ * @param {string} string   The string which will be extended
+ * @param {number} width    The width we want the new string to have
+ * @param {string} token    The characters that will be used to extend the string
+ */
+function padToCenterFromEdges(string, width, token) {
+    const difference = width - string.length
 
-    let edgesWidth = leftEdgeToken.length + rightEdgeToken.length
+    if (difference <= 0) {
+        return string
+    }
+
+    const padding = padRight("", Math.floor(difference / 2), token)
+    return string.length + 2 * padding.length < width ?
+        padding + string + " " + reverseString(padding) :
+        padding + string + reverseString(padding)
+}
+
+/**
+ * @typedef BoxStyle
+ * @property {string} startToken
+ * @property {string} endToken
+ * @property {string} topEdgeToken
+ * @property {string} bottomEdgeToken
+ * @property {string} leftEdgeToken
+ * @property {string} rightEdgeToken
+ * @property {string} fillingToken
+ * @property {number} width
+ * @property {number} clearAroundText
+ * @property {string} align
+ * 
+ * @param {string} text
+ * @param {BoxStyle} options
+ */
+function convertToCommentBox(text, options) {
+    const {
+        startToken,
+        endToken,
+        topEdgeToken,
+        bottomEdgeToken,
+        leftEdgeToken,
+        rightEdgeToken,
+        fillingToken,
+        width: desiredWidth,
+        clearAroundText,
+        align
+    } = options
+
+    let lines = text
+        .replace(/^\s*/, "") // Remove empty space at the beginning
+        .replace(/\s*$/, "") // Remove empty space at the end
+        .split(/\s*\n\s*/) // Cut by newline, and remove empty space
+
+    const maxLineWidth = maxWidth(lines)
+
+    const edgesWidth = leftEdgeToken.length + rightEdgeToken.length
 
     // Calculate width of the box
-    if (!width) 
-        width = maxLineWidth + edgesWidth + 2 * clearAroundText
+    const width = desiredWidth || maxLineWidth + edgesWidth + 2 * clearAroundText
 
-    let alignmentStyle = {
+    const padToCenter = true ? padToCenterFromEdges : padToCenterFromMiddle
+    const alignmentStyle = {
         center: padToCenter,
         left: padRight
     }[align]
@@ -90,21 +143,38 @@ function convertToCommentBox(text = "", {
         // Extend lines to match desired with, using the choosen filling token
         .map(line => padToCenter(line, width - edgesWidth, fillingToken))
 
-    const lineFlip = rightEdgeToken + "\n" + leftEdgeToken
+    /**
+     * Box layout
+     * 
+     * The symbol '~' means that we repeat the token until it aligns with the other lines.
+     * 
+     *          [startToken][~~~~~~~~~~~~~~~~topEdgeToken~~~~~~~~~~~~~][rightEdgeToken]
+     * Repeat:  [leftEdgeToken][~fillingToken~] [line] [~fillingToken~][rightEdgeToken]
+     *          [leftEdgeToken][~~~~~~~~~~~~bottomEdgeToken~~~~~~~~~~~][endToken]
+     * 
+     * If 'topEdgeToken' or 'bottomEdgeToken' is set to an empty string, we'll skip drawing the
+     * first or last line respectively.
+     */
+
     const widthWithoutRightEdge = width - rightEdgeToken.length
+    const midLines = lines.join(rightEdgeToken + "\n" + leftEdgeToken)
+    const firstLine = topEdgeToken === "" ?
+        startToken :
+        padRight(startToken, widthWithoutRightEdge, topEdgeToken) + rightEdgeToken + "\n" +
+        leftEdgeToken;
+    const lastLine = bottomEdgeToken === "" ?
+        endToken :
+        rightEdgeToken + "\n" +
+        padRight(leftEdgeToken, widthWithoutRightEdge, bottomEdgeToken) + endToken
 
-    let result = ""
-    result += padRight(startToken, widthWithoutRightEdge, topEdgeToken) + lineFlip
-    result += lines.join(lineFlip) + rightEdgeToken + "\n"
-    result += padRight(leftEdgeToken, widthWithoutRightEdge, bottomEdgeToken) + endToken
-
-    return result
+    return firstLine + midLines + lastLine
 }
 
 module.exports = {
     maxWidth,
     padRight,
-    padToCenter,
+    padToCenterFromEdges,
+    padToCenterFromMiddle,
     convertToCommentBox
 }
 

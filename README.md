@@ -69,7 +69,8 @@ Alternatively, you can bind the command to a shortcut by adding something like t
 ## Todo
 * Find a better way to handle malformed configuration styles.
 * Add more regression tests.
-* Consider implenting different box styles.
+* Consider allowing multiple box styles (possibly by passing an argument to the extension).
+* Consider automatically detecting and adjusting against the text indentation.
 
 ## Known Issues
 
