@@ -16,8 +16,7 @@ suite("Helper Functions Tests", function () {
     const {
         maxWidth,
         padRight,
-        padToCenterFromEdges,
-        padToCenterFromMiddle,
+        padToCenter,
         convertToCommentBox
     } = require('../src/comment-box')
 
@@ -45,45 +44,20 @@ suite("Helper Functions Tests", function () {
 
     test("padToCenter", function () {
         // Make sure both versions of padToCenter work correctly on simple cases
-        const possibilities = {
-            fromEdges: padToCenterFromEdges,
-            fromMiddle: padToCenterFromMiddle
-        }
-
-        for (const possibility in possibilities) {
-            assert.equal(possibilities[possibility]("", 2, "*"), "**",
-                possibility + ": Creates a string with the appropriate symbols and length.")
-            assert.equal(possibilities[possibility]("", 3, "*"), "* *",
-                possibility + ": Creates a string with the appropriate symbols and length.")
-            assert.equal(possibilities[possibility]("-", 3, "*"), "*-*",
-                possibility + ": Extends a string with the appropriate symbols and length.")
-            assert.equal(possibilities[possibility]("---", 3, "*"), "---",
-                possibility + ": Doesn't extend strings with the right size.")
-            assert.equal(possibilities[possibility]("--", 5, "*"), "*-- *",
-                possibility + ": Works when the string can't be exactly centered.")
-            assert.equal(possibilities[possibility]("", 3, "*+"), "* *",
-                "Works with multi-character tokens 1.")
-            assert.equal(possibilities[possibility]("O", 4, "*+"), "*O *",
-                "Works with multi-character tokens 2.")
-        }
-    })
-
-    // "¸.•'´`'•.¸"
-    test("padToCenterFromEdges", function () {
-        assert.equal(padToCenterFromEdges("O", 5, "*+"), "*+O+*",
-            "Starts filling from the edges.")
-        assert.equal(padToCenterFromEdges(" Hi ", 15, "¸.•'´`'•.¸"), "¸.•'´ Hi  ´'•.¸",
-            "Works with complicated pattern 1.")
-        assert.equal(padToCenterFromEdges(" Hi ", 16, "¸.•'´`'•.¸"), "¸.•'´` Hi `´'•.¸",
-            "Works with complicated pattern 2.")
-    })
-
-    test("padToCenterFromMiddle", function () {
-        assert.equal(padToCenterFromMiddle("O", 5, "*+"), "+*O*+", "Starts filling from the middle.")
-        assert.equal(padToCenterFromMiddle(" Hi ", 15, "¸.•'´`'•.¸"), "´'•.¸ Hi  ¸.•'´",
-            "Works with complicated pattern 1.")
-        assert.equal(padToCenterFromMiddle(" Hi ", 16, "¸.•'´`'•.¸"), "`´'•.¸ Hi ¸.•'´`",
-            "Works with complicated pattern 2.")
+        assert.equal(padToCenter("", 2, "*"), "**",
+            "Creates a string with the appropriate symbols and length.")
+        assert.equal(padToCenter("", 3, "*"), "***",
+            "Creates a string with the appropriate symbols and length.")
+        assert.equal(padToCenter("-", 3, "*"), "*-*",
+            "Extends a string with the appropriate symbols and length.")
+        assert.equal(padToCenter("---", 3, "*"), "---",
+            "Doesn't extend strings with the right size.")
+        assert.equal(padToCenter("--", 5, "*"), "*--**",
+            "Works when the string can't be exactly centered.")
+        assert.equal(padToCenter("", 3, "*+"), "*+*",
+            "Works with multi-character tokens 1.")
+        assert.equal(padToCenter("O", 4, "*+"), "*O+*",
+            "Works with multi-character tokens 2.")
     })
 
     test("convertToCommentBox", function () {
@@ -142,7 +116,7 @@ suite("Helper Functions Tests", function () {
         // TODO: Take a look at this test's behaviour
         assert.equal(convertToCommentBox("test", styleB), "\
 /*===============================================|\n\
- |~~~~~~~~~~~~~~~~~~~~ test  ~~~~~~~~~~~~~~~~~~~~|\n\
+ |~~~~~~~~~~~~~~~~~~~~ test ~~~~~~~~~~~~~~~~~~~~~|\n\
  |===============================================*/\
 ", "StyleB works.")
 

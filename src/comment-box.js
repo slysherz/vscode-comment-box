@@ -47,42 +47,24 @@ function padRight(string, width, token) {
 
 /**
  * Extends a string up to 'width' characters, by filling it with the token characters from both sides
- * The token characters are inserted from the middle to the edges, so that the middle always look the same
- * @param {string} string   The string which will be extended
- * @param {number} width    The width we want the new string to have
- * @param {string} token    The characters that will be used to extend the string
- */
-function padToCenterFromMiddle(string, width, token) {
-    const difference = width - string.length
-
-    if (difference <= 0) {
-        return string
-    }
-
-    const padding = padRight("", Math.floor(difference / 2), token)
-    return string.length + 2 * padding.length < width ?
-        reverseString(padding) + string + " " + padding :
-        reverseString(padding) + string + padding
-}
-
-/**
- * Extends a string up to 'width' characters, by filling it with the token characters from both sides
  * The token characters are inserted from the edges to the middle, so that the edges always look the same
  * @param {string} string   The string which will be extended
  * @param {number} width    The width we want the new string to have
  * @param {string} token    The characters that will be used to extend the string
  */
-function padToCenterFromEdges(string, width, token) {
+function padToCenter(string, width, token) {
     const difference = width - string.length
 
     if (difference <= 0) {
         return string
     }
 
-    const padding = padRight("", Math.floor(difference / 2), token)
-    return string.length + 2 * padding.length < width ?
-        padding + string + " " + reverseString(padding) :
-        padding + string + reverseString(padding)
+    const leftPadSize = Math.floor(difference / 2)
+    const rightPadSize = width - leftPadSize - string.length
+
+    return padRight("", leftPadSize, token) + 
+        string +
+        reverseString(padRight("", rightPadSize, token))
 }
 
 /**
@@ -127,7 +109,6 @@ function convertToCommentBox(text, options) {
     // Calculate width of the box
     const width = desiredWidth || maxLineWidth + edgesWidth + 2 * clearAroundText
 
-    const padToCenter = true ? padToCenterFromEdges : padToCenterFromMiddle
     const alignmentStyle = {
         center: padToCenter,
         left: padRight
@@ -173,8 +154,7 @@ function convertToCommentBox(text, options) {
 module.exports = {
     maxWidth,
     padRight,
-    padToCenterFromEdges,
-    padToCenterFromMiddle,
+    padToCenter,
     convertToCommentBox
 }
 
