@@ -1,7 +1,6 @@
-//@ts-check
 "use strict"
 
-function reverseString (string) {
+function reverseString(string) {
     let result = "";
 
     for (let i = string.length - 1; i >= 0; i--) {
@@ -37,7 +36,7 @@ function maxWidth(lines) {
 function padRight(string, width, token) {
     let position = 0
     let str = string
-    
+
     while (str.length < width) {
         str += token[position++ % token.length]
     }
@@ -62,7 +61,7 @@ function padToCenter(string, width, token) {
     const leftPadSize = Math.floor(difference / 2)
     const rightPadSize = width - leftPadSize - string.length
 
-    return padRight("", leftPadSize, token) + 
+    return padRight("", leftPadSize, token) +
         string +
         reverseString(padRight("", rightPadSize, token))
 }
@@ -138,11 +137,14 @@ function convertToCommentBox(text, options) {
      */
 
     const widthWithoutRightEdge = width - rightEdgeToken.length
+
     const midLines = lines.join(rightEdgeToken + "\n" + leftEdgeToken)
+
     const firstLine = topEdgeToken === "" ?
         startToken :
         padRight(startToken, widthWithoutRightEdge, topEdgeToken) + rightEdgeToken + "\n" +
-        leftEdgeToken;
+        leftEdgeToken
+
     const lastLine = bottomEdgeToken === "" ?
         endToken :
         rightEdgeToken + "\n" +

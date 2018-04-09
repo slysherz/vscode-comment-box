@@ -1,4 +1,3 @@
-// @ts-check
 "use strict"
 
 // The module 'vscode' contains the VS Code extensibility API
@@ -39,8 +38,6 @@ function activate(context) {
         const clearAroundText   = configuration.get("textToEdgeSpace")
         const width             = configuration.get("boxWidth")
 
-        // console.assert(fillingToken.length !== 0, "Filling token configuration cannot be empty.")
-
         const editOperations = editor.selections.map((selection) => {
             if (extendSelection) {
                 // Let's extend the selection from the first character of the first line
@@ -60,7 +57,9 @@ function activate(context) {
                 bottomEdgeToken,
                 leftEdgeToken,
                 rightEdgeToken,
-                fillingToken,
+                fillingToken: fillingToken === "" ? 
+                    " " : 
+                    fillingToken,
                 width,
                 clearAroundText,
                 align,
