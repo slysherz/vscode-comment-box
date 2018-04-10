@@ -121,7 +121,7 @@ function convertToCommentBox(text, options) {
         .map(line => padToCenter(line, maxLineWidth + 2 * clearAroundText, " "))
 
         // Extend lines to match desired with, using the choosen filling token
-        .map(line => padToCenter(line, width - edgesWidth, fillingToken))
+        .map(line => alignmentStyle(line, width - edgesWidth, fillingToken))
 
     /**
      * Box layout

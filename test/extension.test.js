@@ -113,7 +113,6 @@ suite("Helper Functions Tests", function () {
             align: "center",
         }
 
-        // TODO: Take a look at this test's behaviour
         assert.equal(convertToCommentBox("test", styleB), "\
 /*===============================================|\n\
  |~~~~~~~~~~~~~~~~~~~~ test ~~~~~~~~~~~~~~~~~~~~~|\n\
@@ -156,6 +155,39 @@ suite("Helper Functions Tests", function () {
  * test                \n\
  */\
 ", "StyleC works with multiple lines in reverse order.")
+
+        // Fixed width with left alignment
+        const styleD = {
+            startToken: "/*",
+            endToken: "*/",
+            topEdgeToken: "*",
+            bottomEdgeToken: "*",
+            leftEdgeToken: " *",
+            rightEdgeToken: "*",
+            fillingToken: "-",
+            width: 50,
+            clearAroundText: 1,
+            align: "left",
+        }
+        assert.equal(convertToCommentBox("test", styleD), "\
+/*************************************************\n\
+ * test -----------------------------------------*\n\
+ *************************************************/\
+", "StyleD works.")
+
+        assert.equal(convertToCommentBox("test\nwith multiple lines", styleD), "\
+/*************************************************\n\
+ * test                --------------------------*\n\
+ * with multiple lines --------------------------*\n\
+ *************************************************/\
+", "StyleD works with multiple lines.")
+
+        assert.equal(convertToCommentBox("with multiple lines\ntest", styleD), "\
+/*************************************************\n\
+ * with multiple lines --------------------------*\n\
+ * test                --------------------------*\n\
+ *************************************************/\
+", "StyleD works with multiple lines in reverse order.")
     })
 })
 

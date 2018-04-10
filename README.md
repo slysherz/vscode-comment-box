@@ -71,6 +71,7 @@ Alternatively, you can bind the command to a shortcut by adding something like t
 * Add more regression tests.
 * Consider allowing multiple box styles (possibly by passing an argument to the extension).
 * Consider automatically detecting and adjusting against the text indentation.
+* Revisit and improve the way 'fillingToken' is used to fill extra space.
 
 ## Known Issues
 
