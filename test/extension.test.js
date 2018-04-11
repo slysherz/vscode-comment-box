@@ -14,13 +14,21 @@ const assert = require('assert')
 // Defines a Mocha test suite to group tests of similar kind together
 suite("Helper Functions Tests", function () {
     const {
+        widthOfLastLine,
         maxWidth,
         padRight,
         padToCenter,
         convertToCommentBox
     } = require('../src/comment-box')
 
-    // Defines a Mocha unit test
+    test("widthOfLastLine", function () {
+        assert.equal(widthOfLastLine(""), 0, "Width of an empty line is 0.")
+        assert.equal(widthOfLastLine("***\n"), 0, "Last line empty, width of an empty line is 0.")
+        assert.equal(widthOfLastLine("\n*"), 1, "Last line has one character.")
+        assert.equal(widthOfLastLine("\n***"), 3, "Last line has multiple characters.")
+        assert.equal(widthOfLastLine("*\n**\n***"), 3, "Multiple lines, with multiple characters.")
+    })
+
     test("maxWidth", function () {
         assert.equal(maxWidth([]), 0, "With no lines, the maximum length is 0.")
         assert.equal(maxWidth([""]), 0, "With an empty line the max length is 0.")
@@ -36,10 +44,17 @@ suite("Helper Functions Tests", function () {
     })
 
     test("padRight", function () {
-        assert.equal(padRight("", 3, "*"), "***", "Creates a string with the appropriate symbols and length.")
-        assert.equal(padRight("-", 3, "*"), "-**", "Extends a string with the appropriate symbols and length.")
-        assert.equal(padRight("---", 3, "*"), "---", "Doesn't extend strings with the right size.")
-        assert.equal(padRight("", 3, "*+"), "*+*", "Works with multi-character tokens.")
+        assert.equal(padRight("", 3, "*"), "***",
+            "Creates a string with the appropriate symbols and length.")
+        assert.equal(padRight("-", 3, "*"), "-**",
+            "Extends a string with the appropriate symbols and length.")
+        assert.equal(padRight("---", 3, "*"), "---",
+            "Doesn't extend strings with the right size.")
+        assert.equal(padRight("", 3, "*+"), "*+*",
+            "Works with multi-character tokens.")
+
+        assert.equal(padRight("---\n--", 3, "*"), "---\n--*",
+            "On strings with multiple lines, extends the last one to the appropriate length.")
     })
 
     test("padToCenter", function () {
@@ -188,6 +203,29 @@ suite("Helper Functions Tests", function () {
  * test                --------------------------*\n\
  *************************************************/\
 ", "StyleD works with multiple lines in reverse order.")
+
+        // Using newlines in the start and end tokens
+        const styleE = {
+            startToken: "// Hello there!\n/*",
+            endToken: "*/\n// Yap, this is cool :)",
+            topEdgeToken: "",
+            bottomEdgeToken: "*",
+            leftEdgeToken: " *",
+            rightEdgeToken: "*",
+            fillingToken: " ",
+            width: 0,
+            clearAroundText: 1,
+            align: "left",
+        }
+        //convertToCommentBox(" \t with multiple lines \t \n \t test \t ", styleA)
+        assert.equal(convertToCommentBox("test\nwith multiple lines", styleE), "\
+// Hello there!\n\
+/***********************\n\
+ * test                *\n\
+ * with multiple lines *\n\
+ ***********************/\n\
+// Yap, this is cool :)\
+", "StyleE works in a complex case.")
     })
 })
 

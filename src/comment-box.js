@@ -11,6 +11,20 @@ function reverseString(string) {
 }
 
 /**
+ * Calculates the width of the last line on a string.
+ * @todo Change this so it also works with '\r'
+ * @param {string} string
+ * @returns {number}
+ */
+function widthOfLastLine(string) {
+    const lastNewlinePos = string.lastIndexOf("\n")
+
+    return lastNewlinePos === - 1 ?
+        string.length :
+        string.length - lastNewlinePos - 1
+}
+
+/**
  * Calculates the maximum width in a list of strings
  * @param {string[]} lines  List with the strings
  * @returns {number}
@@ -36,9 +50,10 @@ function maxWidth(lines) {
 function padRight(string, width, token) {
     let position = 0
     let str = string
-
-    while (str.length < width) {
-        str += token[position++ % token.length]
+    let tokensLeft = width - widthOfLastLine(str)
+    
+    for (let i = 0; i < tokensLeft; i++) {
+        str += token[i % token.length]
     }
 
     return str
@@ -157,6 +172,7 @@ module.exports = {
     maxWidth,
     padRight,
     padToCenter,
+    widthOfLastLine,
     convertToCommentBox
 }
 
