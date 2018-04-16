@@ -85,13 +85,14 @@ function padToCenter(string, width, token) {
  * @typedef BoxStyle
  * @property {string} startToken
  * @property {string} endToken
+ * @property {string} topRightToken,
+ * @property {string} bottomLeftToken,
  * @property {string} topEdgeToken
  * @property {string} bottomEdgeToken
  * @property {string} leftEdgeToken
  * @property {string} rightEdgeToken
  * @property {string} fillingToken
  * @property {number} width
- * @property {number} clearAroundText
  * @property {string} align
  * 
  * @param {string} text
@@ -101,13 +102,15 @@ function convertToCommentBox(text, options) {
     const {
         startToken,
         endToken,
+        topRightToken,
+        bottomLeftToken,
         topEdgeToken,
         bottomEdgeToken,
         leftEdgeToken,
         rightEdgeToken,
         fillingToken,
         width: desiredWidth,
-        clearAroundText,
+        //clearAroundText,
         align
     } = options
 
@@ -121,21 +124,21 @@ function convertToCommentBox(text, options) {
     const edgesWidth = leftEdgeToken.length + rightEdgeToken.length
 
     // Calculate width of the box
-    const width = desiredWidth || maxLineWidth + edgesWidth + 2 * clearAroundText
+    const width = desiredWidth || maxLineWidth + edgesWidth
 
     const alignmentStyle = {
         center: padToCenter,
         left: padRight
     }[align]
 
-    lines = lines
+    lines = lines/*
         // Make sure all lines have the same width
         .map(line => alignmentStyle(line, maxLineWidth, " "))
 
         // Add space to separate from edges
         .map(line => padToCenter(line, maxLineWidth + 2 * clearAroundText, " "))
-
-        // Extend lines to match desired with, using the choosen filling token
+*/
+        // Extend lines to match desired width, using the choosen filling token
         .map(line => alignmentStyle(line, width - edgesWidth, fillingToken))
 
     /**
@@ -143,9 +146,9 @@ function convertToCommentBox(text, options) {
      * 
      * The symbol '~' means that we repeat the token until it aligns with the other lines.
      * 
-     *          [startToken][~~~~~~~~~~~~~~~~topEdgeToken~~~~~~~~~~~~~][rightEdgeToken]
-     * Repeat:  [leftEdgeToken][~fillingToken~] [line] [~fillingToken~][rightEdgeToken]
-     *          [leftEdgeToken][~~~~~~~~~~~~bottomEdgeToken~~~~~~~~~~~][endToken]
+     *          [startToken][~~~~~~~~~~~~~~~~topEdgeToken~~~~~~~~~~~~~][topRightToken]
+     * Repeat:  [leftEdgeToken][~fillingToken~~][line][~~fillingToken~][rightEdgeToken]
+     *          [bottomLeftToken][~~~~~~~~~~bottomEdgeToken~~~~~~~~~~~][endToken]
      * 
      * If 'topEdgeToken' or 'bottomEdgeToken' is set to an empty string, we'll skip drawing the
      * first or last line respectively.
@@ -157,13 +160,13 @@ function convertToCommentBox(text, options) {
 
     const firstLine = topEdgeToken === "" ?
         startToken :
-        padRight(startToken, widthWithoutRightEdge, topEdgeToken) + rightEdgeToken + "\n" +
+        padRight(startToken, widthWithoutRightEdge, topEdgeToken) + topRightToken + "\n" +
         leftEdgeToken
 
     const lastLine = bottomEdgeToken === "" ?
         endToken :
         rightEdgeToken + "\n" +
-        padRight(leftEdgeToken, widthWithoutRightEdge, bottomEdgeToken) + endToken
+        padRight(bottomLeftToken, widthWithoutRightEdge, bottomEdgeToken) + endToken
 
     return firstLine + midLines + lastLine
 }

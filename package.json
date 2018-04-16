@@ -54,8 +54,18 @@
                 },
                 "commentBox.commentEndToken": {
                     "type": "string",
-                    "default": "*/",
+                    "default": "**/",
                     "description": "Characters that end a multi-line comment for your current language."
+                },
+                "commentBox.topRightToken": {
+                    "type": "string",
+                    "default": "**",
+                    "description": "Characters that are used to draw the top right corner of the box."
+                },
+                "commentBox.bottomLeftToken": {
+                    "type": "string",
+                    "default": " **",
+                    "description": "Characters that are used to draw the bottom left corner of the box."
                 },
                 "commentBox.topEdgeToken": {
                     "type": "string",
@@ -69,12 +79,12 @@
                 },
                 "commentBox.leftEdgeToken": {
                     "type": "string",
-                    "default": " *",
+                    "default": " * ",
                     "description": "Characters that are used to draw the left edge of the box."
                 },
                 "commentBox.rightEdgeToken": {
                     "type": "string",
-                    "default": "*",
+                    "default": " *",
                     "description": "Characters that are used to draw the right edge of the box."
                 },
                 "commentBox.boxWidth": {
@@ -86,11 +96,6 @@
                     "type": "string",
                     "default": " ",
                     "description": "When using a fixed width, controls the characters that are used to fill the extra space available."
-                },
-                "commentBox.textToEdgeSpace": {
-                    "type": "number",
-                    "default": 1,
-                    "description": "The amount of spaces (empty characters) that are used to separate the text from the side edges."
                 }
             }
         }

@@ -29,13 +29,15 @@ function activate(context) {
         const extendSelection   = configuration.get("extendSelection")
         const startToken        = configuration.get("commentStartToken")
         const endToken          = configuration.get("commentEndToken")
+        const topRightToken     = configuration.get("topRightToken")
+        const bottomLeftToken   = configuration.get("bottomLeftToken")
         const leftEdgeToken     = configuration.get("leftEdgeToken")
         const rightEdgeToken    = configuration.get("rightEdgeToken")
         const fillingToken      = configuration.get("fillingToken")
         const topEdgeToken      = configuration.get("topEdgeToken")
         const bottomEdgeToken   = configuration.get("bottomEdgeToken")
         const align             = configuration.get("textAlignment")
-        const clearAroundText   = configuration.get("textToEdgeSpace")
+        //const clearAroundText   = configuration.get("textToEdgeSpace")
         const width             = configuration.get("boxWidth")
 
         const editOperations = editor.selections.map((selection) => {
@@ -55,13 +57,15 @@ function activate(context) {
                 endToken,
                 topEdgeToken,
                 bottomEdgeToken,
+                topRightToken,
+                bottomLeftToken,
                 leftEdgeToken,
                 rightEdgeToken,
                 fillingToken: fillingToken === "" ? 
                     " " : 
                     fillingToken,
                 width,
-                clearAroundText,
+                //clearAroundText,
                 align,
             })
 

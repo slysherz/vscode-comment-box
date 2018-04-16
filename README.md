@@ -58,20 +58,20 @@ Alternatively, you can bind the command to a shortcut by adding something like t
 * `commentBox.extendSelection`: when 'true' the whole line is replaced, not just the selected part.
 * `commentBox.commentStartToken`: characters that start a multi-line comment for your current language.
 * `commentBox.commentEndToken`: characters that end a multi-line comment for your current language.
+* `commentBox.topRightToken`: characters that are used to draw the top right corner of the box.
+* `commentBox.bottomLeftToken`: characters that are used to draw the bottom left corner of the box.
 * `commentBox.topEdgeToken`: characters that are used to draw top edge of the box.
 * `commentBox.bottomEdgeToken`: characters that are used to draw bottom edge of the box.
 * `commentBox.leftEdgeToken`: characters that are used to draw left edge of the box.
 * `commentBox.rightEdgeToken`: characters that are used to draw right edge of the box.
 * `commentBox.boxWidth`: the width of the comment box. When set to 0, it will automatically pick the smallest possible value.
 * `commentBox.fillingToken`: when using a fixed width, controls the characters that are used to fill the extra space available.
-* `commentBox.textToEdgeSpace`: the amount of spaces (empty characters) that are used to separate the text from the side edges.
 
 ## Todo
 * Find a better way to handle malformed configuration styles.
 * Add more regression tests.
 * Consider allowing multiple box styles (possibly by passing an argument to the extension).
 * Consider automatically detecting and adjusting against the text indentation.
-* Revisit and improve the way 'fillingToken' is used to fill extra space.
 
 ## Known Issues
 

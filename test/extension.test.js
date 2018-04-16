@@ -58,7 +58,6 @@ suite("Helper Functions Tests", function () {
     })
 
     test("padToCenter", function () {
-        // Make sure both versions of padToCenter work correctly on simple cases
         assert.equal(padToCenter("", 2, "*"), "**",
             "Creates a string with the appropriate symbols and length.")
         assert.equal(padToCenter("", 3, "*"), "***",
@@ -78,17 +77,24 @@ suite("Helper Functions Tests", function () {
     test("convertToCommentBox", function () {
         const styleA = {
             startToken: "/*",
-            endToken: "*/",
+            endToken: "**/",
+            topRightToken: "**",
+            bottomLeftToken: " **",
             topEdgeToken: "*",
             bottomEdgeToken: "*",
-            leftEdgeToken: " *",
-            rightEdgeToken: "*",
+            leftEdgeToken: " * ",
+            rightEdgeToken: " *",
             fillingToken: " ",
             width: 0,
-            clearAroundText: 1,
             align: "left",
         }
-        //convertToCommentBox(" \t with multiple lines \t \n \t test \t ", styleA)
+
+        assert.equal(convertToCommentBox("", styleA), "\
+/****\n\
+ *  *\n\
+ ****/\
+", "StyleA works with an empty comment.")
+
         assert.equal(convertToCommentBox("test", styleA), "\
 /********\n\
  * test *\n\
@@ -118,103 +124,117 @@ suite("Helper Functions Tests", function () {
         const styleB = {
             startToken: "/*",
             endToken: "*/",
+            topRightToken: "+",
+            bottomLeftToken: " +",
             topEdgeToken: "=",
             bottomEdgeToken: "=",
             leftEdgeToken: " |",
             rightEdgeToken: "|",
             fillingToken: "~",
             width: 50,
-            clearAroundText: 1,
             align: "center",
         }
 
+        assert.equal(convertToCommentBox("", styleB), "\
+/*===============================================+\n\
+ |~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|\n\
+ +===============================================*/\
+", "StyleB works with an empty comment.")
+
         assert.equal(convertToCommentBox("test", styleB), "\
-/*===============================================|\n\
- |~~~~~~~~~~~~~~~~~~~~ test ~~~~~~~~~~~~~~~~~~~~~|\n\
- |===============================================*/\
+/*===============================================+\n\
+ |~~~~~~~~~~~~~~~~~~~~~test~~~~~~~~~~~~~~~~~~~~~~|\n\
+ +===============================================*/\
 ", "StyleB works.")
 
         assert.equal(convertToCommentBox("test\nwith multiple lines", styleB), "\
-/*===============================================|\n\
- |~~~~~~~~~~~~~        test         ~~~~~~~~~~~~~|\n\
- |~~~~~~~~~~~~~ with multiple lines ~~~~~~~~~~~~~|\n\
- |===============================================*/\
+/*===============================================+\n\
+ |~~~~~~~~~~~~~~~~~~~~~test~~~~~~~~~~~~~~~~~~~~~~|\n\
+ |~~~~~~~~~~~~~~with multiple lines~~~~~~~~~~~~~~|\n\
+ +===============================================*/\
 ", "StyleB works.")
 
         // No box, just a bar to the left
         const styleC = {
-            startToken: "/*",
-            endToken: "\n */",
+            startToken: "/* ",
+            endToken: " */",
+            topRightToken: "**",
+            bottomLeftToken: " **",
             topEdgeToken: "",
             bottomEdgeToken: "",
-            leftEdgeToken: " *",
+            leftEdgeToken: " * ",
             rightEdgeToken: "",
             fillingToken: " ",
             width: 0,
-            clearAroundText: 1,
             align: "left",
         }
         assert.equal(convertToCommentBox("test", styleC), "\
-/* test \n\
- */\
+/* test */\
 ", "When 'topEdgeToken' or 'bottomEdgeToken' is set to an empty string, the first or last line is skipped.")
 
         assert.equal(convertToCommentBox("test\nwith multiple lines", styleC), "\
-/* test                \n\
- * with multiple lines \n\
- */\
+/* test               \n\
+ * with multiple lines */\
 ", "StyleC works with multiple lines.")
 
         assert.equal(convertToCommentBox("with multiple lines\ntest", styleC), "\
-/* with multiple lines \n\
- * test                \n\
- */\
+/* with multiple lines\n\
+ * test                */\
 ", "StyleC works with multiple lines in reverse order.")
 
-        // Fixed width with left alignment
+        // Fixed width with left alignment and different tokens
         const styleD = {
             startToken: "/*",
-            endToken: "*/",
-            topEdgeToken: "*",
-            bottomEdgeToken: "*",
-            leftEdgeToken: " *",
-            rightEdgeToken: "*",
+            endToken: "^*/",
+            topRightToken: "vv",
+            bottomLeftToken: " ^^",
+            topEdgeToken: "v",
+            bottomEdgeToken: "^",
+            leftEdgeToken: " > ",
+            rightEdgeToken: " <",
             fillingToken: "-",
-            width: 50,
-            clearAroundText: 1,
+            width: 30,
             align: "left",
         }
+
+        assert.equal(convertToCommentBox("", styleD), "\
+/*vvvvvvvvvvvvvvvvvvvvvvvvvvvv\n\
+ > ------------------------- <\n\
+ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/\
+", "StyleD works with an empty comment.")
+
         assert.equal(convertToCommentBox("test", styleD), "\
-/*************************************************\n\
- * test -----------------------------------------*\n\
- *************************************************/\
+/*vvvvvvvvvvvvvvvvvvvvvvvvvvvv\n\
+ > test--------------------- <\n\
+ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/\
 ", "StyleD works.")
 
         assert.equal(convertToCommentBox("test\nwith multiple lines", styleD), "\
-/*************************************************\n\
- * test                --------------------------*\n\
- * with multiple lines --------------------------*\n\
- *************************************************/\
+/*vvvvvvvvvvvvvvvvvvvvvvvvvvvv\n\
+ > test--------------------- <\n\
+ > with multiple lines------ <\n\
+ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/\
 ", "StyleD works with multiple lines.")
 
         assert.equal(convertToCommentBox("with multiple lines\ntest", styleD), "\
-/*************************************************\n\
- * with multiple lines --------------------------*\n\
- * test                --------------------------*\n\
- *************************************************/\
+/*vvvvvvvvvvvvvvvvvvvvvvvvvvvv\n\
+ > with multiple lines------ <\n\
+ > test--------------------- <\n\
+ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/\
 ", "StyleD works with multiple lines in reverse order.")
 
         // Using newlines in the start and end tokens
         const styleE = {
             startToken: "// Hello there!\n/*",
-            endToken: "*/\n// Yap, this is cool :)",
-            topEdgeToken: "",
+            endToken: "**/\n// Yap, this is cool :)",
+            topRightToken: "**",
+            bottomLeftToken: " **",
+            topEdgeToken: "*",
             bottomEdgeToken: "*",
-            leftEdgeToken: " *",
-            rightEdgeToken: "*",
+            leftEdgeToken: " * ",
+            rightEdgeToken: " *",
             fillingToken: " ",
             width: 0,
-            clearAroundText: 1,
             align: "left",
         }
         //convertToCommentBox(" \t with multiple lines \t \n \t test \t ", styleA)
