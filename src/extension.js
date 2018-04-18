@@ -61,9 +61,9 @@ function activate(context) {
                 bottomLeftToken,
                 leftEdgeToken,
                 rightEdgeToken,
-                fillingToken: fillingToken === "" ? 
-                    " " : 
-                    fillingToken,
+                fillingToken: fillingToken.length ? 
+                    fillingToken :
+                    " ", 
                 width,
                 //clearAroundText,
                 align,
