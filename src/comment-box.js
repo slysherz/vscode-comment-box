@@ -1,5 +1,43 @@
 "use strict"
 
+/**
+ * Calculates the maximum width in a list of strings
+ * @param {string[]} lines  List with the strings
+ * @returns {number}
+ */
+function maxWidth(lines) {
+    let result = 0;
+
+    for (let line of lines) {
+        let width = line.length
+
+        result = Math.max(result, width)
+    }
+
+    return result;
+}
+
+/**
+ * Assume indentation uses spaces only
+ * @param {string[]} strings List of strings
+ * @returns {number} The number of spaces by which all lines are indented
+ */
+function findIndentationLevel(strings) {
+    const width = maxWidth(strings)
+
+    // First we try to find the indentation level of the leftmost character which is not a space
+    for (let level = 0; level < width; level++) {
+        for (let string of strings) {
+            if (string.length > level && string[level] !== " ") {
+                return level;
+            }
+        }
+    }
+
+    // If we don't find one, we use the length of the largest string
+    return width;
+}
+
 function reverseString(string) {
     let result = "";
 
@@ -22,23 +60,6 @@ function widthOfLastLine(string) {
     return lastNewlinePos === - 1 ?
         string.length :
         string.length - lastNewlinePos - 1
-}
-
-/**
- * Calculates the maximum width in a list of strings
- * @param {string[]} lines  List with the strings
- * @returns {number}
- */
-function maxWidth(lines) {
-    let result = 0;
-
-    for (let line of lines) {
-        let width = line.length
-
-        result = Math.max(result, width)
-    }
-
-    return result;
 }
 
 /**
@@ -173,6 +194,7 @@ function convertToCommentBox(text, options) {
 
 module.exports = {
     maxWidth,
+    findIndentationLevel,
     padRight,
     padToCenter,
     widthOfLastLine,

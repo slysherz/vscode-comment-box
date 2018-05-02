@@ -16,6 +16,7 @@ suite("Helper Functions Tests", function () {
     const {
         widthOfLastLine,
         maxWidth,
+        findIndentationLevel,
         padRight,
         padToCenter,
         convertToCommentBox
@@ -43,6 +44,28 @@ suite("Helper Functions Tests", function () {
         ]), 8)
     })
 
+    test("findIndentationLevel", function () {
+        assert.equal(findIndentationLevel([]), 0,
+            "Indentation level with no strings is 0.")
+        assert.equal(findIndentationLevel(["", ""]), 0,
+            "Indentation level with just empty strings is 0.")
+        assert.equal(findIndentationLevel(["  ", ""]), 2,
+            "Indentation level of strings with just spaces is the width of the largest string.")
+        assert.equal(findIndentationLevel(["", "  "]), 2,
+            "Indentation level of strings with just spaces is the width of the largest string reversed.")
+        assert.equal(findIndentationLevel(["  text"]), 2,
+            "Indentation level works with a single string.")
+        assert.equal(findIndentationLevel(["  text", "  text2"]), 2,
+            "Indentation level with multiple strings works.")
+        assert.equal(findIndentationLevel(["  text", "    text2"]), 2,
+            "Indentation level with multiple strings and different alignments works 1.")
+        assert.equal(findIndentationLevel(["    text", "  text2"]), 2,
+            "Indentation level with multiple strings and different alignments works 2.")
+        assert.equal(findIndentationLevel(["    text", "  text2", "    text3"]), 2,
+            "Indentation level with multiple strings and different alignments works 2.")
+        assert.equal(findIndentationLevel(["", "  text", ""]), 2, "Empty lines do not change the result.")
+    })
+
     test("padRight", function () {
         assert.equal(padRight("", 3, "*"), "***",
             "Creates a string with the appropriate symbols and length.")
@@ -52,7 +75,6 @@ suite("Helper Functions Tests", function () {
             "Doesn't extend strings with the right size.")
         assert.equal(padRight("", 3, "*+"), "*+*",
             "Works with multi-character tokens.")
-
         assert.equal(padRight("---\n--", 3, "*"), "---\n--*",
             "On strings with multiple lines, extends the last one to the appropriate length.")
     })

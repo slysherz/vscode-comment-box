@@ -14,7 +14,7 @@ const {
 // When the extension is activated
 function activate(context) {
     // Register comment box command
-    let commentBox = vscode.commands.registerCommand('extension.commentBox', function () {
+    const commentBox = vscode.commands.registerCommand('extension.commentBox', function () {
         let editor = vscode.window.activeTextEditor
         let document = editor.document
 
