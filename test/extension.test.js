@@ -62,8 +62,9 @@ suite("Helper Functions Tests", function () {
         assert.equal(findIndentationLevel(["    text", "  text2"]), 2,
             "Indentation level with multiple strings and different alignments works 2.")
         assert.equal(findIndentationLevel(["    text", "  text2", "    text3"]), 2,
-            "Indentation level with multiple strings and different alignments works 2.")
-        assert.equal(findIndentationLevel(["", "  text", ""]), 2, "Empty lines do not change the result.")
+            "Indentation level with multiple strings and different alignments works 3.")
+        assert.equal(findIndentationLevel(["", "  text", ""]), 2,
+            "Empty lines do not change the result.")
     })
 
     test("padRight", function () {
@@ -109,6 +110,9 @@ suite("Helper Functions Tests", function () {
             fillingToken: " ",
             width: 0,
             align: "left",
+            removeEmptyLines: true,
+            ignoreOuterIndentation: true,
+            ignoreInnerIndentation: true,
         }
 
         assert.equal(convertToCommentBox("", styleA), "\
@@ -139,7 +143,7 @@ suite("Helper Functions Tests", function () {
 
         assert.equal(
             convertToCommentBox("with multiple lines\ntest", styleA),
-            convertToCommentBox(" \t with multiple lines \t \n \t test \t ", styleA),
+            convertToCommentBox(" \t with multiple lines \t \n \t \n \t test \t ", styleA),
             "StyleA correctly strips empty space.")
 
 
@@ -155,6 +159,9 @@ suite("Helper Functions Tests", function () {
             fillingToken: "~",
             width: 50,
             align: "center",
+            removeEmptyLines: true,
+            ignoreOuterIndentation: true,
+            ignoreInnerIndentation: true,
         }
 
         assert.equal(convertToCommentBox("", styleB), "\
@@ -189,6 +196,9 @@ suite("Helper Functions Tests", function () {
             fillingToken: " ",
             width: 0,
             align: "left",
+            removeEmptyLines: true,
+            ignoreOuterIndentation: true,
+            ignoreInnerIndentation: true,
         }
         assert.equal(convertToCommentBox("test", styleC), "\
 /* test */\
@@ -217,6 +227,9 @@ suite("Helper Functions Tests", function () {
             fillingToken: "-",
             width: 30,
             align: "left",
+            removeEmptyLines: true,
+            ignoreOuterIndentation: true,
+            ignoreInnerIndentation: true,
         }
 
         assert.equal(convertToCommentBox("", styleD), "\
@@ -258,6 +271,9 @@ suite("Helper Functions Tests", function () {
             fillingToken: " ",
             width: 0,
             align: "left",
+            removeEmptyLines: true,
+            ignoreOuterIndentation: true,
+            ignoreInnerIndentation: true,
         }
         //convertToCommentBox(" \t with multiple lines \t \n \t test \t ", styleA)
         assert.equal(convertToCommentBox("test\nwith multiple lines", styleE), "\
@@ -268,6 +284,94 @@ suite("Helper Functions Tests", function () {
  ***********************/\n\
 // Yap, this is cool :)\
 ", "StyleE works in a complex case.")
+
+
+        // Keep indentation intact
+        const styleF = {
+            startToken: "/*",
+            endToken: "**/",
+            topRightToken: "**",
+            bottomLeftToken: " **",
+            topEdgeToken: "*",
+            bottomEdgeToken: "*",
+            leftEdgeToken: " * ",
+            rightEdgeToken: " *",
+            fillingToken: " ",
+            width: 0,
+            align: "left",
+            removeEmptyLines: false,
+            ignoreOuterIndentation: false,
+            ignoreInnerIndentation: false,
+        }
+
+        // TODO: The box should be empty in this case
+        assert.equal(convertToCommentBox("", styleF), "\
+/****\n\
+ *  *\n\
+ ****/\
+", "styleF works with an empty comment.")
+
+        assert.equal(convertToCommentBox("test", styleF), "\
+/********\n\
+ * test *\n\
+ ********/\
+", "styleF works.")
+
+        assert.equal(convertToCommentBox("test\nwith multiple lines", styleF), "\
+/***********************\n\
+ * test                *\n\
+ * with multiple lines *\n\
+ ***********************/\
+", "styleF works with multiple lines.")
+
+        assert.equal(convertToCommentBox("with multiple lines\ntest", styleF), "\
+/***********************\n\
+ * with multiple lines *\n\
+ * test                *\n\
+ ***********************/\
+", "styleF works with multiple lines in reverse order.")
+
+        assert.equal(convertToCommentBox("    test\n    with multiple lines", styleF), "\
+    /***********************\n\
+     * test                *\n\
+     * with multiple lines *\n\
+     ***********************/\
+", "styleF works with multiple indented lines.")
+
+        assert.equal(convertToCommentBox("    with multiple lines\n    test", styleF), "\
+    /***********************\n\
+     * with multiple lines *\n\
+     * test                *\n\
+     ***********************/\
+", "styleF works with multiple indented lines in reverse order.")
+
+        assert.equal(convertToCommentBox("    test\n        with multiple lines\n            with inner indentation", styleF), "\
+    /**********************************\n\
+     * test                           *\n\
+     *     with multiple lines        *\n\
+     *         with inner indentation *\n\
+     **********************************/\
+", "styleF works with multiple indented lines with inner indentation.")
+
+        assert.equal(convertToCommentBox("            with inner indentation\n    test\n        with multiple lines", styleF), "\
+    /**********************************\n\
+     *         with inner indentation *\n\
+     * test                           *\n\
+     *     with multiple lines        *\n\
+     **********************************/\
+", "styleF works with multiple indented lines with inner indentation with different order."    )    
+
+        assert.equal(convertToCommentBox("\n            with inner indentation\n\n    test\n\n        with multiple lines\n", styleF), "\
+    /**********************************\n\
+     *                                *\n\
+     *         with inner indentation *\n\
+     *                                *\n\
+     * test                           *\n\
+     *                                *\n\
+     *     with multiple lines        *\n\
+     *                                *\n\
+     **********************************/\
+", "styleF works with multiple indented lines with inner indentation with different order and empty lines.")
     })
 })
 

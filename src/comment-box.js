@@ -38,6 +38,26 @@ function findIndentationLevel(strings) {
     return width;
 }
 
+/**
+ * @param {string[]} strings List of strings
+ * @param {number} levels
+ * @returns {string[]}
+ */
+function dedentBy(strings, levels) {
+    return strings.map(s => s.slice(levels))
+}
+
+/**
+ * @param {string[]} strings List of strings
+ * @param {number} levels
+ * @returns {string[]}
+ */
+function indentBy(strings, levels) {
+    const indentation = " ".repeat(levels)
+
+    return strings.map(s => indentation + s)
+}
+
 function reverseString(string) {
     let result = "";
 
@@ -115,6 +135,9 @@ function padToCenter(string, width, token) {
  * @property {string} fillingToken
  * @property {number} width
  * @property {string} align
+ * @property {boolean} removeEmptyLines
+ * @property {boolean} ignoreOuterIndentation
+ * @property {boolean} ignoreInnerIndentation
  * 
  * @param {string} text
  * @param {BoxStyle} options
@@ -132,13 +155,30 @@ function convertToCommentBox(text, options) {
         fillingToken,
         width: desiredWidth,
         //clearAroundText,
-        align
+        align,
+        removeEmptyLines = true,
+        ignoreOuterIndentation = true,
+        ignoreInnerIndentation = true
     } = options
 
     let lines = text
-        .replace(/^\s*/, "") // Remove empty space at the beginning
-        .replace(/\s*$/, "") // Remove empty space at the end
-        .split(/\s*\n\s*/) // Cut by newline, and remove empty space
+        // Split text by newlines
+        .split(/\n/)
+        // Remove empty lines
+        .filter(s => !removeEmptyLines || s.match(/\S/))
+        // Remove space to the right
+        .map(s => s.replace(/\s*$/, ""))
+
+    // Make sure there's at least a single line, this should go away eventually
+    lines = lines.length ? lines : [ "" ]
+
+    const indentationLevel = findIndentationLevel(lines)
+    lines = dedentBy(lines, indentationLevel)
+
+    if (ignoreInnerIndentation && align === "left") {
+        // Remove space to the left
+        lines = lines.map(s => s.replace(/^\s*/, ""))
+    }
 
     const maxLineWidth = maxWidth(lines)
 
@@ -189,7 +229,13 @@ function convertToCommentBox(text, options) {
         rightEdgeToken + "\n" +
         padRight(bottomLeftToken, widthWithoutRightEdge, bottomEdgeToken) + endToken
 
-    return firstLine + midLines + lastLine
+    const result = firstLine + midLines + lastLine
+
+    if (!ignoreOuterIndentation) {
+        return indentBy(result.split("\n"), indentationLevel).join("\n");
+    }
+
+    return result;
 }
 
 module.exports = {
