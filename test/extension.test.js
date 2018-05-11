@@ -17,6 +17,7 @@ suite("Helper Functions Tests", function () {
         widthOfLastLine,
         maxWidth,
         findIndentationLevel,
+        convertTabsToSpaces,
         padRight,
         padToCenter,
         convertToCommentBox
@@ -65,6 +66,16 @@ suite("Helper Functions Tests", function () {
             "Indentation level with multiple strings and different alignments works 3.")
         assert.equal(findIndentationLevel(["", "  text", ""]), 2,
             "Empty lines do not change the result.")
+    })
+
+    test("convertTabsToSpaces", function () {
+        assert.equal(convertTabsToSpaces("", 1), "", "Using an empty string.")
+        assert.equal(convertTabsToSpaces("", 0), "", "Using an empty string with 0 width.")
+        assert.equal(convertTabsToSpaces("\t", 1), " ", "Replacing with width 1.")
+        assert.equal(convertTabsToSpaces("abc\tabc", 1), "abc abc", "Replacing with width 1 in the middle of the text.")
+        assert.equal(convertTabsToSpaces("\t", 4), "    ", "Replacing with width 4.")
+        assert.equal(convertTabsToSpaces("abc\tabc", 4), "abc abc", "Replacing with width 4 in the middle of the text 1.")
+        assert.equal(convertTabsToSpaces("ab\tab", 4), "ab  ab", "Replacing with width 4 in the middle of the text 1.")
     })
 
     test("padRight", function () {
@@ -117,7 +128,6 @@ suite("Helper Functions Tests", function () {
 
         assert.equal(convertToCommentBox("", styleA), "\
 /****\n\
- *  *\n\
  ****/\
 ", "StyleA works with an empty comment.")
 
@@ -159,7 +169,7 @@ suite("Helper Functions Tests", function () {
             fillingToken: "~",
             width: 50,
             align: "center",
-            removeEmptyLines: true,
+            removeEmptyLines: false,
             ignoreOuterIndentation: true,
             ignoreInnerIndentation: true,
         }
@@ -196,10 +206,11 @@ suite("Helper Functions Tests", function () {
             fillingToken: " ",
             width: 0,
             align: "left",
-            removeEmptyLines: true,
+            removeEmptyLines: false,
             ignoreOuterIndentation: true,
             ignoreInnerIndentation: true,
         }
+        
         assert.equal(convertToCommentBox("test", styleC), "\
 /* test */\
 ", "When 'topEdgeToken' or 'bottomEdgeToken' is set to an empty string, the first or last line is skipped.")
@@ -227,7 +238,7 @@ suite("Helper Functions Tests", function () {
             fillingToken: "-",
             width: 30,
             align: "left",
-            removeEmptyLines: true,
+            removeEmptyLines: false,
             ignoreOuterIndentation: true,
             ignoreInnerIndentation: true,
         }
@@ -271,7 +282,7 @@ suite("Helper Functions Tests", function () {
             fillingToken: " ",
             width: 0,
             align: "left",
-            removeEmptyLines: true,
+            removeEmptyLines: false,
             ignoreOuterIndentation: true,
             ignoreInnerIndentation: true,
         }
@@ -372,6 +383,44 @@ suite("Helper Functions Tests", function () {
      *                                *\n\
      **********************************/\
 ", "styleF works with multiple indented lines with inner indentation with different order and empty lines.")
+
+    // Keep indentation intact, using fixed width and fillingToken
+    const styleG = {
+        startToken: "/*",
+        endToken: "**/",
+        topRightToken: "**",
+        bottomLeftToken: " **",
+        topEdgeToken: "*",
+        bottomEdgeToken: "*",
+        leftEdgeToken: " * ",
+        rightEdgeToken: " *",
+        fillingToken: "-",
+        width: 40,
+        align: "left",
+        removeEmptyLines: false,
+        ignoreOuterIndentation: false,
+        ignoreInnerIndentation: false,
+    }
+
+    assert.equal(convertToCommentBox("test\nwith multiple lines", styleG), "\
+/***************************************\n\
+ * test------------------------------- *\n\
+ * with multiple lines---------------- *\n\
+ ***************************************/\
+", "styleG works with multiple lines.")
+
+    assert.equal(convertToCommentBox("\n            with inner indentation\n\n    test\n\n        with multiple lines\n", styleG), "\
+    /***************************************\n\
+     * ----------------------------------- *\n\
+     *         with inner indentation----- *\n\
+     * ----------------------------------- *\n\
+     * test------------------------------- *\n\
+     * ----------------------------------- *\n\
+     *     with multiple lines------------ *\n\
+     * ----------------------------------- *\n\
+     ***************************************/\
+", "styleG works with multiple lines.")
+
     })
 })
 

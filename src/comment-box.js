@@ -58,6 +58,31 @@ function indentBy(strings, levels) {
     return strings.map(s => indentation + s)
 }
 
+/**
+ * Converts tab characters to spaces, without changing the text.
+ * Assumes that there are no newline characters in the string.
+ * @param {string} string
+ * @param {number} tabWidth
+ */
+function convertTabsToSpaces(string, tabWidth) {
+    if (tabWidth <= 0) {
+        return string.replace("\t", "")
+    }
+
+    let result = ""
+
+    for (let i = 0; i < string.length; i++) {
+        if (string[i] === "\t") {
+            const widthLeft = tabWidth - (i % tabWidth)
+            result += " ".repeat(widthLeft)
+        } else {
+            result += string[i]
+        }
+    }
+
+    return result;
+}
+
 function reverseString(string) {
     let result = "";
 
@@ -169,13 +194,11 @@ function convertToCommentBox(text, options) {
         // Remove space to the right
         .map(s => s.replace(/\s*$/, ""))
 
-    // Make sure there's at least a single line, this should go away eventually
-    lines = lines.length ? lines : [ "" ]
-
     const indentationLevel = findIndentationLevel(lines)
     lines = dedentBy(lines, indentationLevel)
 
-    if (ignoreInnerIndentation && align === "left") {
+    // Inner indentation doesn't make sence with centered text
+    if (ignoreInnerIndentation && align !== "center") {
         // Remove space to the left
         lines = lines.map(s => s.replace(/^\s*/, ""))
     }
@@ -216,17 +239,32 @@ function convertToCommentBox(text, options) {
      */
 
     const widthWithoutRightEdge = width - rightEdgeToken.length
+    const skipFirstLine = topEdgeToken === ""
+    const skipLastLine = bottomEdgeToken === ""
+    const firstLine = skipFirstLine ? 
+        "" : 
+        padRight(startToken, widthWithoutRightEdge, topEdgeToken) + topRightToken + "\n"
 
-    const midLines = lines.join(rightEdgeToken + "\n" + leftEdgeToken)
+    const midLines = lines
+        .map((s, l) => {
+            const left = l === 0 && skipFirstLine ?
+                startToken :
+                leftEdgeToken
 
-    const firstLine = topEdgeToken === "" ?
-        startToken :
-        padRight(startToken, widthWithoutRightEdge, topEdgeToken) + topRightToken + "\n" +
-        leftEdgeToken
+            const right = l === lines.length - 1 && skipLastLine ?
+                endToken :
+                rightEdgeToken
 
-    const lastLine = bottomEdgeToken === "" ?
-        endToken :
-        rightEdgeToken + "\n" +
+            const newline = l === lines.length - 1 && skipLastLine ? 
+                "" :
+                "\n"
+
+            return left + s + right + newline;
+        })
+        .join("")
+
+    const lastLine = skipLastLine ?
+        "" :
         padRight(bottomLeftToken, widthWithoutRightEdge, bottomEdgeToken) + endToken
 
     const result = firstLine + midLines + lastLine
@@ -241,6 +279,7 @@ function convertToCommentBox(text, options) {
 module.exports = {
     maxWidth,
     findIndentationLevel,
+    convertTabsToSpaces,
     padRight,
     padToCenter,
     widthOfLastLine,
