@@ -4,9 +4,7 @@
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require('vscode')
 const {
-    maxWidth,
-    padRight,
-    padToCenter,
+    convertTabsToSpaces,
     convertToCommentBox
 } = require('./comment-box')
 
@@ -24,21 +22,24 @@ function activate(context) {
         }
 
         // Load user settings
-        const configuration     = vscode.workspace.getConfiguration("commentBox")
-        const capitalize        = configuration.get("capitalize")
-        const extendSelection   = configuration.get("extendSelection")
-        const startToken        = configuration.get("commentStartToken")
-        const endToken          = configuration.get("commentEndToken")
-        const topRightToken     = configuration.get("topRightToken")
-        const bottomLeftToken   = configuration.get("bottomLeftToken")
-        const leftEdgeToken     = configuration.get("leftEdgeToken")
-        const rightEdgeToken    = configuration.get("rightEdgeToken")
-        const fillingToken      = configuration.get("fillingToken")
-        const topEdgeToken      = configuration.get("topEdgeToken")
-        const bottomEdgeToken   = configuration.get("bottomEdgeToken")
-        const align             = configuration.get("textAlignment")
-        //const clearAroundText   = configuration.get("textToEdgeSpace")
-        const width             = configuration.get("boxWidth")
+        const configuration             = vscode.workspace.getConfiguration("commentBox")
+        const capitalize                = configuration.get("capitalize")
+        const textAlignment             = configuration.get("textAlignment")
+        const width                     = configuration.get("boxWidth")
+        const extendSelection           = configuration.get("extendSelection")
+        const startToken                = configuration.get("commentStartToken")
+        const endToken                  = configuration.get("commentEndToken")
+        const topRightToken             = configuration.get("topRightToken")
+        const bottomLeftToken           = configuration.get("bottomLeftToken")
+        const topEdgeToken              = configuration.get("topEdgeToken")
+        const bottomEdgeToken           = configuration.get("bottomEdgeToken")
+        const leftEdgeToken             = configuration.get("leftEdgeToken")
+        const rightEdgeToken            = configuration.get("rightEdgeToken")
+        const fillingToken              = configuration.get("fillingToken")
+        //const clearAroundText         = configuration.get("textToEdgeSpace")
+        const removeEmptyLines          = configuration.get("removeEmptyLines")
+        const ignoreOuterIndentation    = configuration.get("ignoreOuterIndentation")
+        const ignoreInnerIndentation    = configuration.get("ignoreInnerIndentation")
 
         const editOperations = editor.selections.map((selection) => {
             if (extendSelection) {
@@ -48,17 +49,18 @@ function activate(context) {
                 selection = new(vscode.Selection)(selection.start.line, 0, selection.end.line, last)
             }
 
-            let text = document.getText(selection)
+            const tabSize = vscode.workspace.getConfiguration("editor").get("tabSize")
+            let text = convertTabsToSpaces(document.getText(selection), tabSize)
 
             if (capitalize) text = text.toUpperCase()
 
             text = convertToCommentBox(text, {
                 startToken,
                 endToken,
-                topEdgeToken,
-                bottomEdgeToken,
                 topRightToken,
                 bottomLeftToken,
+                topEdgeToken,
+                bottomEdgeToken,
                 leftEdgeToken,
                 rightEdgeToken,
                 fillingToken: fillingToken.length ? 
@@ -66,7 +68,10 @@ function activate(context) {
                     " ", 
                 width,
                 //clearAroundText,
-                align,
+                textAlignment,
+                removeEmptyLines,
+                ignoreOuterIndentation,
+                ignoreInnerIndentation
             })
 
             return {

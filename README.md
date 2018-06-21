@@ -68,10 +68,8 @@ Alternatively, you can bind the command to a shortcut by adding something like t
 * `commentBox.fillingToken`: characters that are used to fill the space between the text and the edges.
 
 ## Todo
-* Find a better way to handle malformed configuration styles.
-* Add more regression tests.
 * Consider allowing multiple box styles (possibly by passing an argument to the extension).
-* Consider automatically detecting and adjusting against the text indentation.
+* Consider adding a command that generates a box style from an example.
 
 ## Known Issues
 

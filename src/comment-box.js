@@ -159,7 +159,7 @@ function padToCenter(string, width, token) {
  * @property {string} rightEdgeToken
  * @property {string} fillingToken
  * @property {number} width
- * @property {string} align
+ * @property {string} textAlignment
  * @property {boolean} removeEmptyLines
  * @property {boolean} ignoreOuterIndentation
  * @property {boolean} ignoreInnerIndentation
@@ -180,10 +180,10 @@ function convertToCommentBox(text, options) {
         fillingToken,
         width: desiredWidth,
         //clearAroundText,
-        align,
-        removeEmptyLines = true,
-        ignoreOuterIndentation = true,
-        ignoreInnerIndentation = true
+        textAlignment,
+        removeEmptyLines,
+        ignoreOuterIndentation,
+        ignoreInnerIndentation
     } = options
 
     let lines = text
@@ -198,7 +198,7 @@ function convertToCommentBox(text, options) {
     lines = dedentBy(lines, indentationLevel)
 
     // Inner indentation doesn't make sence with centered text
-    if (ignoreInnerIndentation && align !== "center") {
+    if (ignoreInnerIndentation && textAlignment !== "center") {
         // Remove space to the left
         lines = lines.map(s => s.replace(/^\s*/, ""))
     }
@@ -213,15 +213,9 @@ function convertToCommentBox(text, options) {
     const alignmentStyle = {
         center: padToCenter,
         left: padRight
-    }[align]
+    }[textAlignment]
 
-    lines = lines/*
-        // Make sure all lines have the same width
-        .map(line => alignmentStyle(line, maxLineWidth, " "))
-
-        // Add space to separate from edges
-        .map(line => padToCenter(line, maxLineWidth + 2 * clearAroundText, " "))
-*/
+    lines = lines
         // Extend lines to match desired width, using the choosen filling token
         .map(line => alignmentStyle(line, width - edgesWidth, fillingToken))
 
@@ -241,25 +235,26 @@ function convertToCommentBox(text, options) {
     const widthWithoutRightEdge = width - rightEdgeToken.length
     const skipFirstLine = topEdgeToken === ""
     const skipLastLine = bottomEdgeToken === ""
+    
     const firstLine = skipFirstLine ? 
         "" : 
         padRight(startToken, widthWithoutRightEdge, topEdgeToken) + topRightToken + "\n"
 
     const midLines = lines
-        .map((s, l) => {
-            const left = l === 0 && skipFirstLine ?
+        .map((str, line) => {
+            const left = line === 0 && skipFirstLine ?
                 startToken :
                 leftEdgeToken
 
-            const right = l === lines.length - 1 && skipLastLine ?
+            const right = line === lines.length - 1 && skipLastLine ?
                 endToken :
                 rightEdgeToken
 
-            const newline = l === lines.length - 1 && skipLastLine ? 
+            const newline = line === lines.length - 1 && skipLastLine ? 
                 "" :
                 "\n"
 
-            return left + s + right + newline;
+            return left + str + right + newline;
         })
         .join("")
 
