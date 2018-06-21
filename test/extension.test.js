@@ -124,6 +124,7 @@ suite("Helper Functions Tests", function () {
             removeEmptyLines: true,
             ignoreOuterIndentation: true,
             ignoreInnerIndentation: true,
+            tabSize: 4
         }
 
         assert.equal(convertToCommentBox("", styleA), "\
@@ -172,6 +173,7 @@ suite("Helper Functions Tests", function () {
             removeEmptyLines: false,
             ignoreOuterIndentation: true,
             ignoreInnerIndentation: true,
+            tabSize: 4
         }
 
         assert.equal(convertToCommentBox("", styleB), "\
@@ -209,6 +211,7 @@ suite("Helper Functions Tests", function () {
             removeEmptyLines: false,
             ignoreOuterIndentation: true,
             ignoreInnerIndentation: true,
+            tabSize: 4
         }
         
         assert.equal(convertToCommentBox("test", styleC), "\
@@ -241,6 +244,7 @@ suite("Helper Functions Tests", function () {
             removeEmptyLines: false,
             ignoreOuterIndentation: true,
             ignoreInnerIndentation: true,
+            tabSize: 4
         }
 
         assert.equal(convertToCommentBox("", styleD), "\
@@ -285,6 +289,7 @@ suite("Helper Functions Tests", function () {
             removeEmptyLines: false,
             ignoreOuterIndentation: true,
             ignoreInnerIndentation: true,
+            tabSize: 4
         }
         //convertToCommentBox(" \t with multiple lines \t \n \t test \t ", styleA)
         assert.equal(convertToCommentBox("test\nwith multiple lines", styleE), "\
@@ -313,6 +318,7 @@ suite("Helper Functions Tests", function () {
             removeEmptyLines: false,
             ignoreOuterIndentation: false,
             ignoreInnerIndentation: false,
+            tabSize: 4
         }
 
         // TODO: The box should be empty in this case
@@ -400,6 +406,7 @@ suite("Helper Functions Tests", function () {
         removeEmptyLines: false,
         ignoreOuterIndentation: false,
         ignoreInnerIndentation: false,
+        tabSize: 4
     }
 
     assert.equal(convertToCommentBox("test\nwith multiple lines", styleG), "\

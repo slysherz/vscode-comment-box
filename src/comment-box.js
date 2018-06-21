@@ -163,6 +163,7 @@ function padToCenter(string, width, token) {
  * @property {boolean} removeEmptyLines
  * @property {boolean} ignoreOuterIndentation
  * @property {boolean} ignoreInnerIndentation
+ * @property {number} tabSize
  * 
  * @param {string} text
  * @param {BoxStyle} options
@@ -183,7 +184,8 @@ function convertToCommentBox(text, options) {
         textAlignment,
         removeEmptyLines,
         ignoreOuterIndentation,
-        ignoreInnerIndentation
+        ignoreInnerIndentation,
+        tabSize
     } = options
 
     let lines = text
@@ -193,6 +195,8 @@ function convertToCommentBox(text, options) {
         .filter(s => !removeEmptyLines || s.match(/\S/))
         // Remove space to the right
         .map(s => s.replace(/\s*$/, ""))
+        // Remove tabs
+        .map(line => convertTabsToSpaces(line, tabSize))
 
     const indentationLevel = findIndentationLevel(lines)
     lines = dedentBy(lines, indentationLevel)

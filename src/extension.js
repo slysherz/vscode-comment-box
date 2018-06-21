@@ -50,7 +50,7 @@ function activate(context) {
             }
 
             const tabSize = vscode.workspace.getConfiguration("editor").get("tabSize")
-            let text = convertTabsToSpaces(document.getText(selection), tabSize)
+            let text = document.getText(selection)
 
             if (capitalize) text = text.toUpperCase()
 
@@ -71,7 +71,8 @@ function activate(context) {
                 textAlignment,
                 removeEmptyLines,
                 ignoreOuterIndentation,
-                ignoreInnerIndentation
+                ignoreInnerIndentation,
+                tabSize
             })
 
             return {
