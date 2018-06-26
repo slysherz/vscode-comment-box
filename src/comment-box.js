@@ -201,10 +201,10 @@ function convertToCommentBox(text, options) {
     const indentationLevel = findIndentationLevel(lines)
     lines = dedentBy(lines, indentationLevel)
 
-    // Inner indentation doesn't make sence with centered text
+    // Inner indentation doesn't make sense with centered text
     if (ignoreInnerIndentation || textAlignment === "center") {
         // Remove space to the left
-        lines = lines.map(s => s.replace(/^" "*/, ""))
+        lines = lines.map(s => s.replace(/^\s*/, ""))
     }
 
     const maxLineWidth = maxWidth(lines)

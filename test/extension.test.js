@@ -447,7 +447,7 @@ suite("Helper Functions Tests", function () {
         tabSize: 4
     }
 
-    assert.equal(convertToCommentBox("test\nwith multiple lines", styleH), "\
+    assert.equal(convertToCommentBox("\ttest\nwith multiple lines", styleH), "\
 /***********************\n\
  *        test         *\n\
  * with multiple lines *\n\
