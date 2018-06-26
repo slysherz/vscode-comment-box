@@ -428,6 +428,32 @@ suite("Helper Functions Tests", function () {
      ***************************************/\
 ", "styleG works with multiple lines.")
 
+    // Keep indentation intact, using centered alignment
+    const styleH = {
+        startToken: "/*",
+        endToken: "**/",
+        topRightToken: "**",
+        bottomLeftToken: " **",
+        topEdgeToken: "*",
+        bottomEdgeToken: "*",
+        leftEdgeToken: " * ",
+        rightEdgeToken: " *",
+        fillingToken: " ",
+        width: 0,
+        textAlignment: "center",
+        removeEmptyLines: false,
+        ignoreOuterIndentation: false,
+        ignoreInnerIndentation: false,
+        tabSize: 4
+    }
+
+    assert.equal(convertToCommentBox("test\nwith multiple lines", styleH), "\
+/***********************\n\
+ *        test         *\n\
+ * with multiple lines *\n\
+ ***********************/\
+", "styleG works with multiple lines.")
+
     })
 })
 

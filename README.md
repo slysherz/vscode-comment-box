@@ -113,3 +113,6 @@ Alternatively, you can bind the command to a shortcut by adding something like t
     * We now replace tab characters with spaces before processing the text, using the same width that the editor is using;
     * The spacing inside the text should now be kept intact;
     * Fixed a bug where having tab characters in the middle of the text could cause the box to end up misaligned.
+
+### 0.1.2
+* Fixed a bug introduced with the latest update. Really sorry about that :(
