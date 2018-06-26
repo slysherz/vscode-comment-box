@@ -70,6 +70,7 @@ Alternatively, you can bind the command to a shortcut by adding something like t
 ## Todo
 * Consider allowing multiple box styles (possibly by passing an argument to the extension).
 * Consider adding a command that generates a box style from an example.
+* Consider converting spaces back to tabs when it makes sense.
 
 ## Known Issues
 
@@ -92,7 +93,7 @@ Alternatively, you can bind the command to a shortcut by adding something like t
 ### 0.1.0
 * Warning: if you use a custom style, it's likely that this update changes/breaks the style's behaviour. We'll try hard to avoid doing this in the future, it's really annoying to have your thing broken by an update (╯°□°）╯︵ ┻━┻
 * Changed how the inner part of the box is filled:
-    * The behaviour much simpler, we just fill everything with 'fillingToken';
+    * The behaviour is now much simpler, we just fill everything with 'fillingToken';
     * Text to edge space configuration is going away for while, while we try to make it play well with other features;
     * Spaces should be added to the edges, if needed;
     * We might improve this in the future if someone needs to use a style that cannot be implemented like this.
@@ -102,3 +103,13 @@ Alternatively, you can bind the command to a shortcut by adding something like t
 * Fixed a bug where fixed width was forcing the text to be centered.
 * Fixed a bug where empty tokens would fill with 'undefined'.
 * If you'd like to have a different type of box and you are having trouble getting it to work, please fill an issue and let us know.
+
+### 0.1.1
+* Added support to adapt the comment box to the text indentation:
+    * Added a configuration option to indent the comment box when the text being commented was indented;
+    * Added a configuration option to keep the relative indentation between lines;
+    * Added a configuration option to skip drawing empty lines.
+* Improved the way tab characters are handled:
+    * We now replace tab characters with spaces before processing the text, using the same width that the editor is using;
+    * The spacing inside the text should now be kept intact;
+    * Fixed a bug where having tab characters in the middle of the text could cause the box to end up misaligned.
