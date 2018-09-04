@@ -452,7 +452,33 @@ suite("Helper Functions Tests", function () {
  *        test         *\n\
  * with multiple lines *\n\
  ***********************/\
-", "styleG works with multiple lines.")
+", "styleH works with multiple lines.")
+
+    // Works with a different tabSize
+    const styleI = {
+        startToken: "/*",
+        endToken: "**/",
+        topRightToken: "**",
+        bottomLeftToken: " **",
+        topEdgeToken: "*",
+        bottomEdgeToken: "*",
+        leftEdgeToken: " * ",
+        rightEdgeToken: " *",
+        fillingToken: " ",
+        width: 0,
+        textAlignment: "left",
+        removeEmptyLines: false,
+        ignoreOuterIndentation: false,
+        ignoreInnerIndentation: false,
+        tabSize: 8
+    }
+
+    assert.equal(convertToCommentBox("test \t with\nmultiple\tlines", styleI), "\
+/*************************\n\
+ * test     with         *\n\
+ * multiple        lines *\n\
+ *************************/\
+", "Different tabSize with tabs and spaces.")
 
     })
 })
