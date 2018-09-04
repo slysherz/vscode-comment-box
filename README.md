@@ -1,4 +1,4 @@
-# comment-box README
+# CommentBox README
 
 ## Description
 
@@ -51,9 +51,11 @@ Alternatively, you can bind the command to a shortcut by adding something like t
 { "key": "shift+alt+c", "command": "extension.commentBox", "when": "editorTextFocus"}
 ```
 
+For more information about how to configure the extension, or to see examples with different styles, please check the [Styles page](STYLES.md).
+
 ## Extension Settings
 
-* `commentBox.capitalize`: capitalizes the text.
+* `commentBox.capitalize`: capitalizes the text inside the box.
 * `commentBox.textAlignment`: when using a fixed width, controls how the text should be aligned. Can be 'center' or 'left'.
 * `commentBox.extendSelection`: when 'true' the whole line is replaced, not just the selected part.
 * `commentBox.commentStartToken`: characters that start a multi-line comment for your current language. This also defines the top left corner of the box.

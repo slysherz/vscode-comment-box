@@ -1,7 +1,4 @@
 # Change Log
-All notable changes to the "comment-box" extension will be documented in this file.
-
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
 ## [0.0.1] - 2017-11-30
 - Initial release `\(*.*)/`
@@ -41,3 +38,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [0.1.2] - 2018-06-26
 - Fixed a bug introduced with the latest update where the inner indentation was wrong with indented text. I am really sorry about that : (
+
+## [1.0.0] - Unreleased
+- Inner indentation is now replaced with `fillingToken` characters;
+- Fixed a bug where we where not getting the `tabSize` configuration correctly;
+- Fixed a bug where tabs weren't being converted to spaces correctly in some situations;
