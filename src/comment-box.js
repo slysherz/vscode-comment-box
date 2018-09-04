@@ -71,12 +71,14 @@ function convertTabsToSpaces(string, tabWidth) {
 
     let result = ""
 
-    for (let i = 0; i < string.length; i++) {
+    for (let i = 0, pos = 0; i < string.length; i++) {
         if (string[i] === "\t") {
-            const widthLeft = tabWidth - (i % tabWidth)
+            const widthLeft = tabWidth - (pos % tabWidth)
             result += " ".repeat(widthLeft)
+            pos += widthLeft
         } else {
             result += string[i]
+            pos++
         }
     }
 
