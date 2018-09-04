@@ -4,7 +4,6 @@
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require('vscode')
 const {
-    convertTabsToSpaces,
     convertToCommentBox
 } = require('./comment-box')
 
@@ -22,37 +21,46 @@ function activate(context) {
         }
 
         // Load user settings
-        const configuration             = vscode.workspace.getConfiguration("commentBox")
-        const capitalize                = configuration.get("capitalize")
-        const textAlignment             = configuration.get("textAlignment")
-        const width                     = configuration.get("boxWidth")
-        const extendSelection           = configuration.get("extendSelection")
-        const startToken                = configuration.get("commentStartToken")
-        const endToken                  = configuration.get("commentEndToken")
-        const topRightToken             = configuration.get("topRightToken")
-        const bottomLeftToken           = configuration.get("bottomLeftToken")
-        const topEdgeToken              = configuration.get("topEdgeToken")
-        const bottomEdgeToken           = configuration.get("bottomEdgeToken")
-        const leftEdgeToken             = configuration.get("leftEdgeToken")
-        const rightEdgeToken            = configuration.get("rightEdgeToken")
-        const fillingToken              = configuration.get("fillingToken")
+        const configuration = vscode.workspace.getConfiguration("commentBox")
+        const capitalize = configuration.get("capitalize")
+        const textAlignment = configuration.get("textAlignment")
+        const width = configuration.get("boxWidth")
+        const extendSelection = configuration.get("extendSelection")
+        const startToken = configuration.get("commentStartToken")
+        const endToken = configuration.get("commentEndToken")
+        const topRightToken = configuration.get("topRightToken")
+        const bottomLeftToken = configuration.get("bottomLeftToken")
+        const topEdgeToken = configuration.get("topEdgeToken")
+        const bottomEdgeToken = configuration.get("bottomEdgeToken")
+        const leftEdgeToken = configuration.get("leftEdgeToken")
+        const rightEdgeToken = configuration.get("rightEdgeToken")
+        const fillingToken = configuration.get("fillingToken")
         //const clearAroundText         = configuration.get("textToEdgeSpace")
-        const removeEmptyLines          = configuration.get("removeEmptyLines")
-        const ignoreOuterIndentation    = configuration.get("ignoreOuterIndentation")
-        const ignoreInnerIndentation    = configuration.get("ignoreInnerIndentation")
+        const removeEmptyLines = configuration.get("removeEmptyLines")
+        const ignoreOuterIndentation = configuration.get("ignoreOuterIndentation")
+        const ignoreInnerIndentation = configuration.get("ignoreInnerIndentation")
+
+        const tabSize = vscode.workspace
+            .getConfiguration("editor", vscode.window.activeTextEditor.document.uri)
+            .get("tabSize")
 
         const editOperations = editor.selections.map((selection) => {
             if (extendSelection) {
-                // Let's extend the selection from the first character of the first line
-                // to the last character of the last line
+                // Let's extend the selection from the first character of the first line to the
+                // last character of the last line
                 let last = editor.document.lineAt(selection.end.line).range.end.character
-                selection = new(vscode.Selection)(selection.start.line, 0, selection.end.line, last)
+                selection = new (vscode.Selection)(
+                    selection.start.line,
+                    0,
+                    selection.end.line,
+                    last)
             }
 
-            const tabSize = vscode.workspace.getConfiguration("editor").get("tabSize")
             let text = document.getText(selection)
 
-            if (capitalize) text = text.toUpperCase()
+            if (capitalize) {
+                text = text.toUpperCase()
+            }
 
             text = convertToCommentBox(text, {
                 startToken,
@@ -63,9 +71,9 @@ function activate(context) {
                 bottomEdgeToken,
                 leftEdgeToken,
                 rightEdgeToken,
-                fillingToken: fillingToken.length ? 
+                fillingToken: fillingToken.length ?
                     fillingToken :
-                    " ", 
+                    " ",
                 width,
                 //clearAroundText,
                 textAlignment,
