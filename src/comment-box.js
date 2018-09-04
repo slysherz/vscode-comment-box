@@ -117,7 +117,7 @@ function padRight(string, width, token) {
     let position = 0
     let str = string
     let tokensLeft = width - widthOfLastLine(str)
-    
+
     for (let i = 0; i < tokensLeft; i++) {
         str += token[i % token.length]
     }
@@ -201,11 +201,23 @@ function convertToCommentBox(text, options) {
     const indentationLevel = findIndentationLevel(lines)
     lines = dedentBy(lines, indentationLevel)
 
-    // Inner indentation doesn't make sense with centered text
-    if (ignoreInnerIndentation || textAlignment === "center") {
-        // Remove space to the left
-        lines = lines.map(s => s.replace(/^\s*/, ""))
-    }
+    // Deal with inner indentation
+    const innerIndentationRegxp = /^\s*/
+    lines = lines.map(line => {
+        // Inner indentation doesn't make sense with centered text
+        if (ignoreInnerIndentation || textAlignment === "center") {
+            // Remove space to the left
+            return line.replace(innerIndentationRegxp, "")
+        }
+
+        // Replace space with fillingToken
+        const indentation = line.match(innerIndentationRegxp)[0]
+        const indentationWidth = indentation.length
+
+        return line.replace(
+            indentation, 
+            reverseString(padRight("", indentationWidth, fillingToken)))
+    })
 
     const maxLineWidth = maxWidth(lines)
 
@@ -239,9 +251,9 @@ function convertToCommentBox(text, options) {
     const widthWithoutRightEdge = width - rightEdgeToken.length
     const skipFirstLine = topEdgeToken === ""
     const skipLastLine = bottomEdgeToken === ""
-    
-    const firstLine = skipFirstLine ? 
-        "" : 
+
+    const firstLine = skipFirstLine ?
+        "" :
         padRight(startToken, widthWithoutRightEdge, topEdgeToken) + topRightToken + "\n"
 
     const midLines = lines
@@ -254,7 +266,7 @@ function convertToCommentBox(text, options) {
                 endToken :
                 rightEdgeToken
 
-            const newline = line === lines.length - 1 && skipLastLine ? 
+            const newline = line === lines.length - 1 && skipLastLine ?
                 "" :
                 "\n"
 

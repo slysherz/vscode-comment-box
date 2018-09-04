@@ -321,7 +321,6 @@ suite("Helper Functions Tests", function () {
             tabSize: 4
         }
 
-        // TODO: The box should be empty in this case
         assert.equal(convertToCommentBox("", styleF), "\
 /****\n\
  *  *\n\
@@ -419,11 +418,11 @@ suite("Helper Functions Tests", function () {
     assert.equal(convertToCommentBox("\n            with inner indentation\n\n    test\n\n        with multiple lines\n", styleG), "\
     /***************************************\n\
      * ----------------------------------- *\n\
-     *         with inner indentation----- *\n\
+     * --------with inner indentation----- *\n\
      * ----------------------------------- *\n\
      * test------------------------------- *\n\
      * ----------------------------------- *\n\
-     *     with multiple lines------------ *\n\
+     * ----with multiple lines------------ *\n\
      * ----------------------------------- *\n\
      ***************************************/\
 ", "styleG works with multiple lines.")
