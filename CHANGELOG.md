@@ -40,6 +40,17 @@
 - Fixed a bug introduced with the latest update where the inner indentation was wrong with indented text. I am really sorry about that : (
 
 ## [1.0.0] - Unreleased
+There is nothing new this time, just a few bug fixes and a big documentation improvement. We've reached the point where things are pretty stable and unlikely to change much : )
+
+### Changed
+- Updated `npm` development dependencies;
+- Cleaned up the Readme file;
+- Cleaned up unit tests to make them clearer and more orthogonal;
+- Cleaned up the documentation:
+    - The changelog now has it's own file;
+    - Added a new Styles section that contains information and examples about how to configure the extension;
+
+### Fixed
 - Inner indentation is now replaced with `fillingToken` characters;
-- Fixed a bug where we where not getting the `tabSize` configuration correctly;
+- Fixed a bug where we were the `tabSize` for the open document was being loaded incorrectly;
 - Fixed a bug where tabs weren't being converted to spaces correctly in some situations;
