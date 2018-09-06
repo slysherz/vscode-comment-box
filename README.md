@@ -53,7 +53,7 @@ That's it. Alternatively, you can bind the command to a shortcut by adding somet
 
 ## Configuration
 
-This section contains notes and examples about how to configure this extension's settings, to make sure it draws the box exactly the way you want it to. If you're having troubles with setting up the style you want, please fill an issue in our [GitHub Repository](https://github.com/SlySherZ/vscode-comment-box/issues).
+This section contains notes and examples about how to configure this extension's settings, to make sure the box is drawn exactly the way you want it. If you're having troubles with setting up the style you want, please fill an issue in the [GitHub Repository](https://github.com/SlySherZ/vscode-comment-box/issues).
 
 ### Extension settings
 
@@ -76,27 +76,13 @@ Setting | Description
 `commentBox.ignoreOuterIndentation` | When set to 'false', the box is placed in a way that matches the indentation of the text being commented. Works best when 'extendSelection' is enabled.
 `commentBox.ignoreInnerIndentation` | When set to 'false', the text inside the box will keep the same relative indentation between the lines. Requires `commentBox.textAlignment` to be set to 'left'.
 
-### Box layout
-
-The layout used to draw the comment box looks like this:
-```
-[commentStartToken][    topEdgeToken      ][topRightToken]
-[leftEdgeToken][         your code        ][rightEdgeToken]
-                           ...
-[bottomLeftToken][    bottomEdgeToken     ][commentEndToken]
-```
-
-- If you want, you can configure what appears on any of the blocks above. For example, if you want to change the left edge, go to your settings and search for `commentBox.leftEdgeToken`;
-- To configure the characters used to fill empty space around your code, search for `commentBox.fillingToken` in your settings;
-- If you want a box without top / bottom edge, change `commentBox.topEdgeToken` / `commentBox.bottomEdgeToken` to an empty string;
-
 
 ### Styles
 
 #### Don't mess with my text
 ```
     /**********************************************
-     * we'll try to:                              *
+     * try to:                                    *
      *    - preserve inner and outer indentation; *
      *    - preserve text CaSiNg;                 *
      *                                            *
@@ -157,7 +143,7 @@ The layout used to draw the comment box looks like this:
 
 #### I Live on the Edge
 ```
-// I like to precomment my comments
+// Pre-comment my comment
 /*==================+
  |I LIVE ON THE EDGE|
  |~-~-~-~SEE?~-~-~-~|
@@ -165,7 +151,7 @@ The layout used to draw the comment box looks like this:
  ```
  `settings.json`: 
 ```
-"commentBox.commentStartToken": "// I like to precomment my comments\n/*",
+"commentBox.commentStartToken": "// Pre-comment my comment\n/*",
 "commentBox.commentEndToken": "*/",
 "commentBox.leftEdgeToken": " |",
 "commentBox.rightEdgeToken": "|",
@@ -175,9 +161,3 @@ The layout used to draw the comment box looks like this:
 "commentBox.bottomLeftToken": " +",
 "commentBox.fillingToken": "~-",
 ```
-
-## Todo
-* Consider allowing multiple box styles (possibly by passing an argument to the extension).
-* Consider adding a command that generates a box style from an example.
-* Consider converting spaces back to tabs when it makes sense.
-
