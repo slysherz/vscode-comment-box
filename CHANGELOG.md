@@ -1,4 +1,4 @@
-# Change Log
+# Changelog
 
 ## [0.0.1] - 2017-11-30
 - Initial release `\(*.*)/`
@@ -39,7 +39,7 @@
 ## [0.1.2] - 2018-06-26
 - Fixed a bug introduced with the latest update where the inner indentation was wrong with indented text. I am really sorry about that : (
 
-## [1.0.0] - Unreleased
+## [1.0.0] - 2018-09-06
 There is nothing new this time, just a few bug fixes and a big documentation improvement. We've reached the point where things are pretty stable and unlikely to change much : )
 
 ### Changed

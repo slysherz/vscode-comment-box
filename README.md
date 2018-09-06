@@ -89,7 +89,7 @@ Setting | Description
      *    - and skipping lines is fine too;       *
      **********************************************/
 ```
-`settings.json`:
+settings.json:
 ```
 "commentBox.capitalize": false,
 "commentBox.ignoreInnerIndentation": false,
@@ -107,7 +107,7 @@ Setting | Description
 ```
 
 
-`settings.json`: 
+settings.json: 
 ```
 "commentBox.commentStartToken": "",
 "commentBox.commentEndToken": "##",
@@ -126,7 +126,7 @@ Setting | Description
  */
  ```
 
-`settings.json`: 
+settings.json: 
  ```
 "commentBox.commentStartToken": "/* ",
 "commentBox.commentEndToken": "\n */",
@@ -149,7 +149,7 @@ Setting | Description
  |~-~-~-~SEE?~-~-~-~|
  +==================*/
  ```
- `settings.json`: 
+ settings.json: 
 ```
 "commentBox.commentStartToken": "// Pre-comment my comment\n/*",
 "commentBox.commentEndToken": "*/",
