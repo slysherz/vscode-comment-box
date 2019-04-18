@@ -37,6 +37,7 @@ suite("Helper Functions Tests", function () {
         widthOfLastLine,
         findIndentationLevel,
         convertTabsToSpaces,
+        reverseString,
         padRight,
         padToCenter,
         convertToCommentBox
@@ -71,6 +72,25 @@ suite("Helper Functions Tests", function () {
             "Indentation level with multiple strings and different alignments works 3.")
         assert.equal(findIndentationLevel(["", "  text", ""]), 2,
             "Empty lines do not change the result.")
+    })
+
+    test("reverseString", function () {
+        assert.equal(reverseString(""), "",
+            "Reversing an empty string works.")
+        assert.equal(reverseString("a"), "a",
+            "Reversing a simple string works 1.")
+        assert.equal(reverseString("ab"), "ba",
+            "Reversing a simple string works 2.")
+        assert.equal(reverseString("abc"), "cba",
+            "Reversing a simple string works 3.")
+        assert.equal(reverseString("🐶"), "🐶",
+            "Reversing an unicode string works 1.")
+        assert.equal(reverseString("🐶🐱"), "🐱🐶",
+            "Reversing an unicode string works 2.")
+        assert.equal(reverseString("🐶 🐱"), "🐱 🐶",
+            "Reversing an unicode string works 3.")
+        assert.equal(reverseString("🐶❌🐭"), "🐭❌🐶",
+            "Reversing an unicode string works 4.")
     })
 
     test("convertTabsToSpaces", function () {
