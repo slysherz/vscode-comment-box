@@ -35,7 +35,6 @@ function extend(objectA, objectB) {
 suite("Helper Functions Tests", function () {
     const {
         widthOfLastLine,
-        maxWidth,
         findIndentationLevel,
         convertTabsToSpaces,
         padRight,
@@ -49,20 +48,6 @@ suite("Helper Functions Tests", function () {
         assert.equal(widthOfLastLine("\n*"), 1, "Last line has one character.")
         assert.equal(widthOfLastLine("\n***"), 3, "Last line has multiple characters.")
         assert.equal(widthOfLastLine("*\n**\n***"), 3, "Multiple lines, with multiple characters.")
-    })
-
-    test("maxWidth", function () {
-        assert.equal(maxWidth([]), 0, "With no lines, the maximum length is 0.")
-        assert.equal(maxWidth([""]), 0, "With an empty line the max length is 0.")
-        assert.equal(maxWidth(["single non empty"]), 16)
-        assert.equal(maxWidth([
-            "multiple",
-            "lines"
-        ]), 8)
-        assert.equal(maxWidth([
-            "lines",
-            "multiple"
-        ]), 8)
     })
 
     test("findIndentationLevel", function () {
