@@ -128,7 +128,8 @@ function padRight(string, width, token) {
         i = (i + 1) % tokens.length
     }
 
-    return string
+    // In case we couldn't pad to the end, add spaces
+    return string + " ".repeat(tokensLeft)
 }
 
 /**
