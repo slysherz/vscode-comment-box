@@ -2,7 +2,7 @@
     "name": "comment-box",
     "displayName": "Comment Box",
     "description": "Command that transforms one or multiple lines of text into a comment box.",
-    "version": "1.0.0",
+    "version": "1.1.0-unicode",
     "publisher": "SlySherZ",
     "license": "MIT",
     "repository": {
@@ -129,6 +129,7 @@
         "vscode": "^1.1.33"
     },
     "dependencies": {
-        "vsce": "^1.59.0"
+        "vsce": "^1.59.0",
+        "string-width": "^4.1.0"
     }
 }

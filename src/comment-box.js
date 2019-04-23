@@ -6,10 +6,7 @@
 // For some special characters (newlines, unicode) these do not match and we need to think carefully
 // about which one we're using.
 
-// For now they are the same, but we expect to change this later
-const stringWidth = function (str) {
-    return str.length
-}
+const stringWidth = require("string-width")
 
 /**
  * Generates a list with the string character by character

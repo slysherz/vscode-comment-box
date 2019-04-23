@@ -110,6 +110,10 @@ suite("Helper Functions Tests", function () {
         assert.equal(convertTabsToSpaces(" \t".repeat(5), 8).length, 8 * 5, "Many tabs in a row with spaces in between.")
         assert.equal(convertTabsToSpaces("🐶\t", 4), "🐶  ", "With unicode characters 1.")
         assert.equal(convertTabsToSpaces("🐶🐶\t", 4), "🐶🐶    ", "With unicode characters 2.")
+
+        // Just for the unicode version
+        assert.equal(convertTabsToSpaces("あ\t", 4), "あ  ", "With sneaky unicode characters 1.")
+        assert.equal(convertTabsToSpaces("ああ\t", 4), "ああ    ", "With sneaky unicode characters 2.")
     })
 
     test("padRight", function () {
@@ -129,6 +133,14 @@ suite("Helper Functions Tests", function () {
             "Works with unicode characters 2.")
         assert.equal(padRight("*", 4, "🐶"), "*🐶 ",
             "Works with unicode characters 3.")
+
+        // Just for the unicode version
+        assert.equal(padRight("あ", 4, "*"), "あ**",
+            "Works with sneaky unicode characters 1.")
+        assert.equal(padRight("あ", 4, "あ"), "ああ",
+            "Works with sneaky unicode characters 2.")
+        assert.equal(padRight("*", 4, "あ"), "*あ ",
+            "Works with sneaky unicode characters 3.")
 
     })
 
@@ -153,6 +165,14 @@ suite("Helper Functions Tests", function () {
             "Works with unicode characters 2.")
         assert.equal(padToCenter("--", 9, "🐶"), "🐶 --🐶🐶",
             "Works with unicode characters 3.")
+
+        // Just for the unicode version
+        assert.equal(padToCenter("", 4, "あ"), "ああ",
+            "Works with sneaky unicode characters 1.")
+        assert.equal(padToCenter("", 4, "あ"), "ああ",
+            "Works with sneaky unicode characters 2.")
+        assert.equal(padToCenter("--", 9, "あ"), "あ --ああ",
+            "Works with sneaky unicode characters 3.")
     })
 
     test("convertToCommentBox", function () {
@@ -469,6 +489,27 @@ suite("Helper Functions Tests", function () {
  +==================*/\n\
 // I like to post-comment my comments\
 ", "Correctly draws a Python style comment.")
+
+
+
+        // Just for the unicode version
+        assert.equal(convertToCommentBox("\
+あ          \n\
+ああ        \n\
+あああ      \n\
+ああああ    \n\
+あああああ  \n\
+ああああああ\
+", defaultStyle), "\
+/****************\n\
+ *      あ      *\n\
+ *     ああ     *\n\
+ *    あああ    *\n\
+ *   ああああ   *\n\
+ *  あああああ  *\n\
+ * ああああああ *\n\
+ ****************/\
+", "Works with unicode characters whose width differs from their length.")
 
 
     })
