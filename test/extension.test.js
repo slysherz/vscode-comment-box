@@ -85,12 +85,18 @@ suite("Helper Functions Tests", function () {
             "Reversing a simple string works 3.")
         assert.equal(reverseString("🐶"), "🐶",
             "Reversing an unicode string works 1.")
-        assert.equal(reverseString("🐶🐱"), "🐱🐶",
+        assert.equal(reverseString("あ"), "あ",
             "Reversing an unicode string works 2.")
-        assert.equal(reverseString("🐶 🐱"), "🐱 🐶",
+        assert.equal(reverseString("🐶🐱"), "🐱🐶",
             "Reversing an unicode string works 3.")
-        assert.equal(reverseString("🐶❌🐭"), "🐭❌🐶",
+        assert.equal(reverseString("あい"), "いあ",
             "Reversing an unicode string works 4.")
+        assert.equal(reverseString("🐶 🐱"), "🐱 🐶",
+            "Reversing an unicode string works 5.")
+        assert.equal(reverseString("あ い"), "い あ",
+            "Reversing an unicode string works 6.")
+        assert.equal(reverseString("🐶❌🐭"), "🐭❌🐶",
+            "Reversing an unicode string works 7.")
     })
 
     test("convertTabsToSpaces", function () {
@@ -102,6 +108,8 @@ suite("Helper Functions Tests", function () {
         assert.equal(convertTabsToSpaces("abc\tabc", 4), "abc abc", "Replacing with width 4 in the middle of the text 1.")
         assert.equal(convertTabsToSpaces("ab\tab", 4), "ab  ab", "Replacing with width 4 in the middle of the text 1.")
         assert.equal(convertTabsToSpaces(" \t".repeat(5), 8).length, 8 * 5, "Many tabs in a row with spaces in between.")
+        assert.equal(convertTabsToSpaces("🐶\t", 4), "🐶  ", "With unicode characters 1.")
+        assert.equal(convertTabsToSpaces("🐶🐶\t", 4), "🐶🐶    ", "With unicode characters 2.")
     })
 
     test("padRight", function () {
@@ -115,6 +123,13 @@ suite("Helper Functions Tests", function () {
             "Works with multi-character tokens.")
         assert.equal(padRight("---\n--", 3, "*"), "---\n--*",
             "On strings with multiple lines, extends the last one to the appropriate length.")
+        assert.equal(padRight("🐶", 4, "*"), "🐶**",
+            "Works with unicode characters 1.")
+        assert.equal(padRight("🐶", 4, "🐶"), "🐶🐶",
+            "Works with unicode characters 2.")
+        assert.equal(padRight("*", 4, "🐶"), "*🐶 ",
+            "Works with unicode characters 3.")
+
     })
 
     test("padToCenter", function () {
@@ -132,6 +147,12 @@ suite("Helper Functions Tests", function () {
             "Works with multi-character tokens 1.")
         assert.equal(padToCenter("O", 4, "*+"), "*O+*",
             "Works with multi-character tokens 2.")
+        assert.equal(padToCenter("", 4, "🐶"), "🐶🐶",
+            "Works with unicode characters 1.")
+        assert.equal(padToCenter("", 4, "🐶"), "🐶🐶",
+            "Works with unicode characters 2.")
+        assert.equal(padToCenter("--", 9, "🐶"), "🐶 --🐶🐶",
+            "Works with unicode characters 3.")
     })
 
     test("convertToCommentBox", function () {
