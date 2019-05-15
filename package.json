@@ -15,7 +15,8 @@
         "Formatters"
     ],
     "activationEvents": [
-        "onCommand:extension.commentBox"
+        "onCommand:extension.commentBox",
+        "onCommand:commentBox.transformUsingStyle"
     ],
     "main": "./src/extension",
     "contributes": {
@@ -23,12 +24,111 @@
             {
                 "command": "extension.commentBox",
                 "title": "Transform to Comment Box"
+            },
+            {
+                "command": "commentBox.transformUsingStyle",
+                "title": "Transform to Comment Box using style"
             }
         ],
         "configuration": {
-            "type": "object",
             "title": "Comment Box",
             "properties": {
+                "commentBox.styles": {
+                    "type": "object",
+                    "default": {
+                        "defaultStyle": {}
+                    },
+                    "additionalProperties": {
+                        "type": "object",
+                        "properties": {
+                            "capitalize": {
+                                "type": "boolean",
+                                "default": true,
+                                "description": "Capitalizes the text inside the box."
+                            },
+                            "textAlignment": {
+                                "type": "string",
+                                "enum": [
+                                    "center",
+                                    "left"
+                                ],
+                                "default": "center",
+                                "description": "Controls how the text should be aligned. Can be: \n- \"center\" or \n- \"left\"."
+                            },
+                            "boxWidth": {
+                                "type": "number",
+                                "default": 0,
+                                "description": "The width of the comment box. When set to 0, it will automatically pick the smallest possible value."
+                            },
+                            "extendSelection": {
+                                "type": "boolean",
+                                "default": true,
+                                "description": "When 'true' the whole line is replaced, not just the selected part."
+                            },
+                            "commentStartToken": {
+                                "type": "string",
+                                "default": "/*",
+                                "description": "Characters that start a multi-line comment for your current language. This also defines the top left corner of the box."
+                            },
+                            "commentEndToken": {
+                                "type": "string",
+                                "default": "**/",
+                                "description": "Characters that end a multi-line comment for your current language. This also defines the bottom right corner of the box."
+                            },
+                            "topRightToken": {
+                                "type": "string",
+                                "default": "**",
+                                "description": "Characters that are used to draw the top right corner of the box."
+                            },
+                            "bottomLeftToken": {
+                                "type": "string",
+                                "default": " **",
+                                "description": "Characters that are used to draw the bottom left corner of the box."
+                            },
+                            "topEdgeToken": {
+                                "type": "string",
+                                "default": "*",
+                                "description": "Characters that are used to draw top edge of the box. The entire top edge is skipped when this is set to an empty string."
+                            },
+                            "bottomEdgeToken": {
+                                "type": "string",
+                                "default": "*",
+                                "description": "Characters that are used to draw bottom edge of the box. The entire bottom edge is skipped when this is set to an empty string."
+                            },
+                            "leftEdgeToken": {
+                                "type": "string",
+                                "default": " * ",
+                                "description": "Characters that are used to draw the left edge of the box."
+                            },
+                            "rightEdgeToken": {
+                                "type": "string",
+                                "default": " *",
+                                "description": "Characters that are used to draw the right edge of the box."
+                            },
+                            "fillingToken": {
+                                "type": "string",
+                                "default": " ",
+                                "description": "Characters that are used to fill the space between the text and the edges."
+                            },
+                            "removeEmptyLines": {
+                                "type": "boolean",
+                                "default": true,
+                                "description": "When set to 'true', skips drawing lines that are empty."
+                            },
+                            "ignoreOuterIndentation": {
+                                "type": "boolean",
+                                "default": true,
+                                "description": "When set to 'false', the box is placed in a way that matches the indentation of the text being commented. Works best when 'extendSelection' is enabled."
+                            },
+                            "ignoreInnerIndentation": {
+                                "type": "boolean",
+                                "default": true,
+                                "description": "When set to 'false', the text inside the box will keep the same relative indentation between the lines. Requires 'commentBox.textAlignment' to be set to 'left'."
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                },
                 "commentBox.capitalize": {
                     "type": "boolean",
                     "default": true,
