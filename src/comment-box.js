@@ -158,8 +158,8 @@ function padToCenter(string, width, token) {
  * @typedef BoxStyle
  * @property {string} startToken
  * @property {string} endToken
- * @property {string} topRightToken,
- * @property {string} bottomLeftToken,
+ * @property {string} topRightToken
+ * @property {string} bottomLeftToken
  * @property {string} topEdgeToken
  * @property {string} bottomEdgeToken
  * @property {string} leftEdgeToken
