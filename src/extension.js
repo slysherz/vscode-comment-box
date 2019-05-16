@@ -1,30 +1,15 @@
 "use strict"
 
 // The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 const vscode = require('vscode')
 const {
     convertToCommentBox
 } = require('./comment-box')
 
 /**
- * Import JSDoc definitions
+ * Define JSDoc types
  * @typedef {import('./comment-box').BoxStyle} BoxStyle
- */
-
-function ignore() { /* Do nothing */ }
-
-/**
- * Finds the tab size
- * @returns {number}
- */
-function getTabSize() {
-    return vscode.workspace
-        .getConfiguration("editor", vscode.window.activeTextEditor.document.uri)
-        .get("tabSize")
-}
-
-/**
+ * 
  * @typedef BoxConfiguration
  * @property {boolean} capitalize
  * @property {boolean} extendSelection
@@ -42,7 +27,21 @@ function getTabSize() {
  * @property {boolean} removeEmptyLines
  * @property {boolean} ignoreOuterIndentation
  * @property {boolean} ignoreInnerIndentation
- * 
+ */
+
+function ignore() { /* Do nothing */ }
+
+/**
+ * Find the tab size for the current document
+ * @returns {number}
+ */
+function getTabSize() {
+    return vscode.workspace
+        .getConfiguration("editor", vscode.window.activeTextEditor.document.uri)
+        .get("tabSize")
+}
+
+/**
  * @returns {BoxConfiguration} 
  */
 function loadOldConfiguration() {
@@ -67,14 +66,14 @@ function loadOldConfiguration() {
         ignoreInnerIndentation: configuration.get("ignoreInnerIndentation"),
         // clearAroundText: configuration.get("textToEdgeSpace")
     }
-    /**/
 }
 
 /**
- * Creates a new configuration by merging a list of configurations. The configurations might be
- * incomplete, in which case the default value is used
+ * Creates a new configuration by merging a list of configurations. Each configuration might be
+ * incomplete, so when no value is provided for some setting, the default value is used
  * @param {object} configurations
  * @returns {BoxConfiguration}
+ * @todo Investigate if VSCode can provide these defaults for us
  */
 function mergeConfigurations(configurations) {
     // Start with the default configuration
@@ -127,7 +126,7 @@ function configurationToStyle(configuration, tabSize) {
         removeEmptyLines: configuration.removeEmptyLines,
         ignoreOuterIndentation: configuration.ignoreOuterIndentation,
         ignoreInnerIndentation: configuration.ignoreInnerIndentation,
-        fillingToken: configuration.fillingToken || " ",    // Cannot be empty
+        fillingToken: configuration.fillingToken || " ", // Cannot be empty
         tabSize
     }
 }
@@ -136,10 +135,7 @@ function configurationToStyle(configuration, tabSize) {
  * Takes an open text editor and transforms the selected text into a comment box
  * @param {BoxConfiguration} configuration 
  */
-function transformToCommentBox(configuration) {
-    let editor = vscode.window.activeTextEditor
-    let document = editor.document
-
+function transformToCommentBox(editor, configuration) {
     const editOperations = editor.selections.map((selection) => {
         if (configuration.extendSelection) {
             // Let's extend the selection from the first character of the first line to the
@@ -152,7 +148,7 @@ function transformToCommentBox(configuration) {
                 last)
         }
 
-        let text = document.getText(selection)
+        let text = editor.document.getText(selection)
 
         if (configuration.capitalize) {
             text = text.toUpperCase()
@@ -179,11 +175,18 @@ function transformToCommentBox(configuration) {
     })
 }
 
+/**
+ * Tries to find a configuration with a given name in the user settings. If it doesn't exist, an
+ * error notification is shown to the user and null is returned.
+ * @param {*} baseConfig 
+ * @param {string} styleName
+ */
 function tryGetConfiguration(baseConfig, styleName) {
     const style = baseConfig.get(`styles.${styleName}`)
 
     if (!style) {
         vscode.window.showErrorMessage(`Style "${styleName}" doesn't exist.`)
+        return null
     }
 
     return style
@@ -209,7 +212,7 @@ function activate(context) {
         const configuration = mergeConfigurations([oldDefaultStyle, newDefaultStyle])
 
         // Apply transformation
-        transformToCommentBox(configuration)
+        transformToCommentBox(editor, configuration)
     }))
 
     context.subscriptions.push(vscode.commands.registerCommand("commentBox.transformUsingStyle",
@@ -224,11 +227,11 @@ function activate(context) {
             // Load user settings
             const baseConfig = vscode.workspace.getConfiguration("commentBox")
             const styles = baseConfig.get("styles")
-
-            // Apply transformation
             const styleNames = Object.keys(styles)
 
+            // Check whether the style to be used was passed as an argument
             if (args.length) {
+                // We already have the style, use it
                 const styleName = "" + args[0]
 
                 const style = tryGetConfiguration(baseConfig, styleName)
@@ -238,26 +241,38 @@ function activate(context) {
 
                 const configuration = mergeConfigurations([style])
 
-                transformToCommentBox(configuration)
+                transformToCommentBox(editor, configuration)
             }
             else {
+                // No style was passed, ask the user
                 vscode.window.showQuickPick(styleNames).then((styleName) => {
-                    const style = baseConfig.get(`styles.${styleName}`)
+                    if (!styleName) {
+                        // The used didn't pick any style
+                        return
+                    }
+
+                    const style = tryGetConfiguration(baseConfig, styleName)
 
                     if (!style) {
+                        // The user got a message something is wrong, don't do anything else
                         return
                     }
 
                     const configuration = mergeConfigurations([style])
-                    console.log(style, configuration)
 
-                    transformToCommentBox(configuration)
+                    transformToCommentBox(editor, configuration)
                 }, ignore)
             }
         }))
 }
 
-exports.activate = activate;
-exports.deactivate = ignore;
+// Export additional functions for testing purposes
+module.exports = {
+    activate,
+    deactivate: ignore,
+    mergeConfigurations,
+    configurationToStyle,
+    getTabSize
+}
 
 /** END **/
