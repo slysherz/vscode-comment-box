@@ -35,8 +35,6 @@ turns into:
  ***********************/
 ```
 
-If you'd like to see examples with different configurations, please check the [Styles section](#styles).
-
 
 ## Usage
 Select the text that you want to transform, then call the command bar with:

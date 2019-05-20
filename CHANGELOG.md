@@ -1,5 +1,26 @@
 # Changelog
 
+## [2.0.0] - 2019-05-20
+
+Multi-styles!
+
+### Added
+- You can now define multiple styles at the same time;
+- New command `Transform To Comment Box Using Style`
+    - Asks which style to use;
+    - Supports keybindings to specific styles;
+- New logo;
+
+### Changed
+- The way Comment Box is configured is changing to support multi-styles
+    - Supports the same configuration options, but written in a different way;
+    - There is a single setting - `commentBox.styles` - which is an object that contains defined styles;
+    - The `Transform To Comment Box` command now uses settings from `commentBox.styles.defaultStyle`;
+    - Check the `README` to see how it works;
+
+### Fixed
+- Fixed a bug where we would add giberish characters to the box if unicode characters were used as tokens;
+
 ## [1.0.0] - 2018-09-06
 There is nothing new this time, just a few bug fixes and a big documentation improvement. We've reached the point where things are pretty stable and unlikely to change much : )
 
