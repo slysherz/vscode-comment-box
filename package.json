@@ -1,8 +1,9 @@
 {
     "name": "comment-box",
     "displayName": "Comment Box",
-    "description": "Command that transforms one or multiple lines of text into a comment box.",
-    "version": "1.0.0",
+    "description": "Transform text into a configurable comment box",
+    "icon": "images/comment-box-logo.png",
+    "version": "2.0.0",
     "publisher": "SlySherZ",
     "license": "MIT",
     "repository": {
