@@ -4,6 +4,8 @@ os:
   - linux
   - windows
 
+node_js: 10
+
 services:
   - xvfb # Required for VSCode extension tests
 
