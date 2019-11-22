@@ -41,7 +41,7 @@ suite("Helper Functions Tests", function () {
         padRight,
         padToCenter,
         convertToCommentBox
-    } = require('../src/comment-box')
+    } = require('../../src/comment-box')
 
     test("widthOfLastLine", function () {
         assert.equal(widthOfLastLine(""), 0, "Width of an empty line is 0.")
