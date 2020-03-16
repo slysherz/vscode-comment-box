@@ -2,7 +2,7 @@ language: node_js
 os:
   - osx
   - linux
-  - windows
+#  - windows Disabled until support for this build improves
 
 node_js: 10
 
