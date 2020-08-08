@@ -3,14 +3,14 @@
     "displayName": "Comment Box",
     "description": "Transform text into a configurable comment box",
     "icon": "images/comment-box-logo.png",
-    "version": "2.0.0",
+    "version": "2.1.0-beta",
     "publisher": "SlySherZ",
     "license": "MIT",
     "repository": {
         "url": "https://github.com/SlySherZ/vscode-comment-box"
     },
     "engines": {
-        "vscode": "^1.33.0"
+        "vscode": "^1.47.0"
     },
     "categories": [
         "Formatters"
