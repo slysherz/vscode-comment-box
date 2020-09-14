@@ -41,6 +41,18 @@ function getTabSize() {
         .get("tabSize")
 }
 
+function toStringArray(value) {
+    if (typeof value === "string") {
+        return [value]
+    }
+
+    if (!value) {
+        return []
+    }
+
+    return value
+}
+
 /**
  * @returns {BoxConfiguration} 
  */
@@ -181,15 +193,48 @@ function transformToCommentBox(editor, configuration) {
  * @param {*} baseConfig 
  * @param {string} styleName
  */
-function tryGetConfiguration(baseConfig, styleName) {
-    const style = baseConfig.get(`styles.${styleName}`)
+function tryGetConfiguration(baseConfig, styleName, checked = []) {
+    if (checked.includes(styleName)) {
+        vscode.window.showErrorMessage(
+            "The following styles refer to each other in a cycle: " + ", ".join(checked))
 
-    if (!style) {
-        vscode.window.showErrorMessage(`Style "${styleName}" doesn't exist.`)
         return null
     }
 
-    return style
+    const style = baseConfig.get(`styles.${styleName}`)
+
+    if (!style) {
+        if (checked.length) {
+            // Found a broken link
+            const parentStyle = checked[checked.length - 1]
+            vscode.window.showErrorMessage(
+                `Style ${styleName} is based on ${parentStyle}, but the later doesn't exist.`)
+
+        } else {
+            vscode.window.showErrorMessage(`Style ${styleName} doesn't exist.`)
+        }
+
+        return null
+    }
+
+    const basedOn = toStringArray(style.basedOn)
+
+    let parentStyles = []
+    checked.push(styleName)
+    for (const parentStyleName of basedOn) {
+        const parentStyle = tryGetConfiguration(baseConfig, parentStyleName, checked)
+
+        if (!parentStyle) {
+            // Failed to get parent style for some reason, child also fails
+            return null
+        }
+
+        parentStyles.push(parentStyle)
+    }
+
+    console.assert(styleName === checked.pop())
+
+    return mergeConfigurations([...parentStyles, style])
 }
 
 // When the extension is activated
@@ -206,8 +251,12 @@ function activate(context) {
         // Load user settings
         const oldDefaultStyle = loadOldConfiguration()
 
-        const styles = vscode.workspace.getConfiguration("commentBox")
-        const newDefaultStyle = styles.get("styles.defaultStyle")
+        const baseConfig = vscode.workspace.getConfiguration("commentBox")
+        let newDefaultStyle = tryGetConfiguration(baseConfig, "defaultStyle")
+
+        if (!newDefaultStyle) {
+            return
+        }
 
         const configuration = mergeConfigurations([oldDefaultStyle, newDefaultStyle])
 
@@ -247,7 +296,7 @@ function activate(context) {
                 // No style was passed, ask the user
                 vscode.window.showQuickPick(styleNames).then((styleName) => {
                     if (!styleName) {
-                        // The used didn't pick any style
+                        // The user didn't pick any style
                         return
                     }
 

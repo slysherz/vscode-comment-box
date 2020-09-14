@@ -125,6 +125,23 @@
                                 "type": "boolean",
                                 "default": true,
                                 "description": "When set to 'false', the text inside the box will keep the same relative indentation between the lines. Requires 'commentBox.textAlignment' to be set to 'left'."
+                            },
+                            "basedOn": {
+                                "default": [],
+                                "oneOf": [
+                                    {
+                                        "type": "array",
+                                        "additionalItems": {
+                                            "type": "string",
+                                            "default": ""
+                                        },
+                                        "uniqueItems": true
+                                    },
+                                    {
+                                        "type": "string"
+                                    }
+                                ],
+                                "description": "Name of the style or styles this one is based on. Inherits all properties from the given styles."
                             }
                         },
                         "additionalProperties": false
