@@ -97,6 +97,8 @@ suite("Helper Functions Tests", function () {
             "Reversing an unicode string works 6.")
         assert.equal(reverseString("🐶❌🐭"), "🐭❌🐶",
             "Reversing an unicode string works 7.")
+        // assert.equal(reverseString("👨‍👩‍👧‍👦"), "👨‍👩‍👧‍👦",
+        //     "Reversing an unicode string works 8.")
     })
 
     test("convertTabsToSpaces", function () {
