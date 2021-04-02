@@ -40,8 +40,11 @@ suite("Helper Functions Tests", function () {
         reverseString,
         padRight,
         padToCenter,
+        removeLineComment,
         convertToCommentBox
     } = require('../../src/comment-box')
+
+    const eq = assert.strictEqual
 
     test("widthOfLastLine", function () {
         assert.equal(widthOfLastLine(""), 0, "Width of an empty line is 0.")
@@ -175,6 +178,25 @@ suite("Helper Functions Tests", function () {
             "Works with sneaky unicode characters 2.")
         assert.equal(padToCenter("--", 9, "あ"), "あ --ああ",
             "Works with sneaky unicode characters 3.")
+    })
+
+    test("removeLineComment", function () {
+        eq(removeLineComment("13", "1", "", "3"), "", "Basic test 1")
+        eq(removeLineComment("13", "", "", ""), "13", "Basic test 2")
+        eq(removeLineComment("13", "1", "", "4"), "13", "Basic test 3")
+        eq(removeLineComment("13", "4", "", "3"), "13", "Basic test 4")
+        eq(removeLineComment("13", "4", "", "4"), "13", "Basic test 5")
+        eq(removeLineComment("123a", "123", "", ""), "a", "Basic test 6")
+        eq(removeLineComment("a123", "", "", "123"), "a", "Basic test 7")
+        
+        eq(removeLineComment("🐶❌🐱", "🐶", "", ""), "❌🐱", "Works with unicode 1")
+        eq(removeLineComment("🐶❌🐱", "", "", "🐱"), "🐶❌", "Works with unicode 2")
+        eq(removeLineComment("🐶❌🐱", "🐶", "", "🐱"), "❌", "Works with unicode 3")
+        eq(removeLineComment("🐶❌❌❌hello❌❌❌🐱", "🐶", "❌", "🐱"), "hello", "Works with unicode 4")
+
+        eq(removeLineComment("/******", "/*", "*", "**"), "", "Complex test 1")
+        eq(removeLineComment(" * hello *", " *", " ", "*"), "hello", "Complex test 2")
+        eq(removeLineComment("🐶🐱🐶🐱hello🐱🐶🐱🐶", "", "🐶🐱", ""), "hello", "Complex test 3")
     })
 
     test("convertToCommentBox", function () {

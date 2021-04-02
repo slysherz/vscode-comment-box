@@ -151,6 +151,61 @@ function padToCenter(string, width, token) {
         reverseString(padRight("", rightPadSize, token))
 }
 
+
+/**
+ * @param {string} string
+ * @param {string} start
+ * @param {string} end
+ */
+function matchLineComment(string, start, end) {
+    return string.startsWith(start) && string.endsWith(end);
+}
+
+/**
+ * @param {string} string
+ * @param {string} start
+ * @param {string} fill
+ * @param {string} end
+ */
+function removeLineComment(string, start, fill, end) {
+    // If these don't match, we leave the line as it is
+    if (!matchLineComment(string, start, end)) {
+        return string
+    }
+
+    // Remove the start and end of the comment
+    const innerStr = string.slice(start.length, string.length - end.length)
+
+    if (stringWidth(fill) === 0) {
+        return innerStr;
+    } 
+
+    const fillCP = splitByCharPoints(fill)
+
+    let result = innerStr
+    for (let i = 0; result.length; i++) {
+        const token = fillCP[i % fillCP.length]
+        
+        if (!result.startsWith(token)) {
+            break
+        }
+        
+        result = result.slice(token.length)
+    }
+
+    for (let i = 0; result.length; i++) {
+        const token = fillCP[i % fillCP.length]
+        
+        if (!result.endsWith(token)) {
+            break
+        }
+        
+        result = result.slice(0, result.length - token.length)
+    }
+
+    return result
+}
+
 /**
  * @typedef BoxStyle
  * @property {string} startToken
@@ -295,6 +350,7 @@ module.exports = {
     padRight,
     padToCenter,
     widthOfLastLine,
+    removeLineComment,
     convertToCommentBox
 }
 
