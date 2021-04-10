@@ -156,9 +156,26 @@ function padToCenter(string, width, token) {
  * @param {string} string
  * @param {string} start
  * @param {string} end
+ * @returns {[number, number]|null} [start, end] if it is a comment line, null otherwise
  */
 function matchLineComment(string, start, end) {
-    return string.startsWith(start) && string.endsWith(end);
+    const iStart = string.search(start)
+
+    if (iStart === -1) {
+        return null;
+    }
+
+    const iEnd = string.lastIndexOf(end)
+
+    if (iEnd === -1) {
+        return null;
+    }
+
+    if (iStart + start.length > iEnd) {
+        return null;
+    }
+
+    return [iStart + start.length, iEnd];
 }
 
 /**
@@ -168,13 +185,17 @@ function matchLineComment(string, start, end) {
  * @param {string} end
  */
 function removeLineComment(string, start, fill, end) {
+    const commentPos = matchLineComment(string, start, end)
+
     // If these don't match, we leave the line as it is
-    if (!matchLineComment(string, start, end)) {
+    if (!commentPos) {
         return string
     }
 
+    const [comStart, comEnd] = commentPos
+
     // Remove the start and end of the comment
-    const innerStr = string.slice(start.length, string.length - end.length)
+    const innerStr = string.slice(comStart, comEnd)
 
     if (stringWidth(fill) === 0) {
         return innerStr;
@@ -341,6 +362,57 @@ function convertToCommentBox(text, options) {
     }
 
     return result;
+}
+
+/**
+ * Add lines to styled comment box
+ * 
+ * @param {string} text
+ * @param {BoxStyle} options
+ */
+function addLinesToStyledCommentBox(text, options) {
+
+}
+
+/**
+ * Remove comment box from a piece of text that we know was built by a given style. It might have
+ * been modified in the meantime, it won't match exactly
+ * 
+ * @param {string} text
+ * @param {BoxStyle} options
+ */
+function removeStyledCommentBox(text, options) {
+    const {
+        startToken,
+        endToken,
+        topRightToken,
+        bottomLeftToken,
+        topEdgeToken,
+        bottomEdgeToken,
+        leftEdgeToken,
+        rightEdgeToken,
+        fillingToken,
+        width: desiredWidth,
+        //clearAroundText,
+        textAlignment,
+        removeEmptyLines,
+        ignoreOuterIndentation,
+        ignoreInnerIndentation,
+        tabSize
+    } = options
+
+    let lines = text
+        // Split text by newlines
+        .split(/\n/)
+        // Remove space to the right
+        .map(s => s.replace(/\s*$/, ""))
+        // Remove tabs
+        .map(line => convertTabsToSpaces(line, tabSize))
+
+    const indentationLevel = findIndentationLevel(lines)
+    lines = dedentBy(lines, indentationLevel)
+
+    // TODO
 }
 
 module.exports = {

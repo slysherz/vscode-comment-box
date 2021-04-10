@@ -143,30 +143,90 @@ function configurationToStyle(configuration, tabSize) {
     }
 }
 
+function getExtendedSelection(editor, lineStart, lineEnd) {
+    let last = editor.document.lineAt(lineEnd).range.end.character
+    let selection = new (vscode.Selection)(
+        lineStart,
+        0,
+        lineEnd,
+        last)
+
+    return selection;
+}
+
+function getSelectionWithContext(editor, selection, extendSelection, contextSize) {
+    const startLine = selection.start.line
+    const endLine = selection.end.line
+
+    if (extendSelection) {
+        // Let's extend the selection from the first character of the first line to the
+        // last character of the last line
+        selection = getExtendedSelection(editor, startLine, endLine)
+    }
+    
+    const contextBeforeSelection = editor.document.getText(
+        getExtendedSelection(editor, startLine - contextSize, startLine))
+    const contextAfterSelection = editor.document.getText(
+        getExtendedSelection(editor, endLine, endLine + contextSize))
+
+    return {
+        selection, 
+        selectionText: editor.document.getText(selection),
+        before: contextBeforeSelection.text,
+        after: contextAfterSelection.text
+    }
+}
+
 /**
  * Takes an open text editor and transforms the selected text into a comment box
  * @param {BoxConfiguration} configuration 
  */
 function transformToCommentBox(editor, configuration) {
     const editOperations = editor.selections.map((selection) => {
-        if (configuration.extendSelection) {
-            // Let's extend the selection from the first character of the first line to the
-            // last character of the last line
-            let last = editor.document.lineAt(selection.end.line).range.end.character
-            selection = new (vscode.Selection)(
-                selection.start.line,
-                0,
-                selection.end.line,
-                last)
-        }
-
-        let text = editor.document.getText(selection)
+        let {
+            selection,
+            selectionText: text
+        } = getSelectionWithContext(editor, selection, configuration.extendSelection, 0)
 
         if (configuration.capitalize) {
             text = text.toUpperCase()
         }
 
         text = convertToCommentBox(text, configurationToStyle(configuration, getTabSize()))
+
+        return {
+            text: text,
+            selection: selection,
+        }
+    })
+
+    editor.edit(builder => {
+        editOperations.forEach(({
+            text,
+            selection
+        }) => {
+            // We use insert + delete instead of replace so that the selection automatically
+            // jumps to the end of the comment box
+            builder.delete(selection)
+            builder.insert(selection.anchor, text)
+        })
+    })
+}
+
+/**
+ * Takes an open text editor and transforms the selected text into a comment box
+ * @param {BoxConfiguration} configuration 
+ */
+ function removeSelectedCommentBoxWithStyle(editor, configuration) {
+    const editOperations = editor.selections.map((selection) => {
+        let {
+            selection,
+            selectionText: text
+        } = getSelectionWithContext(editor, selection, configuration.extendSelection, 0)
+
+        let text = editor.document.getText(selection)
+
+        text = removeCommentBoxWithStyle(text, configurationToStyle(configuration, getTabSize()))
 
         return {
             text: text,
