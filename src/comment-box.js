@@ -229,6 +229,7 @@ function removeLineComment(string, start, fill, end) {
 
 /**
  * @typedef BoxStyle
+ * @property {boolean} capitalize
  * @property {string} startToken
  * @property {string} endToken
  * @property {string} topRightToken
@@ -250,6 +251,7 @@ function removeLineComment(string, start, fill, end) {
  */
 function convertToCommentBox(text, options) {
     const {
+        capitalize,
         startToken,
         endToken,
         topRightToken,
@@ -267,6 +269,10 @@ function convertToCommentBox(text, options) {
         ignoreInnerIndentation,
         tabSize
     } = options
+
+    if (capitalize) {
+        text = text.toUpperCase()
+    }
 
     let lines = text
         // Split text by newlines

@@ -11,7 +11,6 @@ const {
  * @typedef {import('./comment-box').BoxStyle} BoxStyle
  * 
  * @typedef BoxConfiguration
- * @property {boolean} capitalize
  * @property {boolean} extendSelection
  * @property {string} commentStartToken
  * @property {string} commentEndToken
@@ -125,6 +124,7 @@ function mergeConfigurations(configurations) {
  */
 function configurationToStyle(configuration, tabSize) {
     return {
+        capitalize: configuration.capitalize,
         startToken: configuration.commentStartToken,
         endToken: configuration.commentEndToken,
         topRightToken: configuration.topRightToken,
@@ -188,10 +188,6 @@ function transformToCommentBox(editor, configuration) {
             selectionText: text
         } = getSelectionWithContext(editor, selection, configuration.extendSelection, 0)
 
-        if (configuration.capitalize) {
-            text = text.toUpperCase()
-        }
-
         text = convertToCommentBox(text, configurationToStyle(configuration, getTabSize()))
 
         return {
@@ -217,7 +213,7 @@ function transformToCommentBox(editor, configuration) {
  * Takes an open text editor and transforms the selected text into a comment box
  * @param {BoxConfiguration} configuration 
  */
- function removeSelectedCommentBoxWithStyle(editor, configuration) {
+function removeSelectedCommentBoxWithStyle(editor, configuration) {
     const editOperations = editor.selections.map((selection) => {
         let {
             selection,
@@ -245,6 +241,119 @@ function transformToCommentBox(editor, configuration) {
             builder.insert(selection.anchor, text)
         })
     })
+}
+
+/**
+ * Creates a function that looks at the current editor, and applies a transformation to all
+ * current text selections
+ */
+function newTransformation(transformer) {
+    return function (editor, configuration) {
+        const editOperations = editor.selections.map((selection) => {
+            let {
+                selection,
+                selectionText: text
+            } = getSelectionWithContext(editor, selection, configuration.extendSelection, 0)
+
+            let text = editor.document.getText(selection)
+
+            text = transformer(text, configurationToStyle(configuration, getTabSize()))
+
+            return {
+                text: text,
+                selection: selection,
+            }
+        })
+
+        editor.edit(builder => {
+            editOperations.forEach(({
+                text,
+                selection
+            }) => {
+                // We use insert + delete instead of replace so that the selection automatically
+                // jumps to the end of the comment box
+                builder.delete(selection)
+                builder.insert(selection.anchor, text)
+            })
+        })
+    }
+}
+
+function defaultStyleCommand(transformation) {
+    return () => {
+        let editor = vscode.window.activeTextEditor
+
+        if (!editor) {
+            // No open text editor
+            return;
+        }
+
+        // Load user settings
+        const oldDefaultStyle = loadOldConfiguration()
+
+        const baseConfig = vscode.workspace.getConfiguration("commentBox")
+        let newDefaultStyle = tryGetConfiguration(baseConfig, "defaultStyle")
+
+        if (!newDefaultStyle) {
+            return;
+        }
+
+        const configuration = mergeConfigurations([oldDefaultStyle, newDefaultStyle])
+
+        // Apply transformation
+        transformation(editor, configuration)
+    }
+}
+
+function pickedStyleCommand(transformation) {
+    return (...args) => {
+        let editor = vscode.window.activeTextEditor
+
+        if (!editor) {
+            // No open text editor
+            return;
+        }
+
+        // Load user settings
+        const baseConfig = vscode.workspace.getConfiguration("commentBox")
+        const styles = baseConfig.get("styles")
+        const styleNames = Object.keys(styles)
+
+        // Check whether the style to be used was passed as an argument
+        if (args.length) {
+            // We already have the style, use it
+            const styleName = "" + args[0]
+
+            const style = tryGetConfiguration(baseConfig, styleName)
+            if (!style) {
+                return;
+            }
+
+            const configuration = mergeConfigurations([style])
+
+            transformation(editor, configuration)
+        }
+        else {
+            // No style was passed, ask the user
+            vscode.window.showQuickPick(styleNames).then((styleName) => {
+                if (!styleName) {
+                    // The user didn't pick any style
+                    return
+                }
+
+                const style = tryGetConfiguration(baseConfig, styleName)
+
+                if (!style) {
+                    // The user got a message something is wrong, don't do anything else
+                    return
+                }
+
+                const configuration = mergeConfigurations([style])
+
+                transformation(editor, configuration)
+            }, ignore)
+        }
+    }
 }
 
 /**
@@ -299,80 +408,19 @@ function tryGetConfiguration(baseConfig, styleName, checked = []) {
 
 // When the extension is activated
 function activate(context) {
+    const convertToCommentBoxT = newTransformation(convertToCommentBox)
+    const removeCommentBoxT = newTransformation(removeSelectedCommentBoxWithStyle)
+
     // Register comment box command
-    context.subscriptions.push(vscode.commands.registerCommand('extension.commentBox', () => {
-        let editor = vscode.window.activeTextEditor
+    context.subscriptions.push(vscode.commands.registerCommand(
+        'extension.commentBox',
+        defaultStyleCommand(convertToCommentBoxT)    
+    ))
 
-        if (!editor) {
-            // No open text editor
-            return;
-        }
-
-        // Load user settings
-        const oldDefaultStyle = loadOldConfiguration()
-
-        const baseConfig = vscode.workspace.getConfiguration("commentBox")
-        let newDefaultStyle = tryGetConfiguration(baseConfig, "defaultStyle")
-
-        if (!newDefaultStyle) {
-            return
-        }
-
-        const configuration = mergeConfigurations([oldDefaultStyle, newDefaultStyle])
-
-        // Apply transformation
-        transformToCommentBox(editor, configuration)
-    }))
-
-    context.subscriptions.push(vscode.commands.registerCommand("commentBox.transformUsingStyle",
-        (...args) => {
-            let editor = vscode.window.activeTextEditor
-
-            if (!editor) {
-                // No open text editor
-                return;
-            }
-
-            // Load user settings
-            const baseConfig = vscode.workspace.getConfiguration("commentBox")
-            const styles = baseConfig.get("styles")
-            const styleNames = Object.keys(styles)
-
-            // Check whether the style to be used was passed as an argument
-            if (args.length) {
-                // We already have the style, use it
-                const styleName = "" + args[0]
-
-                const style = tryGetConfiguration(baseConfig, styleName)
-                if (!style) {
-                    return
-                }
-
-                const configuration = mergeConfigurations([style])
-
-                transformToCommentBox(editor, configuration)
-            }
-            else {
-                // No style was passed, ask the user
-                vscode.window.showQuickPick(styleNames).then((styleName) => {
-                    if (!styleName) {
-                        // The user didn't pick any style
-                        return
-                    }
-
-                    const style = tryGetConfiguration(baseConfig, styleName)
-
-                    if (!style) {
-                        // The user got a message something is wrong, don't do anything else
-                        return
-                    }
-
-                    const configuration = mergeConfigurations([style])
-
-                    transformToCommentBox(editor, configuration)
-                }, ignore)
-            }
-        }))
+    context.subscriptions.push(vscode.commands.registerCommand(
+        'commentBox.transformUsingStyle',
+        pickedStyleCommand(convertToCommentBoxT)
+    ))
 }
 
 // Export additional functions for testing purposes
