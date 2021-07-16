@@ -178,72 +178,6 @@ function getSelectionWithContext(editor, selection, extendSelection, contextSize
 }
 
 /**
- * Takes an open text editor and transforms the selected text into a comment box
- * @param {BoxConfiguration} configuration 
- */
-function transformToCommentBox(editor, configuration) {
-    const editOperations = editor.selections.map((selection) => {
-        let {
-            selection,
-            selectionText: text
-        } = getSelectionWithContext(editor, selection, configuration.extendSelection, 0)
-
-        text = convertToCommentBox(text, configurationToStyle(configuration, getTabSize()))
-
-        return {
-            text: text,
-            selection: selection,
-        }
-    })
-
-    editor.edit(builder => {
-        editOperations.forEach(({
-            text,
-            selection
-        }) => {
-            // We use insert + delete instead of replace so that the selection automatically
-            // jumps to the end of the comment box
-            builder.delete(selection)
-            builder.insert(selection.anchor, text)
-        })
-    })
-}
-
-/**
- * Takes an open text editor and transforms the selected text into a comment box
- * @param {BoxConfiguration} configuration 
- */
-function removeSelectedCommentBoxWithStyle(editor, configuration) {
-    const editOperations = editor.selections.map((selection) => {
-        let {
-            selection,
-            selectionText: text
-        } = getSelectionWithContext(editor, selection, configuration.extendSelection, 0)
-
-        let text = editor.document.getText(selection)
-
-        text = removeCommentBoxWithStyle(text, configurationToStyle(configuration, getTabSize()))
-
-        return {
-            text: text,
-            selection: selection,
-        }
-    })
-
-    editor.edit(builder => {
-        editOperations.forEach(({
-            text,
-            selection
-        }) => {
-            // We use insert + delete instead of replace so that the selection automatically
-            // jumps to the end of the comment box
-            builder.delete(selection)
-            builder.insert(selection.anchor, text)
-        })
-    })
-}
-
-/**
  * Creates a function that looks at the current editor, and applies a transformation to all
  * current text selections
  */
@@ -338,14 +272,14 @@ function pickedStyleCommand(transformation) {
             vscode.window.showQuickPick(styleNames).then((styleName) => {
                 if (!styleName) {
                     // The user didn't pick any style
-                    return
+                    return;
                 }
 
                 const style = tryGetConfiguration(baseConfig, styleName)
 
                 if (!style) {
                     // The user got a message something is wrong, don't do anything else
-                    return
+                    return;
                 }
 
                 const configuration = mergeConfigurations([style])
@@ -408,19 +342,20 @@ function tryGetConfiguration(baseConfig, styleName, checked = []) {
 
 // When the extension is activated
 function activate(context) {
-    const convertToCommentBoxT = newTransformation(convertToCommentBox)
-    const removeCommentBoxT = newTransformation(removeSelectedCommentBoxWithStyle)
+    const commands = [
+        ['extension.commentBox', defaultStyleCommand, convertToCommentBox],
+        ['commentBox.transformUsingStyle', pickedStyleCommand, convertToCommentBox],
+        ['commentBox.remove', defaultStyleCommand, comment]
+    ]
 
-    // Register comment box command
-    context.subscriptions.push(vscode.commands.registerCommand(
-        'extension.commentBox',
-        defaultStyleCommand(convertToCommentBoxT)    
-    ))
-
-    context.subscriptions.push(vscode.commands.registerCommand(
-        'commentBox.transformUsingStyle',
-        pickedStyleCommand(convertToCommentBoxT)
-    ))
+    for (const [name, command, transformer] of commands) {
+        const transformation = newTransformation(transformer)
+        
+        context.subscriptions.push(vscode.commands.registerCommand(
+            name,
+            command(transformation)
+        ))
+    }
 }
 
 // Export additional functions for testing purposes
