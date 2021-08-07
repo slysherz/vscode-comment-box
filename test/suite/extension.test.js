@@ -15,6 +15,7 @@ const {
     convertToCommentBox,
     removeStyledCommentBox
 } = require('../../src/comment-box')
+const { mergeConfigurations } = require('../../src/extension')
 
 /**
  * Creates a new object that contains the combined properties and values of two given objects. When
@@ -38,11 +39,8 @@ function extend(objectA, objectB) {
     return result
 }
 
-function addAndRemoveCommentTest(string, style) {
-    const comment = convertToCommentBox(string, style)
-    const newString = removeStyledCommentBox(comment, style)
-
-    assert.strictEqual(string, newString)
+function trimLineStart(string) {
+    return string.split("\n").map(l => l.trimStart()).join("\n")
 }
 
 // You can import and use all API from the 'vscode' module
@@ -546,7 +544,7 @@ suite("Helper Functions Tests", function () {
     })
 
     test("removeCommentBox", function () {
-        const defaultStyle = {
+        const centerStyle = {
             startToken: "/*",
             endToken: "**/",
             topRightToken: "**",
@@ -559,15 +557,54 @@ suite("Helper Functions Tests", function () {
             width: 0,
             textAlignment: "center",
             removeEmptyLines: true,
-            ignoreOuterIndentation: true,
-            ignoreInnerIndentation: true,
+            ignoreOuterIndentation: false,
+            ignoreInnerIndentation: false,
             tabSize: 4
         }
 
-        const strings = ["hello", "hi\nthere", "hello\nhi"]
+        const leftStyle = extend(centerStyle, {
+            textAlignment: "left"
+        })
 
-        for (const string of strings) {        
-            addAndRemoveCommentTest(string, defaultStyle)
+        const styles = [
+            centerStyle,
+            leftStyle
+        ]
+
+        const strings = [
+            "hello", 
+            "hi\nthere", 
+            "hello\nhi",
+`
+hi there
+    hello
+`, `
+    hi there
+hello
+`, `
+hi there
+hello
+`, `
+hi
+    hello
+there
+`
+        ]
+
+        for (const s of strings) {
+            const string = s.trim()
+            const comment = convertToCommentBox(string, centerStyle)
+            const newString = removeStyledCommentBox(comment, centerStyle)
+
+            assert.strictEqual(trimLineStart(string), newString)
+        }
+
+        for (const s of strings) {
+            const string = s.trim()  
+            const comment = convertToCommentBox(string, leftStyle)
+            const newString = removeStyledCommentBox(comment, leftStyle)
+
+            assert.strictEqual(string, newString)
         }
     })
 })

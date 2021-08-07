@@ -17,7 +17,8 @@
     ],
     "activationEvents": [
         "onCommand:extension.commentBox",
-        "onCommand:commentBox.transformUsingStyle"
+        "onCommand:commentBox.transformUsingStyle",
+        "onCommand:commentBox.removeUsingStyle"
     ],
     "main": "./src/extension",
     "contributes": {
@@ -29,6 +30,10 @@
             {
                 "command": "commentBox.transformUsingStyle",
                 "title": "Transform to Comment Box using style"
+            },
+            {
+                "command": "commentBox.removeUsingStyle",
+                "title": "Remove Comment Box using style"
             }
         ],
         "configuration": {

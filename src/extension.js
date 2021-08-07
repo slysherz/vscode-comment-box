@@ -1,9 +1,11 @@
+// @ts-check
 "use strict"
 
 // The module 'vscode' contains the VS Code extensibility API
 const vscode = require('vscode')
 const {
-    convertToCommentBox
+    convertToCommentBox,
+    removeStyledCommentBox
 } = require('./comment-box')
 
 /**
@@ -11,6 +13,7 @@ const {
  * @typedef {import('./comment-box').BoxStyle} BoxStyle
  * 
  * @typedef BoxConfiguration
+ * @property {boolean} capitalize
  * @property {boolean} extendSelection
  * @property {string} commentStartToken
  * @property {string} commentEndToken
@@ -183,19 +186,17 @@ function getSelectionWithContext(editor, selection, extendSelection, contextSize
  */
 function newTransformation(transformer) {
     return function (editor, configuration) {
-        const editOperations = editor.selections.map((selection) => {
+        const editOperations = editor.selections.map((current) => {
             let {
                 selection,
                 selectionText: text
-            } = getSelectionWithContext(editor, selection, configuration.extendSelection, 0)
-
-            let text = editor.document.getText(selection)
+            } = getSelectionWithContext(editor, current, configuration.extendSelection, 0)
 
             text = transformer(text, configurationToStyle(configuration, getTabSize()))
 
             return {
-                text: text,
-                selection: selection,
+                text,
+                selection,
             }
         })
 
@@ -299,7 +300,9 @@ function pickedStyleCommand(transformation) {
 function tryGetConfiguration(baseConfig, styleName, checked = []) {
     if (checked.includes(styleName)) {
         vscode.window.showErrorMessage(
-            "The following styles refer to each other in a cycle: " + ", ".join(checked))
+            "The following styles refer to each other in a cycle: " +
+            checked.join(", ")
+        )
 
         return null
     }
@@ -345,7 +348,7 @@ function activate(context) {
     const commands = [
         ['extension.commentBox', defaultStyleCommand, convertToCommentBox],
         ['commentBox.transformUsingStyle', pickedStyleCommand, convertToCommentBox],
-        ['commentBox.remove', defaultStyleCommand, comment]
+        ['commentBox.removeUsingStyle', pickedStyleCommand, removeStyledCommentBox]
     ]
 
     for (const [name, command, transformer] of commands) {
