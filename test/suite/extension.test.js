@@ -4,6 +4,17 @@
 
 // The module 'assert' provides assertion methods from node
 const assert = require('assert')
+const {
+    widthOfLastLine,
+    findIndentationLevel,
+    convertTabsToSpaces,
+    reverseString,
+    padRight,
+    padToCenter,
+    removeLineComment,
+    convertToCommentBox,
+    removeStyledCommentBox
+} = require('../../src/comment-box')
 
 /**
  * Creates a new object that contains the combined properties and values of two given objects. When
@@ -27,23 +38,19 @@ function extend(objectA, objectB) {
     return result
 }
 
+function addAndRemoveCommentTest(string, style) {
+    const comment = convertToCommentBox(string, style)
+    const newString = removeStyledCommentBox(comment, style)
+
+    assert.strictEqual(string, newString)
+}
+
 // You can import and use all API from the 'vscode' module
 // as well as import your extension to test it
 // const vscode = require('vscode')
 
 // Defines a Mocha test suite to group tests of similar kind together
 suite("Helper Functions Tests", function () {
-    const {
-        widthOfLastLine,
-        findIndentationLevel,
-        convertTabsToSpaces,
-        reverseString,
-        padRight,
-        padToCenter,
-        removeLineComment,
-        convertToCommentBox
-    } = require('../../src/comment-box')
-
     const eq = assert.strictEqual
 
     test("widthOfLastLine", function () {
@@ -537,6 +544,34 @@ suite("Helper Functions Tests", function () {
 
 
     })
+
+    test("removeCommentBox", function () {
+        const defaultStyle = {
+            startToken: "/*",
+            endToken: "**/",
+            topRightToken: "**",
+            bottomLeftToken: " **",
+            topEdgeToken: "*",
+            bottomEdgeToken: "*",
+            leftEdgeToken: " * ",
+            rightEdgeToken: " *",
+            fillingToken: " ",
+            width: 0,
+            textAlignment: "center",
+            removeEmptyLines: true,
+            ignoreOuterIndentation: true,
+            ignoreInnerIndentation: true,
+            tabSize: 4
+        }
+
+        const strings = ["hello", "hi\nthere", "hello\nhi"]
+
+        for (const string of strings) {        
+            addAndRemoveCommentTest(string, defaultStyle)
+        }
+    })
 })
+
+
 
 /** END **/

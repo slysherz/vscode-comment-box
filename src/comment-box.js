@@ -151,6 +151,23 @@ function padToCenter(string, width, token) {
         reverseString(padRight("", rightPadSize, token))
 }
 
+/**
+ * @param {string} string
+ * @param {string} start
+ * @param {string} fill
+ * @param {string} end
+ * @returns {boolean}
+ */
+function isTopOrBottonLine(string, start, fill, end) {
+    if (!string.startsWith(start) || !string.endsWith(end)) {
+        return false
+    }
+
+    const mid = string.slice(start.length, -end.length)
+    const fillCP = splitByCharPoints(fill)
+    
+    return splitByCharPoints(mid).every(cp => fillCP.includes(cp))
+}
 
 /**
  * @param {string} string
@@ -398,7 +415,7 @@ function removeStyledCommentBox(text, options) {
         leftEdgeToken,
         rightEdgeToken,
         fillingToken,
-        width: desiredWidth,
+        // width: desiredWidth,
         //clearAroundText,
         textAlignment,
         removeEmptyLines,
@@ -418,10 +435,44 @@ function removeStyledCommentBox(text, options) {
     const indentationLevel = findIndentationLevel(lines)
     lines = dedentBy(lines, indentationLevel)
 
-    // TODO
+    let result = []
+
+    // Out of the box, look for top row first, inside box look for top line first
+    // Outside look for bottom line first
+    let inBox = false
+    lines = lines.forEach(line => {
+        const matched = inBox
+            ? isTopOrBottonLine(line, startToken, topEdgeToken, topRightToken)
+            : isTopOrBottonLine(line, bottomLeftToken, bottomEdgeToken, endToken)
+
+        if (matched) {
+            inBox = !inBox
+            return;
+        }
+
+        const cleanLine = removeLineComment(line, leftEdgeToken, fillingToken, rightEdgeToken)
+        if (cleanLine != line) {
+            result.push(cleanLine)
+            return;
+        }
+        
+        const matchedEnd = inBox
+            ? isTopOrBottonLine(line, bottomLeftToken, bottomEdgeToken, endToken)
+            : isTopOrBottonLine(line, startToken, topEdgeToken, topRightToken)
+
+        if (matchedEnd) {
+            return;
+        }
+
+        // Not part of the box?
+        result.push(line)
+    })
+
+    return result.join("\n")
 }
 
 module.exports = {
+    // Helpers
     findIndentationLevel,
     convertTabsToSpaces,
     reverseString,
@@ -429,7 +480,10 @@ module.exports = {
     padToCenter,
     widthOfLastLine,
     removeLineComment,
-    convertToCommentBox
+    
+    // User functions
+    convertToCommentBox,
+    removeStyledCommentBox
 }
 
 /** END **/
