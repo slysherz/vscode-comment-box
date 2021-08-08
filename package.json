@@ -24,16 +24,28 @@
     "contributes": {
         "commands": [
             {
-                "command": "extension.commentBox",
-                "title": "Transform to Comment Box"
+                "command": "commentBox.add",
+                "title": "Add Comment Box (defaultStyle)"
             },
             {
-                "command": "commentBox.transformUsingStyle",
-                "title": "Transform to Comment Box using style"
+                "command": "commentBox.remove",
+                "title": "Remove Comment Box (defaultStyle)"
+            },
+            {
+                "command": "commentBox.update",
+                "title": "Update Comment Box (defaultStyle)"
+            },
+            {
+                "command": "commentBox.addUsingStyle",
+                "title": "Add Comment Box using style"
             },
             {
                 "command": "commentBox.removeUsingStyle",
                 "title": "Remove Comment Box using style"
+            },
+            {
+                "command": "'commentBox.updateUsingStyle'",
+                "title": "Update Comment Box using style"
             }
         ],
         "configuration": {
@@ -259,17 +271,17 @@
         "test": "node ./test/runTest.js"
     },
     "devDependencies": {
-        "@types/glob": "^7.1.3",
+        "@types/glob": "^7.1.4",
         "@types/mocha": "^5.2.7",
-        "@types/node": "^12.12.50",
-        "@types/vscode": "^1.47.0",
+        "@types/node": "^12.20.19",
+        "@types/vscode": "^1.59.0",
         "eslint": "^6.6.0",
-        "glob": "^7.1.5",
+        "glob": "^7.1.7",
         "mocha": "^6.2.3",
-        "typescript": "^3.9.7",
-        "vscode-test": "^1.4.0"
+        "typescript": "^3.9.10",
+        "vscode-test": "^1.6.1"
     },
     "dependencies": {
-        "string-width": "^4.2.0"
+        "string-width": "^4.2.2"
     }
 }

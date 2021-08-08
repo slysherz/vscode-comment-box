@@ -343,12 +343,25 @@ function tryGetConfiguration(baseConfig, styleName, checked = []) {
     return mergeConfigurations([...parentStyles, style])
 }
 
+function updateStyledCommentBox(text, options) {
+    return convertToCommentBox(
+        removeStyledCommentBox(text, options),
+        options
+    )
+}
+
 // When the extension is activated
 function activate(context) {
     const commands = [
+        ['commentBox.add', defaultStyleCommand, convertToCommentBox],
+        ['commentBox.remove', defaultStyleCommand, removeStyledCommentBox],
+        ['commentBox.update', defaultStyleCommand, updateStyledCommentBox],
+        ['commentBox.addUsingStyle', pickedStyleCommand, convertToCommentBox],
+        ['commentBox.removeUsingStyle', pickedStyleCommand, removeStyledCommentBox],
+        ['commentBox.updateUsingStyle', pickedStyleCommand, updateStyledCommentBox],
+        // Deprecated
         ['extension.commentBox', defaultStyleCommand, convertToCommentBox],
-        ['commentBox.transformUsingStyle', pickedStyleCommand, convertToCommentBox],
-        ['commentBox.removeUsingStyle', pickedStyleCommand, removeStyledCommentBox]
+        ['commentBox.transformUsingStyle', pickedStyleCommand, convertToCommentBox]
     ]
 
     for (const [name, command, transformer] of commands) {
