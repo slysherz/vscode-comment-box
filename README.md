@@ -1,6 +1,6 @@
 # Comment Box for Visual Studio Code
 
-This VS Code extension creates highly configurable commands that transform any piece of text into a pretty comment box.
+This VS Code extension creates highly configurable commands that transform any piece of text into a pretty comment box, or remove and update existing comment boxes.
 
 
 ## Examples:
@@ -43,11 +43,11 @@ Select the text that you want to transform, then call the command bar with:
 
 And run the command:
 
-`> Transform To Comment Box`
+`> Add Comment Box`
 
 That's it. If you want to pick from one of many styles instead, run:
 
-`> Transform To Comment Box Using Style`
+`> Add Comment Box Using Style`
 
 ![Transform using style example](images/transform-using-style-example.png)
 
@@ -56,12 +56,14 @@ Check the [Configuration section](#configuration) to learn how to add your own s
 ### Keybindings
 You can bind these commands to a shortcut by adding something like this to your `keybindings.json`:
 ```
-{ "key": "shift+alt+c", "command": "extension.commentBox", "when": "editorTextFocus"}
+{ "key": "shift+alt+c", "command": "commentBox.add", "when": "editorTextFocus"},
+{ "key": "shift+alt+z", "command": "commentBox.remove", "when": "editorTextFocus"},
+{ "key": "shift+alt+x", "command": "commentBox.update", "when": "editorTextFocus"}
 ```
 
 If you want to select a style:
 ```
-{ "key": "shift+alt+c", "command": "commentBox.transformUsingStyle", "when": "editorTextFocus"}
+{ "key": "shift+alt+c", "command": "commentBox.addUsingStyle", "when": "editorTextFocus"}
 ```
 
 If you have multiple styles defined, you can make a keybind for each one like so:

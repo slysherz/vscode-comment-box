@@ -3,7 +3,7 @@
     "displayName": "Comment Box",
     "description": "Transform text into a configurable comment box",
     "icon": "images/comment-box-logo.png",
-    "version": "2.1.0-beta",
+    "version": "2.1.0",
     "publisher": "SlySherZ",
     "license": "MIT",
     "repository": {
@@ -18,22 +18,27 @@
     "activationEvents": [
         "onCommand:extension.commentBox",
         "onCommand:commentBox.transformUsingStyle",
-        "onCommand:commentBox.removeUsingStyle"
+        "onCommand:commentBox.add",
+        "onCommand:commentBox.remove",
+        "onCommand:commentBox.update",
+        "onCommand:commentBox.addUsingStyle",
+        "onCommand:commentBox.removeUsingStyle",
+        "onCommand:commentBox.updateUsingStyle"
     ],
     "main": "./src/extension",
     "contributes": {
         "commands": [
             {
                 "command": "commentBox.add",
-                "title": "Add Comment Box (defaultStyle)"
+                "title": "Add Comment Box"
             },
             {
                 "command": "commentBox.remove",
-                "title": "Remove Comment Box (defaultStyle)"
+                "title": "Remove Comment Box"
             },
             {
                 "command": "commentBox.update",
-                "title": "Update Comment Box (defaultStyle)"
+                "title": "Update Comment Box"
             },
             {
                 "command": "commentBox.addUsingStyle",

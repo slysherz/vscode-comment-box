@@ -491,6 +491,7 @@ function removeStyledCommentBox(text, options) {
 
 module.exports = {
     // Helpers
+    dedentBy,
     findIndentationLevel,
     convertTabsToSpaces,
     reverseString,

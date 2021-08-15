@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.1.0]
+
+Support for updating and removing comments, and better unicode support!
+
+### Added
+
+- You can now update and remove comment boxes
+    - Use the new `Remove Comment Box` and `Update Comment Box` commands
+    - Caveats: it doesn't repair text when the comment is destructive: `tEsT` -> `/* TEST */`
+    - For now, you'll have to manually select the entire box to update / delete it. We'll try to support automatic comment box / style detection in a later update
+- Better Unicode support
+
+### Changed
+
+- The `Transform to Comment Box` command has been renamed to `Add Comment Box` to be consistent with the default `Add Line Comment` VSCode command
+
 ## [2.0.0] - 2019-05-20
 
 Multi-styles!

@@ -13,9 +13,31 @@ const {
     padToCenter,
     removeLineComment,
     convertToCommentBox,
-    removeStyledCommentBox
+    removeStyledCommentBox,
+    dedentBy
 } = require('../../src/comment-box')
 const { mergeConfigurations } = require('../../src/extension')
+
+function* stylesCombination(start, variations) {
+    if (variations.length === 0) {
+        yield start
+        return;
+    }
+
+    const [[property, options], ...otherVariations] = variations
+    for (const option of options) {
+        start[property] = option
+        for (let style of stylesCombination(start, otherVariations)) {
+            yield style
+        }
+    } 
+}
+
+function removeCommonIndentation(string) {
+    const lines = string.split(/\n/g)
+    let indentation = findIndentationLevel(lines)
+    return dedentBy(lines, indentation).join("\n")
+}
 
 /**
  * Creates a new object that contains the combined properties and values of two given objects. When
@@ -544,7 +566,7 @@ suite("Helper Functions Tests", function () {
     })
 
     test("removeCommentBox", function () {
-        const centerStyle = {
+        const baseStyle = {
             startToken: "/*",
             endToken: "**/",
             topRightToken: "**",
@@ -562,49 +584,62 @@ suite("Helper Functions Tests", function () {
             tabSize: 4
         }
 
-        const leftStyle = extend(centerStyle, {
-            textAlignment: "left"
-        })
-
-        const styles = [
-            centerStyle,
-            leftStyle
-        ]
+        const styles = stylesCombination(baseStyle, [
+            ["textAlignment", ["center", "left"]],
+            ["ignoreOuterIndentation", [true, false]],
+            ["ignoreInnerIndentation", [true, false]]
+        ])
 
         const strings = [
-            "hello", 
-            "hi\nthere", 
-            "hello\nhi",
 `
+hello
+`, `
+hi
+there
+`, `
+hello
+hi
+`, `
 hi there
     hello
 `, `
     hi there
 hello
 `, `
-hi there
-hello
-`, `
 hi
     hello
 there
+`, `
+    hi
+    hello
+`, `
+        hi
+    hello
+`, `
+    hi
+        hello
 `
         ]
 
-        for (const s of strings) {
-            const string = s.trim()
-            const comment = convertToCommentBox(string, centerStyle)
-            const newString = removeStyledCommentBox(comment, centerStyle)
+        for (const style of styles) {
+            for (const s of strings) {
+                const string = s.trim()
+                const comment = convertToCommentBox(string, style)
+                const newString = removeStyledCommentBox(comment, style)
 
-            assert.strictEqual(trimLineStart(string), newString)
-        }
+                let expected = string
+                let result = newString
 
-        for (const s of strings) {
-            const string = s.trim()  
-            const comment = convertToCommentBox(string, leftStyle)
-            const newString = removeStyledCommentBox(comment, leftStyle)
+                if (style.textAlignment === "center" || 
+                    style.ignoreInnerIndentation && style.ignoreOuterIndentation) {
+                    expected = trimLineStart(expected)
+                    result = result
+                } else if (style.ignoreOuterIndentation) {
+                    expected = removeCommonIndentation(expected)
+                }
 
-            assert.strictEqual(string, newString)
+                assert.strictEqual(trimLineStart(string), trimLineStart(newString), "\n" + comment)
+            }
         }
     })
 })
