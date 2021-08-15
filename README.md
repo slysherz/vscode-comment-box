@@ -70,13 +70,13 @@ If you have multiple styles defined, you can make a keybind for each one like so
 ```
 { 
     "key": "shift+alt+c", 
-    "command": "commentBox.transformUsingStyle", 
+    "command": "commentBox.addUsingStyle", 
     "when": "editorTextFocus", 
     "args": "styleA"
 },
 { 
     "key": "shift+alt+b", 
-    "command": "commentBox.transformUsingStyle", 
+    "command": "commentBox.addUsingStyle", 
     "when": "editorTextFocus", 
     "args": "styleB"
 }
