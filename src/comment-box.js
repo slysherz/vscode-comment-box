@@ -486,6 +486,10 @@ function removeStyledCommentBox(text, options) {
         result.push(line)
     })
 
+    if (ignoreOuterIndentation == false) {
+        result = indentBy(result, indentationLevel)
+    }
+
     return result.join("\n")
 }
 
