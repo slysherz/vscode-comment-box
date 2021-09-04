@@ -110,7 +110,7 @@ function findLastIndex(array, predicate) {
  */
 function widthOfLastLine(string) {
     const lastNewlinePos = string.lastIndexOf("\n")
-    const lastLine = lastNewlinePos === - 1 ?
+    const lastLine = lastNewlinePos === -1 ?
         string :
         string.slice(lastNewlinePos + 1)
 
@@ -175,7 +175,7 @@ function isTopOrBottonLine(string, start, fill, end) {
 
     const mid = string.slice(start.length, -end.length)
     const fillCP = splitByCharPoints(fill)
-    
+
     return splitByCharPoints(mid).every(cp => fillCP.includes(cp))
 }
 
@@ -226,7 +226,7 @@ function removeLineComment(string, start, fill, end, keepSpace = false) {
 
     if (stringWidth(fill) === 0) {
         return innerStr;
-    } 
+    }
 
     const fillCP = splitByCharPoints(fill)
 
@@ -234,28 +234,28 @@ function removeLineComment(string, start, fill, end, keepSpace = false) {
     let result = innerStr
     for (let i = 0; result.length; i++) {
         const token = fillCP[i % fillCP.length]
-        
+
         if (!result.startsWith(token)) {
             break
         }
-        
+
         result = result.slice(token.length)
         skipped += token
     }
 
     for (let i = 0; result.length; i++) {
         const token = fillCP[i % fillCP.length]
-        
+
         if (!result.endsWith(token)) {
             break
         }
-        
+
         result = result.slice(0, result.length - token.length)
     }
 
-    const spaces = keepSpace
-        ? stringWidth(skipped)
-        : 0
+    const spaces = keepSpace ?
+        stringWidth(skipped) :
+        0
 
     return " ".repeat(spaces) + result
 }
@@ -348,7 +348,7 @@ function convertToCommentBox(text, options) {
     const alignmentStyle = {
         center: padToCenter,
         left: padRight
-    }[textAlignment]
+    } [textAlignment]
 
     lines = lines
         // Extend lines to match desired width, using the choosen filling token
@@ -459,9 +459,9 @@ function removeStyledCommentBox(text, options) {
     // Outside look for bottom line first
     let inBox = false
     lines.forEach(line => {
-        const matched = inBox
-            ? isTopOrBottonLine(line, startToken, topEdgeToken, topRightToken)
-            : isTopOrBottonLine(line, bottomLeftToken, bottomEdgeToken, endToken)
+        const matched = inBox ?
+            isTopOrBottonLine(line, startToken, topEdgeToken, topRightToken) :
+            isTopOrBottonLine(line, bottomLeftToken, bottomEdgeToken, endToken)
 
         if (matched) {
             inBox = !inBox
@@ -473,10 +473,10 @@ function removeStyledCommentBox(text, options) {
             result.push(cleanLine)
             return;
         }
-        
-        const matchedEnd = inBox
-            ? isTopOrBottonLine(line, bottomLeftToken, bottomEdgeToken, endToken)
-            : isTopOrBottonLine(line, startToken, topEdgeToken, topRightToken)
+
+        const matchedEnd = inBox ?
+            isTopOrBottonLine(line, bottomLeftToken, bottomEdgeToken, endToken) :
+            isTopOrBottonLine(line, startToken, topEdgeToken, topRightToken)
 
         if (matchedEnd) {
             return;
@@ -503,7 +503,7 @@ module.exports = {
     padToCenter,
     widthOfLastLine,
     removeLineComment,
-    
+
     // User functions
     convertToCommentBox,
     removeStyledCommentBox
