@@ -4,7 +4,7 @@ This VS Code extension creates highly configurable commands that transform any p
 
 
 ## Examples:
-#### Transforming a simple comment (with default settings)
+#### Adding a simple comment (with default settings)
 
 ```
 my comment
@@ -19,7 +19,7 @@ turns into:
 ```
 
 
-#### Transforming a multiple line comment (with default settings)
+#### Adding a multiple line comment (with default settings)
 ```
 could you
 comment box this?
@@ -37,7 +37,7 @@ turns into:
 
 
 ## Usage
-Select the text that you want to transform, then call the command bar with:
+Select the text that you want to comment, then call the command bar with:
 
 `Ctrl+Shift+P`
 
@@ -49,7 +49,7 @@ That's it. If you want to pick from one of many styles instead, run:
 
 `> Add Comment Box Using Style`
 
-![Transform using style example](images/transform-using-style-example.png)
+![Add Comment Box Using Style](images/transform-using-style-example.png)
 
 Check the [Configuration section](#configuration) to learn how to add your own styles.
 
@@ -109,7 +109,7 @@ Define your comment styles with the `commentBox.styles` setting:
 },
 ```
 
-The `Transform To Comment Box` command always uses the `defaultStyle`.
+The `Add Comment Box` command always uses the `defaultStyle`.
 
 ### Style settings
 
