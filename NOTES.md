@@ -4,15 +4,15 @@
 | | With a given style | Known style detection | Any style detection
 | - | - | - | - |
 | Add comment | yes | - | - 
-| Remove comment | 1 | 3 | 4
-| Update comment | 1 | 3 | 4
+| Remove comment | yes | 3 | 4
+| Update comment | yes | 3 | 4
 | Toggle comment | 2 | 3 | 4
 | Update lines | 2 | 3 | 4
 | Change style | no | 3 | 4
 
 ## Roadmap
 
-1. Support to remove / toggle / update a comment box
+1. (Done) Support to remove / update a comment box
 2. Detect boxes with the current selected style
 3. Support to detect comment boxes from all known styles, then use that to support all change operations
 4. Learn style from box example
