@@ -16,7 +16,9 @@ const {
     removeStyledCommentBox,
     dedentBy
 } = require('../../src/comment-box')
-const { mergeConfigurations } = require('../../src/extension')
+const {
+    mergeConfigurations
+} = require('../../src/extension')
 
 function* stylesCombination(start, variations) {
     if (variations.length === 0) {
@@ -24,13 +26,15 @@ function* stylesCombination(start, variations) {
         return;
     }
 
-    const [[property, options], ...otherVariations] = variations
+    const [
+        [property, options], ...otherVariations
+    ] = variations
     for (const option of options) {
         start[property] = option
         for (let style of stylesCombination(start, otherVariations)) {
             yield style
         }
-    } 
+    }
 }
 
 function removeCommonIndentation(string) {
@@ -63,6 +67,12 @@ function extend(objectA, objectB) {
 
 function trimLineStart(string) {
     return string.split("\n").map(l => l.trimStart()).join("\n")
+}
+
+function fakeDocument(text) {
+    const lines = text.split(/\n/g)
+
+    return (n) => n >= 0 && n < lines.length ? lines[n] : null;
 }
 
 // You can import and use all API from the 'vscode' module
@@ -215,7 +225,7 @@ suite("Helper Functions Tests", function () {
         eq(removeLineComment("13", "4", "", "4"), "13", "Basic test 5")
         eq(removeLineComment("123a", "123", "", ""), "a", "Basic test 6")
         eq(removeLineComment("a123", "", "", "123"), "a", "Basic test 7")
-        
+
         eq(removeLineComment("🐶❌🐱", "🐶", "", ""), "❌🐱", "Works with unicode 1")
         eq(removeLineComment("🐶❌🐱", "", "", "🐱"), "🐶❌", "Works with unicode 2")
         eq(removeLineComment("🐶❌🐱", "🐶", "", "🐱"), "❌", "Works with unicode 3")
@@ -225,333 +235,426 @@ suite("Helper Functions Tests", function () {
         eq(removeLineComment(" * hello *", " *", " ", "*"), "hello", "Complex test 2")
         eq(removeLineComment("🐶🐱🐶🐱hello🐱🐶🐱🐶", "", "🐶🐱", ""), "hello", "Complex test 3")
     })
+})
 
-    test("convertToCommentBox", function () {
-        const defaultStyle = {
-            startToken: "/*",
-            endToken: "**/",
-            topRightToken: "**",
-            bottomLeftToken: " **",
-            topEdgeToken: "*",
-            bottomEdgeToken: "*",
-            leftEdgeToken: " * ",
-            rightEdgeToken: " *",
-            fillingToken: " ",
-            width: 0,
-            textAlignment: "center",
-            removeEmptyLines: true,
-            ignoreOuterIndentation: true,
-            ignoreInnerIndentation: true,
-            tabSize: 4
-        }
+suite("Comment Functions Tests", function () {
+    const defaultStyle = {
+        startToken: "/*",
+        endToken: "**/",
+        topRightToken: "**",
+        bottomLeftToken: " **",
+        topEdgeToken: "*",
+        bottomEdgeToken: "*",
+        leftEdgeToken: " * ",
+        rightEdgeToken: " *",
+        fillingToken: " ",
+        width: 0,
+        textAlignment: "center",
+        removeEmptyLines: true,
+        ignoreOuterIndentation: true,
+        ignoreInnerIndentation: true,
+        tabSize: 4
+    }
 
-        assert.equal(convertToCommentBox("", defaultStyle), "\
+    const leftStyle = extend(defaultStyle, {
+        textAlignment: "left"
+    })
+
+    const fillingTokenStyle = extend(defaultStyle, {
+        fillingToken: "~"
+    })
+
+    const multiCharfillingStyle = extend(defaultStyle, {
+        fillingToken: "~-"
+    })
+
+    const fixedWidthStyle = extend(defaultStyle, {
+        width: 50,
+    })
+
+    const leftFixedWidthStyle = extend(defaultStyle, {
+        width: 30,
+        textAlignment: "left"
+    })
+
+    const outerIndentationStyle = extend(defaultStyle, {
+        ignoreOuterIndentation: false,
+        textAlignment: "left"
+    })
+
+    const keepIndentationStyle = extend(defaultStyle, {
+        ignoreInnerIndentation: false,
+        ignoreOuterIndentation: false,
+        textAlignment: "left"
+    })
+
+    const innerIndentationStyle = extend(defaultStyle, {
+        ignoreInnerIndentation: false,
+        textAlignment: "left"
+    })
+
+    const widthEightTabs = extend(defaultStyle, {
+        tabSize: 8
+    })
+
+    const noTopEdgeStyle = extend(defaultStyle, {
+        topEdgeToken: "",
+        startToken: "/* "
+    })
+
+    const noBottomEdgeStyle = extend(defaultStyle, {
+        bottomEdgeToken: "",
+        endToken: " */"
+    })
+
+    const pythonStyle = extend(defaultStyle, {
+        startToken: "#",
+        topEdgeToken: "#",
+        topRightToken: "##",
+        leftEdgeToken: "# ",
+        rightEdgeToken: " #",
+        bottomLeftToken: "",
+        bottomEdgeToken: "#",
+        endToken: "##"
+    })
+
+    const crazyStyle = extend(defaultStyle, {
+        startToken: "// I like to pre-comment my comments\n/*",
+        endToken: "*/\n// I like to post-comment my comments",
+        leftEdgeToken: " |",
+        rightEdgeToken: "|",
+        topEdgeToken: "=",
+        bottomEdgeToken: "=",
+        topRightToken: "+",
+        bottomLeftToken: " +",
+        fillingToken: "~-",
+        textAlignment: "center",
+    })
+
+    const testCases = [{
+            name: "Default works with an empty line.",
+            style: defaultStyle,
+            input: "",
+            result: "\
 /****\n\
  ****/\
-", "Default works with an empty line.")
-
-        assert.equal(convertToCommentBox("\n\n", defaultStyle), "\
+"
+        },
+        {
+            name: "Default works with multiple empty lines",
+            style: defaultStyle,
+            input: "\n\n",
+            result: "\
 /****\n\
  ****/\
-", "Default works with multiple empty lines")
-
-        assert.equal(convertToCommentBox("test", defaultStyle), "\
+"
+        },
+        {
+            name: "Default works with a normal comment.",
+            style: defaultStyle,
+            input: "test",
+            result: "\
 /********\n\
  * test *\n\
  ********/\
-", "Default works with a normal comment.")
-
-        assert.equal(convertToCommentBox("test\nmultiple lines", defaultStyle), "\
+"
+        },
+        {
+            name: "Default works with a multi-line comment 1.",
+            style: defaultStyle,
+            input: "test\nmultiple lines",
+            result: "\
 /******************\n\
  *      test      *\n\
  * multiple lines *\n\
  ******************/\
-", "Default works with a multi-line comment 1.")
-
-        assert.equal(convertToCommentBox("multiple lines\n test", defaultStyle), "\
+"
+        },
+        {
+            name: "Default works with a multi-line comment 2",
+            style: defaultStyle,
+            input: "multiple lines\n test",
+            result: "\
 /******************\n\
  * multiple lines *\n\
  *      test      *\n\
  ******************/\
-", "Default works with a multi-line comment 2")
-
-        assert.equal(convertToCommentBox("really\ntest\nmultiple lines", defaultStyle), "\
+"
+        },
+        {
+            name: "Default works with a multi-line comment 3.",
+            style: defaultStyle,
+            input: "really\ntest\nmultiple lines",
+            result: "\
 /******************\n\
  *     really     *\n\
  *      test      *\n\
  * multiple lines *\n\
  ******************/\
-", "Default works with a multi-line comment 3.")
-
-
-
-        const leftStyle = extend(defaultStyle, {
-            textAlignment: "left"
-        })
-
-        assert.equal(convertToCommentBox("", leftStyle), "\
+"
+        },
+        {
+            name: "Left alignment works with an empty line.",
+            style: leftStyle,
+            input: "",
+            result: "\
 /****\n\
  ****/\
-", "Left alignment works with an empty line.")
-
-        assert.equal(convertToCommentBox("\n\n", leftStyle), "\
+"
+        },
+        {
+            name: "Left alignment works with multiple empty lines",
+            style: leftStyle,
+            input: "\n\n",
+            result: "\
 /****\n\
  ****/\
-", "Left alignment works with multiple empty lines")
-
-        assert.equal(convertToCommentBox("test", leftStyle), "\
+"
+        },
+        {
+            name: "Left alignment works with a normal comment.",
+            style: leftStyle,
+            input: "test",
+            result: "\
 /********\n\
  * test *\n\
  ********/\
-", "Left alignment works with a normal comment.")
-
-        assert.equal(convertToCommentBox("test\nmultiple lines", leftStyle), "\
+"
+        },
+        {
+            name: "Left alignment works with a multi-line comment 1.",
+            style: leftStyle,
+            input: "test\nmultiple lines",
+            result: "\
 /******************\n\
  * test           *\n\
  * multiple lines *\n\
  ******************/\
-", "Left alignment works with a multi-line comment 1.")
-
-        assert.equal(convertToCommentBox("multiple lines\n test", leftStyle), "\
+"
+        },
+        {
+            name: "Left alignment works with a multi-line comment 2",
+            style: leftStyle,
+            input: "multiple lines\n test",
+            result: "\
 /******************\n\
  * multiple lines *\n\
  * test           *\n\
  ******************/\
-", "Left alignment works with a multi-line comment 2")
-
-        assert.equal(convertToCommentBox("really\ntest\nmultiple lines", leftStyle), "\
+"
+        },
+        {
+            name: "Left alignment works with a multi-line comment 3.",
+            style: leftStyle,
+            input: "really\ntest\nmultiple lines",
+            result: "\
 /******************\n\
  * really         *\n\
  * test           *\n\
  * multiple lines *\n\
  ******************/\
-", "Left alignment works with a multi-line comment 3.")
-
-
-
-        const fillingTokenStyle = extend(defaultStyle, {
-            fillingToken: "~"
-        })
-
-        assert.equal(convertToCommentBox("really\ntest\nmultiple lines", fillingTokenStyle), "\
+"
+        },
+        {
+            name: "Filling token works.",
+            style: fillingTokenStyle,
+            input: "really\ntest\nmultiple lines",
+            result: "\
 /******************\n\
  * ~~~~really~~~~ *\n\
  * ~~~~~test~~~~~ *\n\
  * multiple lines *\n\
  ******************/\
-", "Filling token works.")
-
-
-
-        const multiCharfillingStyle = extend(defaultStyle, {
-            fillingToken: "~-"
-        })
-
-        assert.equal(convertToCommentBox("test\nusing a really really long line", multiCharfillingStyle), "\
+"
+        },
+        {
+            name: "Filling token works with multiple characters.",
+            style: multiCharfillingStyle,
+            input: "test\nusing a really really long line",
+            result: "\
 /***********************************\n\
  * ~-~-~-~-~-~-~test-~-~-~-~-~-~-~ *\n\
  * using a really really long line *\n\
  ***********************************/\
-", "Filling token works with multiple characters.")
-
-
-        const fixedWidthStyle = extend(defaultStyle, {
-            width: 50,
-        })
-
-        assert.equal(convertToCommentBox("", fixedWidthStyle), "\
+"
+        },
+        {
+            name: "Fixed width works with an empty comment.",
+            style: fixedWidthStyle,
+            input: "",
+            result: "\
 /*************************************************\n\
  *************************************************/\
-", "Fixed width works with an empty comment.")
-
-        assert.equal(convertToCommentBox("test", fixedWidthStyle), "\
+"
+        },
+        {
+            name: "Fixed width works with a normal comment.",
+            style: fixedWidthStyle,
+            input: "test",
+            result: "\
 /*************************************************\n\
  *                     test                      *\n\
  *************************************************/\
-", "Fixed width works with a normal comment.")
-
-        assert.equal(convertToCommentBox("test\nwith multiple lines", fixedWidthStyle), "\
+"
+        },
+        {
+            name: "Fixed width works with multi-line comment 1.",
+            style: fixedWidthStyle,
+            input: "test\nwith multiple lines",
+            result: "\
 /*************************************************\n\
  *                     test                      *\n\
  *              with multiple lines              *\n\
  *************************************************/\
-", "Fixed width works with multi-line comment 1.")
-
-        assert.equal(convertToCommentBox("really\ntest\nmultiple lines", fixedWidthStyle), "\
+"
+        },
+        {
+            name: "Fixed width works with multi-line comment 3.",
+            style: fixedWidthStyle,
+            input: "really\ntest\nmultiple lines",
+            result: "\
 /*************************************************\n\
  *                    really                     *\n\
  *                     test                      *\n\
  *                multiple lines                 *\n\
  *************************************************/\
-", "Fixed width works with multi-line comment 3.")
-
-
-
-        const leftFixedWidthStyle = extend(defaultStyle, {
-            width: 30,
-            textAlignment: "left"
-        })
-
-        assert.equal(convertToCommentBox("really\ntest\nmultiple lines", leftFixedWidthStyle), "\
+"
+        },
+        {
+            name: "Left aligned fixed width works with multi-line comment.",
+            style: leftFixedWidthStyle,
+            input: "really\ntest\nmultiple lines",
+            result: "\
 /*****************************\n\
  * really                    *\n\
  * test                      *\n\
  * multiple lines            *\n\
  *****************************/\
-", "Left aligned fixed width works with multi-line comment.")
-
-
-
-        const outerIndentationStyle = extend(defaultStyle, {
-            ignoreOuterIndentation: false,
-            textAlignment: "left"
-        })
-
-        assert.equal(convertToCommentBox("\treally\n\ttest\n\tmultiple lines", outerIndentationStyle), "\
+"
+        },
+        {
+            name: "Keeping outer indentation intact.",
+            style: outerIndentationStyle,
+            input: "\treally\n\ttest\n\tmultiple lines",
+            result: "\
     /******************\n\
      * really         *\n\
      * test           *\n\
      * multiple lines *\n\
      ******************/\
-", "Keeping outer indentation intact.")
-
-
-
-        const innerIndentationStyle = extend(defaultStyle, {
-            ignoreInnerIndentation: false,
-            textAlignment: "left"
-        })
-
-        assert.equal(convertToCommentBox("really\n\ttest\n\tmultiple lines", innerIndentationStyle), "\
+"
+        },
+        {
+            name: "Keeping inner indentation intact.",
+            style: innerIndentationStyle,
+            input: "really\n\ttest\n\tmultiple lines",
+            result: "\
 /**********************\n\
  * really             *\n\
  *     test           *\n\
  *     multiple lines *\n\
  **********************/\
-", "Keeping inner indentation intact.")
-
-
-
-        const keepIndentationStyle = extend(defaultStyle, {
-            ignoreInnerIndentation: false,
-            ignoreOuterIndentation: false,
-            textAlignment: "left"
-        })
-
-        assert.equal(convertToCommentBox("\treally\n\t\ttest\n\t\tmultiple lines", keepIndentationStyle), "\
+"
+        },
+        {
+            name: "Keeping indentation intact 1.",
+            style: keepIndentationStyle,
+            input: "\treally\n\t\ttest\n\t\tmultiple lines",
+            result: "\
     /**********************\n\
      * really             *\n\
      *     test           *\n\
      *     multiple lines *\n\
      **********************/\
-", "Keeping indentation intact 1.")
-
-        assert.equal(convertToCommentBox("\t\tmultiple lines\n\treally\n\t\ttest", keepIndentationStyle), "\
+"
+        },
+        {
+            name: "Keeping indentation intact 2.",
+            style: keepIndentationStyle,
+            input: "\t\tmultiple lines\n\treally\n\t\ttest",
+            result: "\
     /**********************\n\
      *     multiple lines *\n\
      * really             *\n\
      *     test           *\n\
      **********************/\
-", "Keeping indentation intact 2.")
-
-
-
-        const widthEightTabs = extend(defaultStyle, {
-            tabSize: 8
-        })
-
-        assert.equal(convertToCommentBox("tabs\tin\tthe\tmiddle", widthEightTabs), "\
+"
+        },
+        {
+            name: "Correctly handles text with tabs.",
+            style: widthEightTabs,
+            input: "tabs\tin\tthe\tmiddle",
+            result: "\
 /**********************************\n\
  * tabs    in      the     middle *\n\
  **********************************/\
-", "Correctly handles text with tabs.")
-
-        assert.equal(convertToCommentBox("spaces  and     \ttabs\nwith\tmultiple\tlines", widthEightTabs), "\
+"
+        },
+        {
+            name: "Correctly handles text with tabs and spaces, even with multiple lines.",
+            style: widthEightTabs,
+            input: "spaces  and     \ttabs\nwith\tmultiple\tlines",
+            result: "\
 /*********************************\n\
  * spaces  and             tabs  *\n\
  * with    multiple        lines *\n\
  *********************************/\
-", "Correctly handles text with tabs and spaces, even with multiple lines.")
-
-
-
-        const noTopEdgeStyle = extend(defaultStyle, {
-            topEdgeToken: "",
-            startToken: "/* "
-        })
-
-        assert.equal(convertToCommentBox("test", noTopEdgeStyle), "\
+"
+        },
+        {
+            name: "Correctly skips the top edge when top edge token is empty.",
+            style: noTopEdgeStyle,
+            input: "test",
+            result: "\
 /* test *\n\
  ********/\
-", "Correctly skips the top edge when top edge token is empty.")
-
-
-
-        const noBottomEdgeStyle = extend(defaultStyle, {
-            bottomEdgeToken: "",
-            endToken: " */"
-        })
-
-        assert.equal(convertToCommentBox("test", noBottomEdgeStyle), "\
+"
+        },
+        {
+            name: "Correctly skips the bottom edge when bottom edge token is empty.",
+            style: noBottomEdgeStyle,
+            input: "test",
+            result: "\
 /********\n\
  * test */\
-", "Correctly skips the bottom edge when bottom edge token is empty.")
-
-
-
-        const pythonStyle = extend(defaultStyle, {
-            startToken: "#",
-            topEdgeToken: "#",
-            topRightToken: "##",
-            leftEdgeToken: "# ",
-            rightEdgeToken: " #",
-            bottomLeftToken: "",
-            bottomEdgeToken: "#",
-            endToken: "##"
-        })
-
-        assert.equal(convertToCommentBox("this is a\nmulti-line comment example", pythonStyle), "\
+"
+        },
+        {
+            name: "Correctly draws a Python style comment.",
+            style: pythonStyle,
+            input: "this is a\nmulti-line comment example",
+            result: "\
 ##############################\n\
 #         this is a          #\n\
 # multi-line comment example #\n\
 ##############################\
-", "Correctly draws a Python style comment.")
-
-
-
-        const crazyStyle = extend(defaultStyle, {
-            startToken: "// I like to pre-comment my comments\n/*",
-            endToken: "*/\n// I like to post-comment my comments",
-            leftEdgeToken: " |",
-            rightEdgeToken: "|",
-            topEdgeToken: "=",
-            bottomEdgeToken: "=",
-            topRightToken: "+",
-            bottomLeftToken: " +",
-            fillingToken: "~-",
-            textAlignment: "center",
-        })
-
-        assert.equal(convertToCommentBox("I LIVE ON THE EDGE\nSEE?", crazyStyle), "\
+"
+        },
+        {
+            name: "Correctly draws a Python style comment.",
+            style: crazyStyle,
+            input: "I LIVE ON THE EDGE\nSEE?",
+            result: "\
 // I like to pre-comment my comments\n\
 /*==================+\n\
  |I LIVE ON THE EDGE|\n\
  |~-~-~-~SEE?~-~-~-~|\n\
  +==================*/\n\
 // I like to post-comment my comments\
-", "Correctly draws a Python style comment.")
-
-
-
-        // Just for the unicode version
-        assert.equal(convertToCommentBox("\
+"
+        },
+        {
+            name: "Works with unicode characters whose width differs from their length.",
+            style: defaultStyle,
+            input: "\
 あ          \n\
 ああ        \n\
 あああ      \n\
 ああああ    \n\
 あああああ  \n\
 ああああああ\
-", defaultStyle), "\
+",
+            result: "\
 /****************\n\
  *      あ      *\n\
  *     ああ     *\n\
@@ -560,9 +663,19 @@ suite("Helper Functions Tests", function () {
  *  あああああ  *\n\
  * ああああああ *\n\
  ****************/\
-", "Works with unicode characters whose width differs from their length.")
+"
+        }
+    ]
 
-
+    test("addCommentBox", function () {
+        testCases.forEach(({
+            name,
+            style,
+            input,
+            result
+        }) => {
+            assert.strictEqual(convertToCommentBox(input, style), result, name)
+        })
     })
 
     test("removeCommentBox", function () {
@@ -591,7 +704,7 @@ suite("Helper Functions Tests", function () {
         ])
 
         const strings = [
-`
+            `
 hello
 `, `
 hi
@@ -630,7 +743,7 @@ there
                 let expected = string
                 let result = newString
 
-                if (style.textAlignment === "center" || 
+                if (style.textAlignment === "center" ||
                     style.ignoreInnerIndentation && style.ignoreOuterIndentation) {
                     expected = trimLineStart(expected)
                     result = result
