@@ -168,15 +168,30 @@ function padToCenter(string, width, token) {
  * @param {string} end
  * @returns {boolean}
  */
-function isTopOrBottonLine(string, start, fill, end) {
+function isCommentEdge(string, start, fill, end) {
+    let index = string.indexOf(start)
+    if (index === -1 || !string.endsWith(end)) {
+        return false
+    }
+
+    for (let i = 0; i < index; i++) {
+        if (string[i] !== ' ' && string[i] !== '\t') {
+            return false
+        }
+    }
+
+    const mid = string.slice(index + start.length, -end.length)
+    const fillCP = splitByCharPoints(fill)
+
+    return splitByCharPoints(mid).every(cp => fillCP.includes(cp))
+}
+
+function isCommentLine(string, start, fill, end) {
     if (!string.startsWith(start) || !string.endsWith(end)) {
         return false
     }
 
-    const mid = string.slice(start.length, -end.length)
-    const fillCP = splitByCharPoints(fill)
-
-    return splitByCharPoints(mid).every(cp => fillCP.includes(cp))
+    return true
 }
 
 /**
@@ -403,14 +418,126 @@ function convertToCommentBox(text, options) {
     return result;
 }
 
+function matchesTopEdge(line, options) {
+    const hasHardTopEdge = options.topEdgeToken !== ''
+    const hasHardBottomEdge = options.bottomEdgeToken !== ''
+
+    if (hasHardTopEdge) {
+        return isCommentEdge(
+            line,
+            options.startToken,
+            options.topEdgeToken,
+            options.topRightToken
+        )
+    }
+
+    return isCommentLine(
+        line,
+        options.startToken,
+        options.fillingToken,
+        options.rightEdgeToken
+    ) || (hasHardBottomEdge && isCommentLine(
+        line,
+        options.startToken,
+        options.fillingToken,
+        options.endToken
+    ))
+}
+
+function matchesBottomEdge(line, options) {
+    const hasHardTopEdge = options.topEdgeToken !== ''
+    const hasHardBottomEdge = options.bottomEdgeToken !== ''
+
+    if (hasHardBottomEdge) {
+        return isCommentEdge(
+            line,
+            options.bottomLeftToken,
+            options.bottomEdgeToken,
+            options.endToken
+        )
+    } else {
+        return isCommentLine(
+            line,
+            options.leftEdgeToken,
+            options.fillingToken,
+            options.endToken
+        ) || (hasHardTopEdge && isCommentLine(
+            line,
+            options.startToken,
+            options.fillingToken,
+            options.endToken
+        ))
+    }
+}
+
+function findStyledCommentStart(selectionStart, selectionEnd, options, getLine) {
+    for (let line = selectionStart; line <= selectionEnd; line++) {
+        const lineText = getLine(line)
+
+        if (matchesTopEdge(lineText, options)) {
+            return line
+        }
+    }
+
+    // Didn't find comment start, look outside the selection
+    for (let line = selectionStart - 1;; line--) {
+        const lineText = getLine(line)
+
+        if (lineText === null) {
+            return null
+        }
+
+        if (matchesTopEdge(lineText, options)) {
+            return line
+        }
+    }
+}
+
+function findStyledCommentEnd(selectionStart, selectionEnd, options, getLine) {
+    for (let line = selectionEnd; line >= selectionStart; line--) {
+        const lineText = getLine(line)
+
+        if (matchesBottomEdge(lineText, options)) {
+            return line
+        }
+    }
+
+    // Didn't find comment start, look outside the selection
+    for (let line = selectionEnd + 1;; line++) {
+        const lineText = getLine(line)
+
+        if (lineText === null) {
+            return null
+        }
+
+        if (matchesBottomEdge(lineText, options)) {
+            return line
+        }
+    }
+}
+
 /**
  * Add lines to styled comment box
  * 
- * @param {string} text
+ * @param {number} selectionStart
+ * @param {number} selectionEnd
  * @param {BoxStyle} options
+ * @param {function(number):string} getLine
  */
-function addLinesToStyledCommentBox(text, options) {
+function findStyledCommentBox(selectionStart, selectionEnd, options, getLine) {
+    const start = findStyledCommentStart(selectionStart, selectionEnd, options, getLine)
 
+    if (start === null) {
+        return null
+    }
+
+    const end = findStyledCommentEnd(selectionStart, selectionEnd, options, getLine)
+
+    if (end === null) {
+        return null
+    }
+
+    return [start, end]
 }
 
 /**
@@ -460,8 +587,8 @@ function removeStyledCommentBox(text, options) {
     let inBox = false
     lines.forEach(line => {
         const matched = inBox ?
-            isTopOrBottonLine(line, startToken, topEdgeToken, topRightToken) :
-            isTopOrBottonLine(line, bottomLeftToken, bottomEdgeToken, endToken)
+            isCommentEdge(line, startToken, topEdgeToken, topRightToken) :
+            isCommentEdge(line, bottomLeftToken, bottomEdgeToken, endToken)
 
         if (matched) {
             inBox = !inBox
@@ -475,8 +602,8 @@ function removeStyledCommentBox(text, options) {
         }
 
         const matchedEnd = inBox ?
-            isTopOrBottonLine(line, bottomLeftToken, bottomEdgeToken, endToken) :
-            isTopOrBottonLine(line, startToken, topEdgeToken, topRightToken)
+            isCommentEdge(line, bottomLeftToken, bottomEdgeToken, endToken) :
+            isCommentEdge(line, startToken, topEdgeToken, topRightToken)
 
         if (matchedEnd) {
             return;
@@ -506,7 +633,8 @@ module.exports = {
 
     // User functions
     convertToCommentBox,
-    removeStyledCommentBox
+    removeStyledCommentBox,
+    findStyledCommentBox
 }
 
 /** END **/

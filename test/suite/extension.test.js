@@ -14,6 +14,7 @@ const {
     removeLineComment,
     convertToCommentBox,
     removeStyledCommentBox,
+    findStyledCommentBox,
     dedentBy
 } = require('../../src/comment-box')
 const {
@@ -754,6 +755,25 @@ there
                 assert.strictEqual(trimLineStart(string), trimLineStart(newString), "\n" + comment)
             }
         }
+    })
+
+    test("findCommentBox", function () {
+        testCases.forEach(({
+            name,
+            style,
+            result
+        }) => {
+            if (style.startToken.indexOf('\n') !== -1 || style.endToken.indexOf('\n') !== -1) {
+                return
+            }
+
+            const nbLines = (result.match(/\n/g) || '').length + 1
+            const slice = findStyledCommentBox(0, nbLines - 1, style, fakeDocument(result))
+
+            assert.ok(slice, name)
+            assert.strictEqual(0, slice[0], name)
+            assert.strictEqual(nbLines - 1, slice[1], name)
+        })
     })
 })
 
