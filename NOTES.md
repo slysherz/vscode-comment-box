@@ -7,7 +7,6 @@
 | Remove comment | yes | 3 | 4
 | Update comment | yes | 3 | 4
 | Toggle comment | 2 | 3 | 4
-| Update lines | 2 | 3 | 4
 | Change style | no | 3 | 4
 
 ## Roadmap
