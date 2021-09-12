@@ -5,7 +5,9 @@
 const vscode = require('vscode')
 const {
     convertToCommentBox,
-    removeStyledCommentBox
+    removeStyledCommentBox,
+    updateStyledCommentBox,
+    findStyledCommentBox
 } = require('./comment-box')
 
 /**
@@ -31,7 +33,9 @@ const {
  * @property {boolean} ignoreInnerIndentation
  */
 
-function ignore() { /* Do nothing */ }
+function ignore() {
+    /* Do nothing */
+}
 
 /**
  * Find the tab size for the current document
@@ -148,7 +152,7 @@ function configurationToStyle(configuration, tabSize) {
 
 function getExtendedSelection(editor, lineStart, lineEnd) {
     let last = editor.document.lineAt(lineEnd).range.end.character
-    let selection = new (vscode.Selection)(
+    let selection = new(vscode.Selection)(
         lineStart,
         0,
         lineEnd,
@@ -157,7 +161,7 @@ function getExtendedSelection(editor, lineStart, lineEnd) {
     return selection;
 }
 
-function getSelectionWithContext(editor, selection, extendSelection, contextSize) {
+function userSelection(editor, selection, options, extendSelection) {
     const startLine = selection.start.line
     const endLine = selection.end.line
 
@@ -166,17 +170,34 @@ function getSelectionWithContext(editor, selection, extendSelection, contextSize
         // last character of the last line
         selection = getExtendedSelection(editor, startLine, endLine)
     }
-    
-    const contextBeforeSelection = editor.document.getText(
-        getExtendedSelection(editor, startLine - contextSize, startLine))
-    const contextAfterSelection = editor.document.getText(
-        getExtendedSelection(editor, endLine, endLine + contextSize))
 
     return {
-        selection, 
+        selection,
         selectionText: editor.document.getText(selection),
-        before: contextBeforeSelection.text,
-        after: contextAfterSelection.text
+        annotatedLines: null
+    }
+}
+
+function findCommentSelection(editor, selection, options, extendSelection) {
+    const getLine = function getLine(n) {
+        if (n < 0 || n >= editor.document.lineCount) {
+            return null
+        }
+
+        return editor.document.lineAt(n).text
+    }
+
+    const startLine = selection.start.line
+    const endLine = selection.end.line
+    const slice = findStyledCommentBox(selection.start.line, selection.end.line, options, getLine)
+
+    selection = slice ?
+        getExtendedSelection(editor, slice[0], slice[1]) :
+        getExtendedSelection(editor, startLine, endLine)
+
+    return {
+        selection,
+        selectionText: editor.document.getText(selection),
     }
 }
 
@@ -184,15 +205,18 @@ function getSelectionWithContext(editor, selection, extendSelection, contextSize
  * Creates a function that looks at the current editor, and applies a transformation to all
  * current text selections
  */
-function newTransformation(transformer) {
+function newTransformation(transformer, getSelection) {
     return function (editor, configuration) {
         const editOperations = editor.selections.map((current) => {
+            let style = configurationToStyle(configuration, getTabSize())
+
             let {
                 selection,
-                selectionText: text
-            } = getSelectionWithContext(editor, current, configuration.extendSelection, 0)
+                selectionText: text,
+                annotatedLines
+            } = getSelection(editor, current, style, configuration.extendSelection)
 
-            text = transformer(text, configurationToStyle(configuration, getTabSize()))
+            text = transformer(text, style, annotatedLines)
 
             return {
                 text,
@@ -267,8 +291,7 @@ function pickedStyleCommand(transformation) {
             const configuration = mergeConfigurations([style])
 
             transformation(editor, configuration)
-        }
-        else {
+        } else {
             // No style was passed, ask the user
             vscode.window.showQuickPick(styleNames).then((styleName) => {
                 if (!styleName) {
@@ -343,30 +366,23 @@ function tryGetConfiguration(baseConfig, styleName, checked = []) {
     return mergeConfigurations([...parentStyles, style])
 }
 
-function updateStyledCommentBox(text, options) {
-    return convertToCommentBox(
-        removeStyledCommentBox(text, options),
-        options
-    )
-}
-
 // When the extension is activated
 function activate(context) {
     const commands = [
-        ['commentBox.add', defaultStyleCommand, convertToCommentBox],
-        ['commentBox.remove', defaultStyleCommand, removeStyledCommentBox],
-        ['commentBox.update', defaultStyleCommand, updateStyledCommentBox],
-        ['commentBox.addUsingStyle', pickedStyleCommand, convertToCommentBox],
-        ['commentBox.removeUsingStyle', pickedStyleCommand, removeStyledCommentBox],
-        ['commentBox.updateUsingStyle', pickedStyleCommand, updateStyledCommentBox],
+        ['commentBox.add', defaultStyleCommand, userSelection, convertToCommentBox],
+        ['commentBox.remove', defaultStyleCommand, findCommentSelection, removeStyledCommentBox],
+        ['commentBox.update', defaultStyleCommand, findCommentSelection, updateStyledCommentBox],
+        ['commentBox.addUsingStyle', pickedStyleCommand, userSelection, convertToCommentBox],
+        ['commentBox.removeUsingStyle', pickedStyleCommand, findCommentSelection, removeStyledCommentBox],
+        ['commentBox.updateUsingStyle', pickedStyleCommand, findCommentSelection, updateStyledCommentBox],
         // Deprecated
-        ['extension.commentBox', defaultStyleCommand, convertToCommentBox],
-        ['commentBox.transformUsingStyle', pickedStyleCommand, convertToCommentBox]
+        ['extension.commentBox', defaultStyleCommand, userSelection, convertToCommentBox],
+        ['commentBox.transformUsingStyle', pickedStyleCommand, userSelection, convertToCommentBox]
     ]
 
-    for (const [name, command, transformer] of commands) {
-        const transformation = newTransformation(transformer)
-        
+    for (const [name, command, selection, transformer] of commands) {
+        const transformation = newTransformation(transformer, selection)
+
         context.subscriptions.push(vscode.commands.registerCommand(
             name,
             command(transformation)

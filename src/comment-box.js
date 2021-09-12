@@ -1,13 +1,110 @@
 // @ts-check
 "use strict"
 
-// When working with strings, we use two similar but different concepts:
-// length: the number of characters the string contains.
-// width: the amount of space that the string takes, measured in spaces.
-// For some special characters (newlines, unicode) these do not match and we need to think carefully
-// about which one we're using.
+/**
+ * Box layout
+ * 
+ * The symbol '~' means that we repeat the token until it aligns with the other lines.
+ * 
+ *          [startToken][~~~~~~~~~~~~~~~~topEdgeToken~~~~~~~~~~~~~][topRightToken]
+ * Repeat:  [leftEdgeToken][~fillingToken~~][line][~~fillingToken~][rightEdgeToken]
+ *          [bottomLeftToken][~~~~~~~~~~bottomEdgeToken~~~~~~~~~~~][endToken]
+ * 
+ * If 'topEdgeToken' or 'bottomEdgeToken' is set to an empty string, we'll skip drawing the
+ * first or last line respectively.
+ * 
+ * 
+ * When working with strings, we use two similar but different concepts:
+ *  - length: the number of characters the string contains.
+ *  - width: the amount of space that the string takes, measured in spaces.
+ * 
+ * For some special characters (newlines, unicode) these do not match and we need to think carefully
+ * about which one we're using.
+ */
+
+/**
+ * @typedef BoxStyle
+ * @property {boolean} capitalize
+ * @property {string} startToken
+ * @property {string} endToken
+ * @property {string} topRightToken
+ * @property {string} bottomLeftToken
+ * @property {string} topEdgeToken
+ * @property {string} bottomEdgeToken
+ * @property {string} leftEdgeToken
+ * @property {string} rightEdgeToken
+ * @property {string} fillingToken
+ * @property {number} width
+ * @property {string} textAlignment
+ * @property {boolean} removeEmptyLines
+ * @property {boolean} ignoreOuterIndentation
+ * @property {boolean} ignoreInnerIndentation
+ * @property {number} tabSize
+ * 
+ * @typedef AnnotatedLine
+ * @property {string?} indentation
+ * @property {string?} startToken
+ * @property {string?} leftFill
+ * @property {string} text
+ * @property {string?} rightFill
+ * @property {string?} endToken
+ * 
+ * @typedef AnnotatedSelection
+ * @property {number[]} selection
+ * @property {AnnotatedLine[]} annotatedLines
+ */
 
 const stringWidth = require("string-width")
+const lineType = Object.freeze({
+    EDGE: 1,
+    MID: 2,
+    NOT_COMMENT: 3
+})
+
+function splitAt(array, pred) {
+    let first = []
+    let second = []
+
+    let cut = false
+    for (let i = 0; i < array.length; i++) {
+        cut = cut || pred(array[i])
+
+        let arr = cut ? second : first
+        arr.push(array[i])
+    }
+
+    return [first, second]
+}
+
+function splitAtLast(array, pred) {
+    let first = []
+    let second = []
+
+    let cut = array.length
+    for (let i = array.length - 1; i >= 0; i--) {
+        if (pred(array[i])) {
+            cut = i;
+            break;
+        }
+    }
+
+    for (let i = 0; i < array.length; i++) {
+        let arr = i <= cut ? first : second
+        arr.push(array[i])
+    }
+
+    return [first, second]
+}
+
+function findLastIndex(array, pred) {
+    for (let i = array.length - 1; i => 0; i--) {
+        if (pred(array[i])) {
+            return i
+        }
+    }
+
+    return -1
+}
 
 /**
  * Generates a list with the string character by character
@@ -93,15 +190,6 @@ function reverseString(string) {
     return splitByCharPoints(string).reverse().join("")
 }
 
-function findLastIndex(array, predicate) {
-    let l = array.length;
-    while (l--) {
-        if (predicate(array[l], l, array))
-            return l;
-    }
-    return -1;
-}
-
 /**
  * Calculates the width of the last line on a string.
  * @todo Change this so it also works with '\r'
@@ -162,138 +250,175 @@ function padToCenter(string, width, token) {
 }
 
 /**
+ * Annotate a line as not being a comment
+ * @param {string} text
+ * @returns {AnnotatedLine}
+ */
+function noCommentLine(text) {
+    return {
+        indentation: null,
+        startToken: null,
+        leftFill: null,
+        text: text,
+        rightFill: null,
+        endToken: null
+    }
+}
+
+/**
+ * Checks if a given line matches the tokens for a the first or last line of a comment box
  * @param {string} string
  * @param {string} start
  * @param {string} fill
  * @param {string} end
- * @returns {boolean}
+ * @returns {AnnotatedLine?}
  */
-function isCommentEdge(string, start, fill, end) {
+function matchCommentEdge(string, start, fill, end) {
     let index = string.indexOf(start)
     if (index === -1 || !string.endsWith(end)) {
-        return false
+        return null
     }
 
     for (let i = 0; i < index; i++) {
         if (string[i] !== ' ' && string[i] !== '\t') {
-            return false
+            return null
         }
     }
 
     const mid = string.slice(index + start.length, -end.length)
     const fillCP = splitByCharPoints(fill)
 
-    return splitByCharPoints(mid).every(cp => fillCP.includes(cp))
-}
-
-function isCommentLine(string, start, fill, end) {
-    if (!string.startsWith(start) || !string.endsWith(end)) {
-        return false
+    if (!splitByCharPoints(mid).every(cp => fillCP.includes(cp))) {
+        return null
     }
 
-    return true
-}
-
-/**
- * @param {string} string
- * @param {string} start
- * @param {string} end
- * @returns {[number, number]|null} [start, end] if it is a comment line, null otherwise
- */
-function matchLineComment(string, start, end) {
-    const iStart = string.search(start)
-
-    if (iStart === -1) {
-        return null;
+    return {
+        indentation: string.slice(0, index),
+        startToken: start,
+        leftFill: mid,
+        text: null,
+        rightFill: null,
+        endToken: end
     }
-
-    const iEnd = string.lastIndexOf(end)
-
-    if (iEnd === -1) {
-        return null;
-    }
-
-    if (iStart + start.length > iEnd) {
-        return null;
-    }
-
-    return [iStart + start.length, iEnd];
 }
 
 /**
+ * Checks if a given line matches the tokens for a middle line of a comment box
  * @param {string} string
  * @param {string} start
  * @param {string} fill
  * @param {string} end
+ * @returns {AnnotatedLine?}
  */
-function removeLineComment(string, start, fill, end, keepSpace = false) {
-    const commentPos = matchLineComment(string, start, end)
-
-    // If these don't match, we leave the line as it is
-    if (!commentPos) {
-        return string
+function matchCommentLine(string, start, fill, end) {
+    const index = string.indexOf(start)
+    if (index === -1 || !string.endsWith(end)) {
+        return null
     }
 
-    const [comStart, comEnd] = commentPos
-
-    // Remove the start and end of the comment
-    const innerStr = string.slice(comStart, comEnd)
-
-    if (stringWidth(fill) === 0) {
-        return innerStr;
+    // Before the start, it's indentation only
+    for (let i = 0; i < index; i++) {
+        if (string[i] !== ' ' && string[i] !== '\t') {
+            return null
+        }
     }
 
+    const mid = string.slice(index + start.length, -end.length)
     const fillCP = splitByCharPoints(fill)
+    const [leftFill, rest] = splitAt(splitByCharPoints(mid), c => !fillCP.includes(c))
+    const [midText, rightFill] = splitAtLast(rest, (c) => !fillCP.includes(c))
 
-    let skipped = ""
-    let result = innerStr
-    for (let i = 0; result.length; i++) {
-        const token = fillCP[i % fillCP.length]
-
-        if (!result.startsWith(token)) {
-            break
-        }
-
-        result = result.slice(token.length)
-        skipped += token
+    return {
+        indentation: string.slice(0, index),
+        startToken: start,
+        leftFill: leftFill.join(''),
+        text: midText.join(''),
+        rightFill: rightFill.join(''),
+        endToken: end
     }
-
-    for (let i = 0; result.length; i++) {
-        const token = fillCP[i % fillCP.length]
-
-        if (!result.endsWith(token)) {
-            break
-        }
-
-        result = result.slice(0, result.length - token.length)
-    }
-
-    const spaces = keepSpace ?
-        stringWidth(skipped) :
-        0
-
-    return " ".repeat(spaces) + result
 }
 
 /**
- * @typedef BoxStyle
- * @property {boolean} capitalize
- * @property {string} startToken
- * @property {string} endToken
- * @property {string} topRightToken
- * @property {string} bottomLeftToken
- * @property {string} topEdgeToken
- * @property {string} bottomEdgeToken
- * @property {string} leftEdgeToken
- * @property {string} rightEdgeToken
- * @property {string} fillingToken
- * @property {number} width
- * @property {string} textAlignment
- * @property {boolean} removeEmptyLines
- * @property {boolean} ignoreOuterIndentation
- * @property {boolean} ignoreInnerIndentation
- * @property {number} tabSize
- * 
+ * Checks if a given line matches the top edge of a comment box with a given style
+ * @param {string} line
+ * @param {BoxStyle} options
+ * @returns {AnnotatedLine?}
+ */
+function matchTopEdge(line, options) {
+    const hasHardTopEdge = options.topEdgeToken !== ''
+    const hasHardBottomEdge = options.bottomEdgeToken !== ''
+
+    if (hasHardTopEdge) {
+        return matchCommentEdge(
+            line,
+            options.startToken,
+            options.topEdgeToken,
+            options.topRightToken
+        )
+    }
+
+    return matchCommentLine(
+        line,
+        options.startToken,
+        options.fillingToken,
+        options.rightEdgeToken
+    ) || (hasHardBottomEdge && matchCommentLine(
+        line,
+        options.startToken,
+        options.fillingToken,
+        options.endToken
+    ))
+}
+
+
+/**
+ * Checks if a given line matches the bottom edge of a comment box with a given style
+ * @param {string} line
+ * @param {BoxStyle} options
+ * @returns {AnnotatedLine?}
+ */
+function matchBottomEdge(line, options) {
+    const hasHardTopEdge = options.topEdgeToken !== ''
+    const hasHardBottomEdge = options.bottomEdgeToken !== ''
+
+    if (hasHardBottomEdge) {
+        return matchCommentEdge(
+            line,
+            options.bottomLeftToken,
+            options.bottomEdgeToken,
+            options.endToken
+        )
+    } else {
+        return matchCommentLine(
+            line,
+            options.leftEdgeToken,
+            options.fillingToken,
+            options.endToken
+        ) || (hasHardTopEdge && matchCommentLine(
+            line,
+            options.startToken,
+            options.fillingToken,
+            options.endToken
+        ))
+    }
+}
+
+/**
+ * Checks if a given line matches a middle line from a comment box with a given style
+ * @param {string} line
+ * @param {BoxStyle} options
+ * @returns {AnnotatedLine?}
+ */
+function matchMidLine(line, options) {
+    return matchCommentLine(
+        line,
+        options.leftEdgeToken,
+        options.fillingToken,
+        options.rightEdgeToken
+    )
+}
+
+/**
  * @param {string} text
  * @param {BoxStyle} options
  */
@@ -369,19 +494,6 @@ function convertToCommentBox(text, options) {
         // Extend lines to match desired width, using the choosen filling token
         .map(line => alignmentStyle(line, width - edgesWidth, fillingToken))
 
-    /**
-     * Box layout
-     * 
-     * The symbol '~' means that we repeat the token until it aligns with the other lines.
-     * 
-     *          [startToken][~~~~~~~~~~~~~~~~topEdgeToken~~~~~~~~~~~~~][topRightToken]
-     * Repeat:  [leftEdgeToken][~fillingToken~~][line][~~fillingToken~][rightEdgeToken]
-     *          [bottomLeftToken][~~~~~~~~~~bottomEdgeToken~~~~~~~~~~~][endToken]
-     * 
-     * If 'topEdgeToken' or 'bottomEdgeToken' is set to an empty string, we'll skip drawing the
-     * first or last line respectively.
-     */
-
     const widthWithoutRightEdge = width - stringWidth(rightEdgeToken)
     const skipFirstLine = topEdgeToken === ""
     const skipLastLine = bottomEdgeToken === ""
@@ -418,206 +530,163 @@ function convertToCommentBox(text, options) {
     return result;
 }
 
-function matchesTopEdge(line, options) {
-    const hasHardTopEdge = options.topEdgeToken !== ''
-    const hasHardBottomEdge = options.bottomEdgeToken !== ''
-
-    if (hasHardTopEdge) {
-        return isCommentEdge(
-            line,
-            options.startToken,
-            options.topEdgeToken,
-            options.topRightToken
-        )
-    }
-
-    return isCommentLine(
-        line,
-        options.startToken,
-        options.fillingToken,
-        options.rightEdgeToken
-    ) || (hasHardBottomEdge && isCommentLine(
-        line,
-        options.startToken,
-        options.fillingToken,
-        options.endToken
-    ))
-}
-
-function matchesBottomEdge(line, options) {
-    const hasHardTopEdge = options.topEdgeToken !== ''
-    const hasHardBottomEdge = options.bottomEdgeToken !== ''
-
-    if (hasHardBottomEdge) {
-        return isCommentEdge(
-            line,
-            options.bottomLeftToken,
-            options.bottomEdgeToken,
-            options.endToken
-        )
-    } else {
-        return isCommentLine(
-            line,
-            options.leftEdgeToken,
-            options.fillingToken,
-            options.endToken
-        ) || (hasHardTopEdge && isCommentLine(
-            line,
-            options.startToken,
-            options.fillingToken,
-            options.endToken
-        ))
-    }
-}
-
-function findStyledCommentStart(selectionStart, selectionEnd, options, getLine) {
-    for (let line = selectionStart; line <= selectionEnd; line++) {
-        const lineText = getLine(line)
-
-        if (matchesTopEdge(lineText, options)) {
-            return line
-        }
-    }
-
-    // Didn't find comment start, look outside the selection
-    for (let line = selectionStart - 1;; line--) {
-        const lineText = getLine(line)
-
-        if (lineText === null) {
-            return null
-        }
-
-        if (matchesTopEdge(lineText, options)) {
-            return line
-        }
-    }
-}
-
-function findStyledCommentEnd(selectionStart, selectionEnd, options, getLine) {
-    for (let line = selectionEnd; line >= selectionStart; line--) {
-        const lineText = getLine(line)
-
-        if (matchesBottomEdge(lineText, options)) {
-            return line
-        }
-    }
-
-    // Didn't find comment start, look outside the selection
-    for (let line = selectionEnd + 1;; line++) {
-        const lineText = getLine(line)
-
-        if (lineText === null) {
-            return null
-        }
-
-        if (matchesBottomEdge(lineText, options)) {
-            return line
-        }
-    }
-}
-
 /**
  * Add lines to styled comment box
  * 
  * @param {number} selectionStart
  * @param {number} selectionEnd
  * @param {BoxStyle} options
- * @param {function(number):string} getLine
+ * @param {function(number):string?} getLine
+ * @returns {AnnotatedSelection}
  */
 function findStyledCommentBox(selectionStart, selectionEnd, options, getLine) {
-    const start = findStyledCommentStart(selectionStart, selectionEnd, options, getLine)
-
-    if (start === null) {
-        return null
+    let lines = []
+    for (let i = selectionStart; i <= selectionEnd; i++) {
+        const line = getLine(i)
+        lines.push(convertTabsToSpaces(line, options.tabSize))
     }
 
-    const end = findStyledCommentEnd(selectionStart, selectionEnd, options, getLine)
+    const lineMatches = lines.map(line => [
+        matchTopEdge(line, options),
+        matchBottomEdge(line, options)
+    ])
 
-    if (end === null) {
-        return null
+    const firstTop = lineMatches.findIndex(([start, end]) => start)
+    const firstEnd = lineMatches.findIndex(([start, end]) => end)
+    const lastTop = findLastIndex(lineMatches, ([start, end]) => start)
+    const lastEnd = findLastIndex(lineMatches, ([start, end]) => end)
+
+    const searchUp = firstTop === -1 || firstEnd !== -1 && firstTop > firstEnd
+    const searchDown = firstEnd === -1 || firstEnd < firstTop
+
+    const lineStart = searchUp ? 0 : firstTop
+    const lineEnd = searchDown ? lineMatches.length : lastEnd + 1
+
+    let result = []
+
+    if (searchUp) {
+        for (let l = selectionStart - 1;; l--) {
+            let line = getLine(l)
+
+            if (line === null) {
+                // Failed to find comment start
+                selectionStart = l + 1
+                break
+            }
+
+            line = convertTabsToSpaces(line, options.tabSize)
+
+            let match = matchTopEdge(line, options)
+
+            if (match) {
+                result.push(match)
+                selectionStart = l
+                break
+            }
+
+            result.push(matchMidLine(line, options) || noCommentLine(line))
+        }
+
+        result = result.reverse()
     }
 
-    return [start, end]
+    let insideComment = searchUp
+    for (let i = lineStart; i < lineEnd; i++) {
+        const [matchTop, matchBot] = lineMatches[i]
+
+        let lineInterpretation = null
+
+        if (matchTop) {
+            lineInterpretation = matchTop
+            insideComment = true
+        }
+
+        if (matchBot) {
+            lineInterpretation = lineInterpretation || matchBot
+            insideComment = false
+        }
+
+        const line = lines[i]
+        lineInterpretation = lineInterpretation ||
+            (insideComment && matchMidLine(line, options)) ||
+            noCommentLine(line)
+
+        result.push(lineInterpretation)
+    }
+
+    if (searchDown) {
+        for (let l = selectionEnd + 1;; l++) {
+            let line = getLine(l)
+
+            if (line === null) {
+                // Failed to find comment start
+                selectionEnd = l - 1
+                break
+            }
+
+            line = convertTabsToSpaces(line, options.tabSize)
+
+            let match = matchBottomEdge(line, options)
+
+            if (match) {
+                result.push(match)
+                selectionEnd = l
+                break
+            }
+
+            result.push(matchMidLine(line, options) || noCommentLine(line))
+        }
+    }
+
+    console.assert(result.length === selectionEnd - selectionStart + 1)
+    return {
+        selection: [selectionStart, selectionEnd],
+        annotatedLines: result
+    }
 }
 
 /**
  * Remove comment box from a piece of text that we know was built by a given style. It might have
  * been modified in the meantime, it won't match exactly
  * 
- * @param {string} text
+ * @param {AnnotatedLine[]} annotatedLines
  * @param {BoxStyle} options
+ * @returns {string}
  */
-function removeStyledCommentBox(text, options) {
-    const {
-        startToken,
-        endToken,
-        topRightToken,
-        bottomLeftToken,
-        topEdgeToken,
-        bottomEdgeToken,
-        leftEdgeToken,
-        rightEdgeToken,
-        fillingToken,
-        // width: desiredWidth,
-        //clearAroundText,
-        textAlignment,
-        removeEmptyLines,
-        ignoreOuterIndentation,
-        ignoreInnerIndentation,
-        tabSize
-    } = options
-
-    const keepSpace = textAlignment !== "center"
-
-    let lines = text
-        // Split text by newlines
-        .split(/\n/)
-        // Remove space to the right
-        .map(s => s.replace(/\s*$/, ""))
-        // Remove tabs
-        .map(line => convertTabsToSpaces(line, tabSize))
-
-    const indentationLevel = findIndentationLevel(lines)
-    lines = dedentBy(lines, indentationLevel)
-
+function removeStyledCommentBox(annotatedLines, options) {
     let result = []
+    for (const line of annotatedLines) {
+        const {
+            indentation,
+            startToken,
+            leftFill,
+            text,
+            rightFill,
+            endToken
+        } = line
 
-    // Out of the box, look for top row first, inside box look for top line first
-    // Outside look for bottom line first
-    let inBox = false
-    lines.forEach(line => {
-        const matched = inBox ?
-            isCommentEdge(line, startToken, topEdgeToken, topRightToken) :
-            isCommentEdge(line, bottomLeftToken, bottomEdgeToken, endToken)
-
-        if (matched) {
-            inBox = !inBox
-            return;
+        if (text === null) {
+            continue
         }
 
-        const cleanLine = removeLineComment(line, leftEdgeToken, fillingToken, rightEdgeToken, keepSpace)
-        if (cleanLine != line) {
-            result.push(cleanLine)
-            return;
-        }
+        let resultLine = ''
+        resultLine += indentation || ''
+        resultLine += leftFill ? ' '.repeat(stringWidth(leftFill)) : ''
+        resultLine += text
+        resultLine += rightFill ? ' '.repeat(stringWidth(rightFill)) : ''
 
-        const matchedEnd = inBox ?
-            isCommentEdge(line, bottomLeftToken, bottomEdgeToken, endToken) :
-            isCommentEdge(line, startToken, topEdgeToken, topRightToken)
-
-        if (matchedEnd) {
-            return;
-        }
-
-        // Not part of the box?
-        result.push(line)
-    })
-
-    if (ignoreOuterIndentation == false) {
-        result = indentBy(result, indentationLevel)
+        result.push(resultLine)
     }
 
-    return result.join("\n")
+    return result.join('\n')
+}
+
+
+function updateStyledCommentBox(annotatedLines, options) {
+    return convertToCommentBox(
+        removeStyledCommentBox(annotatedLines, options),
+        options
+    )
 }
 
 module.exports = {
@@ -629,11 +698,11 @@ module.exports = {
     padRight,
     padToCenter,
     widthOfLastLine,
-    removeLineComment,
 
     // User functions
     convertToCommentBox,
     removeStyledCommentBox,
+    updateStyledCommentBox,
     findStyledCommentBox
 }
 

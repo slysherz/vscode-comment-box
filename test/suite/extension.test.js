@@ -1,3 +1,4 @@
+// @ts-check
 //
 // Please refer to their documentation on https://mochajs.org/ for help.
 //
@@ -11,7 +12,6 @@ const {
     reverseString,
     padRight,
     padToCenter,
-    removeLineComment,
     convertToCommentBox,
     removeStyledCommentBox,
     findStyledCommentBox,
@@ -66,14 +66,35 @@ function extend(objectA, objectB) {
     return result
 }
 
-function trimLineStart(string) {
-    return string.split("\n").map(l => l.trimStart()).join("\n")
+function trimLine(string) {
+    return string.split("\n").map(l => l.trim()).join("\n")
 }
 
 function fakeDocument(text) {
     const lines = text.split(/\n/g)
 
     return (n) => n >= 0 && n < lines.length ? lines[n] : null;
+}
+
+function lineCount(text) {
+    return (text.match(/\n/g) || '').length + 1
+}
+
+function matchesProperties(properties, inObj) {
+    for (const property in properties) {
+        const prop = properties[property]
+        const objValue = inObj[property]
+
+        if (typeof (prop) === 'object') {
+            if (!matchesProperties(prop, objValue)) {
+                return false
+            }
+        } else if (prop !== objValue) {
+            return false
+        }
+    }
+
+    return true
 }
 
 // You can import and use all API from the 'vscode' module
@@ -217,26 +238,8 @@ suite("Helper Functions Tests", function () {
         assert.equal(padToCenter("--", 9, "あ"), "あ --ああ",
             "Works with sneaky unicode characters 3.")
     })
-
-    test("removeLineComment", function () {
-        eq(removeLineComment("13", "1", "", "3"), "", "Basic test 1")
-        eq(removeLineComment("13", "", "", ""), "13", "Basic test 2")
-        eq(removeLineComment("13", "1", "", "4"), "13", "Basic test 3")
-        eq(removeLineComment("13", "4", "", "3"), "13", "Basic test 4")
-        eq(removeLineComment("13", "4", "", "4"), "13", "Basic test 5")
-        eq(removeLineComment("123a", "123", "", ""), "a", "Basic test 6")
-        eq(removeLineComment("a123", "", "", "123"), "a", "Basic test 7")
-
-        eq(removeLineComment("🐶❌🐱", "🐶", "", ""), "❌🐱", "Works with unicode 1")
-        eq(removeLineComment("🐶❌🐱", "", "", "🐱"), "🐶❌", "Works with unicode 2")
-        eq(removeLineComment("🐶❌🐱", "🐶", "", "🐱"), "❌", "Works with unicode 3")
-        eq(removeLineComment("🐶❌❌❌hello❌❌❌🐱", "🐶", "❌", "🐱"), "hello", "Works with unicode 4")
-
-        eq(removeLineComment("/******", "/*", "*", "**"), "", "Complex test 1")
-        eq(removeLineComment(" * hello *", " *", " ", "*"), "hello", "Complex test 2")
-        eq(removeLineComment("🐶🐱🐶🐱hello🐱🐶🐱🐶", "", "🐶🐱", ""), "hello", "Complex test 3")
-    })
 })
+
 
 suite("Comment Functions Tests", function () {
     const defaultStyle = {
@@ -679,6 +682,7 @@ suite("Comment Functions Tests", function () {
         })
     })
 
+
     test("removeCommentBox", function () {
         const baseStyle = {
             startToken: "/*",
@@ -739,25 +743,32 @@ there
             for (const s of strings) {
                 const string = s.trim()
                 const comment = convertToCommentBox(string, style)
-                const newString = removeStyledCommentBox(comment, style)
+                const box = findStyledCommentBox(
+                    0,
+                    lineCount(comment) - 1,
+                    style,
+                    fakeDocument(comment)
+                )
+                const newString = removeStyledCommentBox(box.annotatedLines, style)
 
                 let expected = string
                 let result = newString
 
                 if (style.textAlignment === "center" ||
                     style.ignoreInnerIndentation && style.ignoreOuterIndentation) {
-                    expected = trimLineStart(expected)
+                    expected = trimLine(expected)
                     result = result
                 } else if (style.ignoreOuterIndentation) {
                     expected = removeCommonIndentation(expected)
                 }
 
-                assert.strictEqual(trimLineStart(string), trimLineStart(newString), "\n" + comment)
+                assert.strictEqual(trimLine(string), trimLine(newString), "\n" + comment)
             }
         }
     })
 
-    test("findCommentBox", function () {
+
+    test("findCommentBoxSelection", function () {
         testCases.forEach(({
             name,
             style,
@@ -768,11 +779,13 @@ there
             }
 
             const nbLines = (result.match(/\n/g) || '').length + 1
-            const slice = findStyledCommentBox(0, nbLines - 1, style, fakeDocument(result))
+            const {
+                selection,
+                annotatedLines
+            } = findStyledCommentBox(0, nbLines - 1, style, fakeDocument(result))
 
-            assert.ok(slice, name)
-            assert.strictEqual(0, slice[0], name)
-            assert.strictEqual(nbLines - 1, slice[1], name)
+            assert.strictEqual(0, selection[0], name)
+            assert.strictEqual(nbLines - 1, selection[1], name)
         })
     })
 })
