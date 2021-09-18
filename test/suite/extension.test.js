@@ -89,6 +89,20 @@ function matchesProperties(properties, inObj) {
             if (!matchesProperties(prop, objValue)) {
                 return false
             }
+        } else if (prop instanceof Array) {
+            if (prop.length != objValue.lenght) {
+                return false
+            }
+
+            for (let i = 0; i < prop.length; i++) {
+                if (prop[i] === undefined) {
+                    continue
+                }
+
+                if (!matchesProperties(prop[i], objValue[i])) {
+                    return false
+                }
+            }
         } else if (prop !== objValue) {
             return false
         }
@@ -257,7 +271,8 @@ suite("Comment Functions Tests", function () {
         removeEmptyLines: true,
         ignoreOuterIndentation: true,
         ignoreInnerIndentation: true,
-        tabSize: 4
+        tabSize: 4,
+        capitalize: false
     }
 
     const leftStyle = extend(defaultStyle, {
@@ -682,6 +697,137 @@ suite("Comment Functions Tests", function () {
         })
     })
 
+
+    test("findCommentBox", function () {
+        function testFindComment(name, style, selections, document = "", properties) {
+            document = document.split('\n').slice(1, -1).join('\n')
+
+            if (!(selections[0] instanceof Array)) {
+                selections = [selections]
+            }
+
+            for (const [selectionStart, selectionEnd] of selections) {
+                const {
+                    selection,
+                    annotatedLines
+                } = findStyledCommentBox(
+                    selectionStart,
+                    selectionEnd,
+                    style,
+                    fakeDocument(document)
+                )
+
+                assert.ok(
+                    matchesProperties(properties, annotatedLines),
+                    `${name} + ${[selectionStart, selectionEnd]}}`
+                )
+            }
+        }
+
+        if (false) {
+            testFindComment(
+                "Not a comment",
+                defaultStyle,
+                [0, 0],
+                `
+hello
+                `,
+                [{
+                    text: 'hello'
+                }]
+            )
+
+            testFindComment(
+                "Not a comment (correct line)",
+                defaultStyle,
+                [1, 1],
+                `
+hello
+hi
+there
+                `,
+                [{
+                    text: 'hi'
+                }]
+            )
+
+            testFindComment(
+                "Find entire comment box",
+                defaultStyle,
+                [
+                    [0, 0],
+                    [1, 1],
+                    [2, 2],
+                    [0, 2],
+                    [0, 1],
+                    [1, 2]
+                ],
+                `
+/********
+ * test *
+ ********/
+                `,
+                [{
+                    startToken: '/*'
+                }, {
+                    text: 'test'
+                }, {
+                    endToken: '**/'
+                }]
+            )
+
+            testFindComment(
+                "Hard example 1",
+                keepIndentationStyle,
+                [
+                    [0, 0],
+                    [1, 1],
+                    [2, 2],
+                    [3, 3],
+                    [1, 2],
+                    [0, 3]
+                ],
+                `
+    /*********************
+     * this              *
+     *     is a big test *
+     *********************/
+                `,
+                [, {
+                    text: 'this'
+                }, {
+                    leftFill: '    ',
+                    text: 'is a big test'
+                }, ]
+            )
+        }
+
+        testFindComment(
+            "Hard example 2",
+            keepIndentationStyle,
+            [
+                [4, 4]
+            ],
+            `
+    /*********************
+     * this              *
+     *     is a big test *
+     *********************/
+    hello
+     /*********************
+      * this              *
+      *     is a big test *
+      *********************/
+        `,
+            [, {
+                text: 'this'
+            }, {
+                leftFill: '    ',
+                text: 'is a big test'
+            }, ]
+        )
+
+    })
 
     test("removeCommentBox", function () {
         const baseStyle = {
