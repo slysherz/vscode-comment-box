@@ -55,11 +55,6 @@
  */
 
 const stringWidth = require("string-width")
-const lineType = Object.freeze({
-    EDGE: 1,
-    MID: 2,
-    NOT_COMMENT: 3
-})
 
 function splitAt(array, pred) {
     let first = []
@@ -97,7 +92,7 @@ function splitAtLast(array, pred) {
 }
 
 function findLastIndex(array, pred) {
-    for (let i = array.length - 1; i => 0; i--) {
+    for (let i = array.length - 1; i >= 0; i--) {
         if (pred(array[i])) {
             return i
         }
@@ -562,15 +557,14 @@ function findStyledCommentBox(selectionStart, selectionEnd, options, getLine) {
     const lineStart = searchUp ? 0 : firstTop
     const lineEnd = searchDown ? lineMatches.length : lastEnd + 1
 
-    let result = []
-
+    let searchUpResult = []
     if (searchUp) {
         for (let l = selectionStart - 1;; l--) {
             let line = getLine(l)
 
             if (line === null) {
                 // Failed to find comment start
-                selectionStart = l + 1
+                searchUpResult = []
                 break
             }
 
@@ -579,17 +573,16 @@ function findStyledCommentBox(selectionStart, selectionEnd, options, getLine) {
             let match = matchTopEdge(line, options)
 
             if (match) {
-                result.push(match)
+                searchUpResult.push(match)
                 selectionStart = l
                 break
             }
 
-            result.push(matchMidLine(line, options) || noCommentLine(line))
+            searchUpResult.push(matchMidLine(line, options) || noCommentLine(line))
         }
-
-        result = result.reverse()
     }
 
+    let midResult = []
     let insideComment = searchUp
     for (let i = lineStart; i < lineEnd; i++) {
         const [matchTop, matchBot] = lineMatches[i]
@@ -611,16 +604,17 @@ function findStyledCommentBox(selectionStart, selectionEnd, options, getLine) {
             (insideComment && matchMidLine(line, options)) ||
             noCommentLine(line)
 
-        result.push(lineInterpretation)
+        midResult.push(lineInterpretation)
     }
 
+    let searchDownResult = []
     if (searchDown) {
         for (let l = selectionEnd + 1;; l++) {
             let line = getLine(l)
 
             if (line === null) {
                 // Failed to find comment start
-                selectionEnd = l - 1
+                searchDownResult = []
                 break
             }
 
@@ -629,15 +623,16 @@ function findStyledCommentBox(selectionStart, selectionEnd, options, getLine) {
             let match = matchBottomEdge(line, options)
 
             if (match) {
-                result.push(match)
+                searchDownResult.push(match)
                 selectionEnd = l
                 break
             }
 
-            result.push(matchMidLine(line, options) || noCommentLine(line))
+            searchDownResult.push(matchMidLine(line, options) || noCommentLine(line))
         }
     }
 
+    const result = searchUpResult.reverse().concat(midResult, searchDownResult)
     console.assert(result.length === selectionEnd - selectionStart + 1)
     return {
         selection: [selectionStart, selectionEnd],
