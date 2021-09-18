@@ -724,86 +724,84 @@ suite("Comment Functions Tests", function () {
             }
         }
 
-        if (false) {
-            testFindComment(
-                "Not a comment",
-                defaultStyle,
-                [0, 0],
-                `
+        testFindComment(
+            "Not a comment",
+            defaultStyle,
+            [0, 0],
+            `
 hello
                 `,
-                [{
-                    text: 'hello'
-                }]
-            )
+            [{
+                text: 'hello'
+            }]
+        )
 
-            testFindComment(
-                "Not a comment (correct line)",
-                defaultStyle,
-                [1, 1],
-                `
+        testFindComment(
+            "Not a comment (correct line)",
+            defaultStyle,
+            [1, 1],
+            `
 hello
 hi
 there
                 `,
-                [{
-                    text: 'hi'
-                }]
-            )
+            [{
+                text: 'hi'
+            }]
+        )
 
-            testFindComment(
-                "Find entire comment box",
-                defaultStyle,
-                [
-                    [0, 0],
-                    [1, 1],
-                    [2, 2],
-                    [0, 2],
-                    [0, 1],
-                    [1, 2]
-                ],
-                `
+        testFindComment(
+            "Find entire comment box",
+            defaultStyle,
+            [
+                [0, 0],
+                [1, 1],
+                [2, 2],
+                [0, 2],
+                [0, 1],
+                [1, 2]
+            ],
+            `
 /********
  * test *
  ********/
                 `,
-                [{
-                    startToken: '/*'
-                }, {
-                    text: 'test'
-                }, {
-                    endToken: '**/'
-                }]
-            )
+            [{
+                startToken: '/*'
+            }, {
+                text: 'test'
+            }, {
+                endToken: '**/'
+            }]
+        )
 
-            testFindComment(
-                "Hard example 1",
-                keepIndentationStyle,
-                [
-                    [0, 0],
-                    [1, 1],
-                    [2, 2],
-                    [3, 3],
-                    [1, 2],
-                    [0, 3]
-                ],
-                `
+        testFindComment(
+            "Always find the box",
+            keepIndentationStyle,
+            [
+                [0, 0],
+                [1, 1],
+                [2, 2],
+                [3, 3],
+                [1, 2],
+                [0, 3]
+            ],
+            `
     /*********************
      * this              *
      *     is a big test *
      *********************/
                 `,
-                [, {
-                    text: 'this'
-                }, {
-                    leftFill: '    ',
-                    text: 'is a big test'
-                }, ]
-            )
-        }
+            [, {
+                text: 'this'
+            }, {
+                leftFill: '    ',
+                text: 'is a big test'
+            }, ]
+        )
 
         testFindComment(
-            "Hard example 2",
+            "Don't find the boxes",
             keepIndentationStyle,
             [
                 [4, 4]
@@ -819,13 +817,60 @@ there
       *     is a big test *
       *********************/
         `,
-            [, {
-                text: 'this'
-            }, {
-                leftFill: '    ',
-                text: 'is a big test'
-            }, ]
+            [{
+                text: '    hello'
+            }]
         )
+
+        testFindComment(
+            "Broken box",
+            keepIndentationStyle,
+            [
+                [0, 6],
+                [0, 3],
+                [4, 6],
+                [0, 0],
+                [1, 1],
+                [2, 2],
+                [3, 3],
+                [4, 4],
+                [5, 5],
+                [6, 6]
+            ],
+            `
+    /*********************
+     * this              *
+     *     is a big test *
+    hello
+      * this              *
+      *     is a big test *
+        ***********/
+        `,
+            [{
+                    startToken: '/*'
+                },
+                {
+                    text: 'this'
+                },
+                {
+                    text: 'is a big test'
+                },
+                {
+                    text: '    hello'
+                },
+                {
+                    text: 'this'
+                },
+                {
+                    text: 'is a big test'
+                },
+                {
+                    endToken: '**/'
+                }
+            ]
+        )
+
+
 
     })
 

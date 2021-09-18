@@ -173,70 +173,129 @@ function userSelection(editor, selection, options, extendSelection) {
 
     return {
         selection,
-        selectionText: editor.document.getText(selection),
-        annotatedLines: null
+        selectionText: editor.document.getText(selection)
     }
 }
 
-function findCommentSelection(editor, selection, options, extendSelection) {
-    const getLine = function getLine(n) {
+function getLineAcess(editor) {
+    return function getLine(n) {
         if (n < 0 || n >= editor.document.lineCount) {
             return null
         }
 
         return editor.document.lineAt(n).text
     }
+}
 
+function findCommentSelection(editor, selection, options, extendSelection) {
     const startLine = selection.start.line
     const endLine = selection.end.line
-    const slice = findStyledCommentBox(selection.start.line, selection.end.line, options, getLine)
+    const {
+        selection: slice,
+        annotatedLines
+    } = findStyledCommentBox(startLine, endLine, options, getLineAcess(editor))
 
-    selection = slice ?
-        getExtendedSelection(editor, slice[0], slice[1]) :
-        getExtendedSelection(editor, startLine, endLine)
+    selection = getExtendedSelection(editor, slice[0], slice[1])
 
     return {
-        selection,
+        selection: getExtendedSelection(editor, slice[0], slice[1]),
         selectionText: editor.document.getText(selection),
+        annotatedLines
     }
 }
 
-/**
- * Creates a function that looks at the current editor, and applies a transformation to all
- * current text selections
- */
-function newTransformation(transformer, getSelection) {
-    return function (editor, configuration) {
-        const editOperations = editor.selections.map((current) => {
-            let style = configurationToStyle(configuration, getTabSize())
+function findAndRemoveStyledComment(editor, configuration) {
+    const editOperations = editor.selections.map((current) => {
+        let style = configurationToStyle(configuration, getTabSize())
 
-            let {
-                selection,
-                selectionText: text,
-                annotatedLines
-            } = getSelection(editor, current, style, configuration.extendSelection)
+        let {
+            selection,
+            selectionText: text,
+            annotatedLines
+        } = findCommentSelection(editor, current, style, configuration.extendSelection)
 
-            text = transformer(text, style, annotatedLines)
+        text = removeStyledCommentBox(annotatedLines, style)
 
-            return {
-                text,
-                selection,
-            }
+        return {
+            text,
+            selection,
+        }
+    })
+
+    editor.edit(builder => {
+        editOperations.forEach(({
+            text,
+            selection
+        }) => {
+            // We use insert + delete instead of replace so that the selection automatically
+            // jumps to the end of the comment box
+            builder.delete(selection)
+            builder.insert(selection.anchor, text)
         })
-
-        editor.edit(builder => {
-            editOperations.forEach(({
-                text,
-                selection
-            }) => {
-                // We use insert + delete instead of replace so that the selection automatically
-                // jumps to the end of the comment box
-                builder.delete(selection)
-                builder.insert(selection.anchor, text)
-            })
-        })
-    }
+    })
 }
+
+function findAndUpdateStyledComment(editor, configuration) {
+    const editOperations = editor.selections.map((current) => {
+        let style = configurationToStyle(configuration, getTabSize())
+
+        let {
+            selection,
+            selectionText: text,
+            annotatedLines
+        } = findCommentSelection(editor, current, style, configuration.extendSelection)
+
+        text = updateStyledCommentBox(annotatedLines, style)
+
+        return {
+            text,
+            selection,
+        }
+    })
+
+    editor.edit(builder => {
+        editOperations.forEach(({
+            text,
+            selection
+        }) => {
+            // We use insert + delete instead of replace so that the selection automatically
+            // jumps to the end of the comment box
+            builder.delete(selection)
+            builder.insert(selection.anchor, text)
+        })
+    })
+}
+
+function addStyledComment(editor, configuration) {
+    const editOperations = editor.selections.map((current) => {
+        let style = configurationToStyle(configuration, getTabSize())
+
+        let {
+            selection,
+            selectionText: text
+        } = userSelection(editor, current, style, configuration.extendSelection)
+
+        text = convertToCommentBox(text, style)
+
+        return {
+            text,
+            selection,
+        }
+    })
+
+    editor.edit(builder => {
+        editOperations.forEach(({
+            text,
+            selection
+        }) => {
+            // We use insert + delete instead of replace so that the selection automatically
+            // jumps to the end of the comment box
+            builder.delete(selection)
+            builder.insert(selection.anchor, text)
+        })
+    })
+}
+
 
 function defaultStyleCommand(transformation) {
     return () => {
@@ -369,20 +428,18 @@ function tryGetConfiguration(baseConfig, styleName, checked = []) {
 // When the extension is activated
 function activate(context) {
     const commands = [
-        ['commentBox.add', defaultStyleCommand, userSelection, convertToCommentBox],
-        ['commentBox.remove', defaultStyleCommand, findCommentSelection, removeStyledCommentBox],
-        ['commentBox.update', defaultStyleCommand, findCommentSelection, updateStyledCommentBox],
-        ['commentBox.addUsingStyle', pickedStyleCommand, userSelection, convertToCommentBox],
-        ['commentBox.removeUsingStyle', pickedStyleCommand, findCommentSelection, removeStyledCommentBox],
-        ['commentBox.updateUsingStyle', pickedStyleCommand, findCommentSelection, updateStyledCommentBox],
+        ['commentBox.add', defaultStyleCommand, addStyledComment],
+        ['commentBox.remove', defaultStyleCommand, findAndRemoveStyledComment],
+        ['commentBox.update', defaultStyleCommand, findAndUpdateStyledComment],
+        ['commentBox.addUsingStyle', pickedStyleCommand, addStyledComment],
+        ['commentBox.removeUsingStyle', pickedStyleCommand, findAndRemoveStyledComment],
+        ['commentBox.updateUsingStyle', pickedStyleCommand, findAndUpdateStyledComment],
         // Deprecated
-        ['extension.commentBox', defaultStyleCommand, userSelection, convertToCommentBox],
-        ['commentBox.transformUsingStyle', pickedStyleCommand, userSelection, convertToCommentBox]
+        ['extension.commentBox', defaultStyleCommand, addStyledComment],
+        ['commentBox.transformUsingStyle', pickedStyleCommand, addStyledComment]
     ]
 
-    for (const [name, command, selection, transformer] of commands) {
-        const transformation = newTransformation(transformer, selection)
-
+    for (const [name, command, transformation] of commands) {
         context.subscriptions.push(vscode.commands.registerCommand(
             name,
             command(transformation)

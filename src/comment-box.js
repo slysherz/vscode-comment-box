@@ -543,13 +543,15 @@ function findStyledCommentBox(selectionStart, selectionEnd, options, getLine) {
 
     const lineMatches = lines.map(line => [
         matchTopEdge(line, options),
+        matchMidLine(line, options),
         matchBottomEdge(line, options)
     ])
 
-    const firstTop = lineMatches.findIndex(([start, end]) => start)
-    const firstEnd = lineMatches.findIndex(([start, end]) => end)
-    const lastTop = findLastIndex(lineMatches, ([start, end]) => start)
-    const lastEnd = findLastIndex(lineMatches, ([start, end]) => end)
+    const firstTop = lineMatches.findIndex(([start, mid, end]) => start)
+    const firstEnd = lineMatches.findIndex(([start, mid, end]) => end)
+    const lastTop = findLastIndex(lineMatches, ([start, mid, end]) => start)
+    const lastEnd = findLastIndex(lineMatches, ([start, mid, end]) => end)
+    const anyMid = lineMatches.findIndex(([start, mid, end]) => mid)
 
     const searchUp = firstTop === -1 || firstEnd !== -1 && firstTop > firstEnd
     const searchDown = firstEnd === -1 || firstEnd < firstTop
@@ -574,7 +576,10 @@ function findStyledCommentBox(selectionStart, selectionEnd, options, getLine) {
 
             if (match) {
                 searchUpResult.push(match)
-                selectionStart = l
+                break
+            } else if (matchBottomEdge(line, options)) {
+                // Failed to find comment start
+                searchUpResult = []
                 break
             }
 
@@ -585,7 +590,7 @@ function findStyledCommentBox(selectionStart, selectionEnd, options, getLine) {
     let midResult = []
     let insideComment = searchUp
     for (let i = lineStart; i < lineEnd; i++) {
-        const [matchTop, matchBot] = lineMatches[i]
+        const [matchTop, matchMid, matchBot] = lineMatches[i]
 
         let lineInterpretation = null
 
@@ -601,7 +606,7 @@ function findStyledCommentBox(selectionStart, selectionEnd, options, getLine) {
 
         const line = lines[i]
         lineInterpretation = lineInterpretation ||
-            (insideComment && matchMidLine(line, options)) ||
+            (insideComment && matchMid) ||
             noCommentLine(line)
 
         midResult.push(lineInterpretation)
@@ -624,7 +629,10 @@ function findStyledCommentBox(selectionStart, selectionEnd, options, getLine) {
 
             if (match) {
                 searchDownResult.push(match)
-                selectionEnd = l
+                break
+            } else if (matchTopEdge(line, options)) {
+                // Failed to find comment start
+                searchUpResult = []
                 break
             }
 
@@ -633,7 +641,8 @@ function findStyledCommentBox(selectionStart, selectionEnd, options, getLine) {
     }
 
     const result = searchUpResult.reverse().concat(midResult, searchDownResult)
-    console.assert(result.length === selectionEnd - selectionStart + 1)
+    selectionStart -= searchUpResult.length
+    selectionEnd += searchDownResult.length
     return {
         selection: [selectionStart, selectionEnd],
         annotatedLines: result
