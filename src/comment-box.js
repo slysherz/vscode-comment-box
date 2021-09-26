@@ -658,6 +658,8 @@ function findStyledCommentBox(selectionStart, selectionEnd, options, getLine) {
  * @returns {string}
  */
 function removeStyledCommentBox(annotatedLines, options) {
+    const keepInnerFill = options.textAlignment !== 'center'
+
     let result = []
     for (const line of annotatedLines) {
         const {
@@ -675,9 +677,9 @@ function removeStyledCommentBox(annotatedLines, options) {
 
         let resultLine = ''
         resultLine += indentation || ''
-        resultLine += leftFill ? ' '.repeat(stringWidth(leftFill)) : ''
+        resultLine += (leftFill && keepInnerFill) ? ' '.repeat(stringWidth(leftFill)) : ''
         resultLine += text
-        resultLine += rightFill ? ' '.repeat(stringWidth(rightFill)) : ''
+        resultLine += (rightFill && keepInnerFill) ? ' '.repeat(stringWidth(rightFill)) : ''
 
         result.push(resultLine)
     }
