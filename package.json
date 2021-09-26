@@ -49,7 +49,7 @@
                 "title": "Remove Comment Box using style"
             },
             {
-                "command": "'commentBox.updateUsingStyle'",
+                "command": "commentBox.updateUsingStyle",
                 "title": "Update Comment Box using style"
             }
         ],
