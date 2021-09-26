@@ -21,7 +21,7 @@ const {
     mergeConfigurations
 } = require('../../src/extension')
 
-function* stylesCombination(start, variations) {
+function* allCombinations(variations, start) {
     if (variations.length === 0) {
         yield start
         return;
@@ -32,8 +32,23 @@ function* stylesCombination(start, variations) {
     ] = variations
     for (const option of options) {
         start[property] = option
-        for (let style of stylesCombination(start, otherVariations)) {
+        for (let style of allCombinations(otherVariations, start)) {
             yield style
+        }
+    }
+}
+
+function* objectCombinations(variations, start = null) {
+    const vars = Object.entries(variations)
+    for (const value of allCombinations(vars, start || {})) {
+        yield value
+    }
+}
+
+function* allSlices(start, end) {
+    for (let i = start; i < end; i++) {
+        for (let j = i; j < end; j++) {
+            yield [i, j]
         }
     }
 }
@@ -893,11 +908,37 @@ there
             tabSize: 4
         }
 
-        const styles = stylesCombination(baseStyle, [
-            ["textAlignment", ["center", "left"]],
-            ["ignoreOuterIndentation", [true, false]],
-            ["ignoreInnerIndentation", [true, false]]
-        ])
+        const pythonStyle = {
+            startToken: "/*",
+            endToken: "**/",
+            fillingToken: " ",
+            width: 0,
+            removeEmptyLines: true,
+            ignoreOuterIndentation: false,
+            ignoreInnerIndentation: false,
+            tabSize: 4,
+            commentStartToken: "",
+            commentEndToken: "##",
+            leftEdgeToken: "# ",
+            rightEdgeToken: " #",
+            topEdgeToken: "#",
+            bottomEdgeToken: "#",
+            topRightToken: "##",
+            bottomLeftToken: "##",
+        }
+
+        const styles = [
+            ...objectCombinations({
+                textAlignment: ["center", "left"],
+                ignoreOuterIndentation: [true, false],
+                ignoreInnerIndentation: [true, false]
+            }, baseStyle),
+            ...objectCombinations({
+                textAlignment: ["center", "left"],
+                ignoreOuterIndentation: [true, false],
+                ignoreInnerIndentation: [true, false]
+            }, pythonStyle),
+        ]
 
         const strings = [
             `
@@ -927,16 +968,29 @@ there
 `, `
     hi
         hello
+`, `
+    hi
+        there
+            hello
 `
         ]
 
-        for (const style of styles) {
-            for (const s of strings) {
-                const string = s.trim()
-                const comment = convertToCommentBox(string, style)
+        for (const comb of objectCombinations({
+                style: styles,
+                string: strings
+            })) {
+            let {
+                style,
+                string
+            } = comb
+
+            string = string.trim()
+            const comment = convertToCommentBox(string, style)
+
+            for (const [selStart, selEnd] of allSlices(0, lineCount(comment) - 1)) {
                 const box = findStyledCommentBox(
-                    0,
-                    lineCount(comment) - 1,
+                    selStart,
+                    selEnd,
                     style,
                     fakeDocument(comment)
                 )
@@ -954,6 +1008,7 @@ there
                 }
 
                 assert.strictEqual(trimLine(string), trimLine(newString), "\n" + comment)
+
             }
         }
     })
