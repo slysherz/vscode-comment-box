@@ -35,6 +35,7 @@
  * @property {string} rightEdgeToken
  * @property {string} fillingToken
  * @property {number} width
+ * @property {number} maxEndColumn
  * @property {string} textAlignment
  * @property {boolean} removeEmptyLines
  * @property {boolean} ignoreOuterIndentation
@@ -219,7 +220,7 @@ function padRight(string, width, token) {
     }
 
     // In case we couldn't pad to the end, add spaces
-    return string + " ".repeat(tokensLeft)
+    return string + " ".repeat(Math.max(0, tokensLeft))
 }
 
 /**
@@ -430,6 +431,7 @@ function convertToCommentBox(text, options) {
         rightEdgeToken,
         fillingToken,
         width: desiredWidth,
+        maxEndColumn,
         //clearAroundText,
         textAlignment,
         removeEmptyLines,
@@ -478,7 +480,10 @@ function convertToCommentBox(text, options) {
     const edgesWidth = stringWidth(leftEdgeToken) + stringWidth(rightEdgeToken)
 
     // Calculate width of the box
-    const width = desiredWidth || maxLineWidth + edgesWidth
+    const width = Math.min(
+        desiredWidth || maxLineWidth + edgesWidth,
+        maxEndColumn - indentationLevel
+    )
 
     const alignmentStyle = {
         center: padToCenter,

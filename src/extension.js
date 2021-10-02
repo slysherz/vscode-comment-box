@@ -27,6 +27,7 @@ const {
  * @property {string} rightEdgeToken
  * @property {string} fillingToken
  * @property {number} boxWidth
+ * @property {number} maxEndColumn
  * @property {string} textAlignment
  * @property {boolean} removeEmptyLines
  * @property {boolean} ignoreOuterIndentation
@@ -69,6 +70,7 @@ function loadOldConfiguration() {
         capitalize: configuration.get("capitalize"),
         textAlignment: configuration.get("textAlignment"),
         boxWidth: configuration.get("boxWidth"),
+        maxEndColumn: 120,
         extendSelection: configuration.get("extendSelection"),
         commentStartToken: configuration.get("commentStartToken"),
         commentEndToken: configuration.get("commentEndToken"),
@@ -99,6 +101,7 @@ function mergeConfigurations(configurations) {
         capitalize: true,
         textAlignment: "center",
         boxWidth: 0,
+        maxEndColumn: 120,
         extendSelection: true,
         commentStartToken: "/*",
         commentEndToken: "**/",
@@ -141,6 +144,7 @@ function configurationToStyle(configuration, tabSize) {
         leftEdgeToken: configuration.leftEdgeToken,
         rightEdgeToken: configuration.rightEdgeToken,
         width: configuration.boxWidth,
+        maxEndColumn: configuration.maxEndColumn,
         textAlignment: configuration.textAlignment,
         removeEmptyLines: configuration.removeEmptyLines,
         ignoreOuterIndentation: configuration.ignoreOuterIndentation,
