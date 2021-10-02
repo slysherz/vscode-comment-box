@@ -282,6 +282,7 @@ suite("Comment Functions Tests", function () {
         rightEdgeToken: " *",
         fillingToken: " ",
         width: 0,
+        maxEndColumn: 120,
         textAlignment: "center",
         removeEmptyLines: true,
         ignoreOuterIndentation: true,
@@ -363,6 +364,11 @@ suite("Comment Functions Tests", function () {
         bottomLeftToken: " +",
         fillingToken: "~-",
         textAlignment: "center",
+    })
+
+    const rightLimitStyle = extend(keepIndentationStyle, {
+        maxEndColumn: 10,
+        boxWidth: 10
     })
 
     const testCases = [{
@@ -698,6 +704,24 @@ suite("Comment Functions Tests", function () {
  * ああああああ *\n\
  ****************/\
 "
+        },
+        {
+            name: "Works with maxEndColumn 1",
+            style: rightLimitStyle,
+            input: "hello",
+            result: "\
+/*******************\n\
+ * hello           *\n\
+ *******************/"
+        },
+        {
+            name: "Works with maxEndColumn 2",
+            style: rightLimitStyle,
+            input: "    hello",
+            result: "\
+    /***************\n\
+     * hello       *\n\
+     ***************/"
         }
     ]
 
