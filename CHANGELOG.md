@@ -1,5 +1,18 @@
 # Changelog
 
+## [Unreleased]
+
+Automatically update and remove the entire box!
+
+### Added
+
+- The `Update` and `Remove` commands are now able to find the entire comment box.
+    - When your cursor is in the middle of a comment, the `Remove` command will remove the entire box
+    - When your cursor is in the middle of a comment, the `Update` command will regenerate the entire box
+    - Play with it, if you find a situation where it doesn't behave how you'd expect, please let me know
+- New `maxEndColumn` setting, useful if you want to make sure the box doesn't go over a given column
+    - Thanks @dgraber95
+
 ## [2.1.0]
 
 Support for updating and removing comments, and better unicode support!

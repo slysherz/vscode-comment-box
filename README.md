@@ -1,7 +1,8 @@
 # Comment Box for Visual Studio Code
 
-This VS Code extension creates highly configurable commands that transform any piece of text into a pretty comment box, or remove and update existing comment boxes.
+Add, remove and update pretty and highly configurable comment boxes in VS Code. The Comment Box extension adds new commands to VS Code that allow you to easily manage your comment boxes.
 
+![Comment Box usage example](images/usage-example.gif)
 
 ## Examples:
 #### Adding a simple comment (with default settings)
@@ -211,7 +212,6 @@ settings.json:
 
 #### I Live on the Edge
 ```
-// Pre-comment my comment
 /*==================+
  |I LIVE ON THE EDGE|
  |~-~-~-~SEE?~-~-~-~|
@@ -221,7 +221,7 @@ settings.json:
 ```
 "commentBox.styles": {
     "defaultStyle": {
-        "commentStartToken": "// Pre-comment my comment\n/*",
+        "commentStartToken": "/*",
         "commentEndToken": "*/",
         "leftEdgeToken": " |",
         "rightEdgeToken": "|",

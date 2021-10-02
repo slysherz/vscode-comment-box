@@ -1,7 +1,7 @@
 {
     "name": "comment-box",
     "displayName": "Comment Box",
-    "description": "Transform text into a configurable comment box",
+    "description": "Add, remove and update highly configurable comment boxes",
     "icon": "images/comment-box-logo.png",
     "version": "2.1.0",
     "publisher": "SlySherZ",
