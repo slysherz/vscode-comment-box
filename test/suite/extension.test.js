@@ -367,8 +367,8 @@ suite("Comment Functions Tests", function () {
     })
 
     const rightLimitStyle = extend(keepIndentationStyle, {
-        maxEndColumn: 10,
-        boxWidth: 10
+        maxEndColumn: 20,
+        width: 20
     })
 
     const testCases = [{
