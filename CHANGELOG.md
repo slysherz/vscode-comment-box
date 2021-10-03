@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [2.2.0]
 
 Automatically update and remove the entire box!
 
