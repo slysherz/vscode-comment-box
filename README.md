@@ -96,7 +96,7 @@ Define your comment styles with the `commentBox.styles` setting:
         "ignoreOuterIndentation": false,
         "removeEmptyLines": false,
         "textAlignment": "left"
-    }
+    },
     "pythonicStyle": {
         "commentStartToken": "",
         "commentEndToken": "##",
