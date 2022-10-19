@@ -3,7 +3,7 @@
     "displayName": "Comment Box",
     "description": "Add, remove and update highly configurable comment boxes",
     "icon": "images/comment-box-logo.png",
-    "version": "2.2.0",
+    "version": "2.2.1",
     "publisher": "SlySherZ",
     "license": "MIT",
     "repository": {
@@ -73,10 +73,11 @@
                                 "type": "string",
                                 "enum": [
                                     "center",
-                                    "left"
+                                    "left",
+                                    "right"
                                 ],
                                 "default": "center",
-                                "description": "Controls how the text should be aligned. Can be: \n- \"center\" or \n- \"left\"."
+                                "description": "Controls how the text should be aligned. Can be: \n- \"center\", \n- \"left\"\n- \"right\"."
                             },
                             "boxWidth": {
                                 "type": "number",

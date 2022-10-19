@@ -224,6 +224,30 @@ function padRight(string, width, token) {
 }
 
 /**
+ * Extends a string up to 'width' characters, by filling it with the token characters from the left
+ * @param {string} string   The string which will be extended
+ * @param {number} width    The width we want the new string to have
+ * @param {string} token    The characters that will be used to extend the string
+ */
+ function padLeft(string, width, token) {
+    const tokens = splitByCharPoints(token)
+    let tokensLeft = width - widthOfLastLine(string)
+    let pad = ""
+
+    let i = 0
+    while (tokensLeft >= stringWidth(tokens[i])) {
+        pad += tokens[i]
+        tokensLeft -= Math.max(1, stringWidth(tokens[i]))
+        i = (i + 1) % tokens.length
+    }
+
+    // In case we couldn't pad to the end, add spaces
+    pad += " ".repeat(Math.max(0, tokensLeft))
+
+    return pad + string
+}
+
+/**
  * Extends a string up to 'width' characters, by filling it with the token characters from both sides
  * The token characters are inserted from the edges to the middle, so that the edges always look the same
  * @param {string} string   The string which will be extended
@@ -487,7 +511,8 @@ function convertToCommentBox(text, options) {
 
     const alignmentStyle = {
         center: padToCenter,
-        left: padRight
+        left: padRight,
+        right: padLeft
     } [textAlignment]
 
     lines = lines

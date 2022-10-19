@@ -117,7 +117,7 @@ The `Add Comment Box` command always uses the `defaultStyle`.
 Setting | Description
 --- | ---
 `capitalize` | Capitalizes the text inside the box.
-`textAlignment` | Controls how the text should be aligned. Can be 'center' or 'left'.
+`textAlignment` | Controls how the text should be aligned. Can be 'center', 'left' or 'right'.
 `extendSelection` | When 'true' the whole line is replaced, not just the selected part.
 `commentStartToken` | Characters that start a multi-line comment for your current language. This also defines the top left corner of the box.
 `commentEndToken` | Characters that end a multi-line comment for your current language. This also defines the bottom right corner of the box.

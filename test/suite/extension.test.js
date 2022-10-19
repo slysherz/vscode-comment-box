@@ -371,6 +371,11 @@ suite("Comment Functions Tests", function () {
         width: 20
     })
 
+    const rightStyle = extend(defaultStyle, {
+        textAlignment: "right",
+        width: 50
+    })
+
     const testCases = [{
             name: "Default works with an empty line.",
             style: defaultStyle,
@@ -722,6 +727,15 @@ suite("Comment Functions Tests", function () {
     /***************\n\
      * hello       *\n\
      ***************/"
+        },
+        {
+            name: "Works with right style",
+            style: rightStyle,
+            input: "    hello",
+            result: "\
+/*************************************************\n\
+ *                                         hello *\n\
+ *************************************************/"
         }
     ]
 
@@ -953,12 +967,12 @@ there
 
         const styles = [
             ...objectCombinations({
-                textAlignment: ["center", "left"],
+                textAlignment: ["center", "left", "right"],
                 ignoreOuterIndentation: [true, false],
                 ignoreInnerIndentation: [true, false]
             }, baseStyle),
             ...objectCombinations({
-                textAlignment: ["center", "left"],
+                textAlignment: ["center", "left", "right"],
                 ignoreOuterIndentation: [true, false],
                 ignoreInnerIndentation: [true, false]
             }, pythonStyle),

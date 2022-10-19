@@ -1,4 +1,8 @@
 # Changelog
+## [2.2.1]
+
+- The `textAlignment` option now allows aligning text to the `right`
+    - Thanks @Xelbayria
 
 ## [2.2.0]
 
