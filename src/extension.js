@@ -32,6 +32,7 @@ const {
  * @property {boolean} removeEmptyLines
  * @property {boolean} ignoreOuterIndentation
  * @property {boolean} ignoreInnerIndentation
+ * @property {boolean} hidden
  */
 
 function ignore() {
@@ -66,11 +67,10 @@ function toStringArray(value) {
 function loadOldConfiguration() {
     const configuration = vscode.workspace.getConfiguration("commentBox")
 
-    return {
+    return mergeConfigurations([{
         capitalize: configuration.get("capitalize"),
         textAlignment: configuration.get("textAlignment"),
         boxWidth: configuration.get("boxWidth"),
-        maxEndColumn: 0,
         extendSelection: configuration.get("extendSelection"),
         commentStartToken: configuration.get("commentStartToken"),
         commentEndToken: configuration.get("commentEndToken"),
@@ -85,7 +85,7 @@ function loadOldConfiguration() {
         ignoreOuterIndentation: configuration.get("ignoreOuterIndentation"),
         ignoreInnerIndentation: configuration.get("ignoreInnerIndentation"),
         // clearAroundText: configuration.get("textToEdgeSpace")
-    }
+    }])
 }
 
 /**
@@ -115,6 +115,7 @@ function mergeConfigurations(configurations) {
         removeEmptyLines: true,
         ignoreOuterIndentation: true,
         ignoreInnerIndentation: true,
+        hidden: false,
     }
 
     for (const config of configurations) {
@@ -339,7 +340,6 @@ function pickedStyleCommand(transformation) {
         // Load user settings
         const baseConfig = vscode.workspace.getConfiguration("commentBox")
         const styles = baseConfig.get("styles")
-        const styleNames = Object.keys(styles)
 
         // Check whether the style to be used was passed as an argument
         if (args.length) {
@@ -356,6 +356,14 @@ function pickedStyleCommand(transformation) {
             transformation(editor, configuration)
         } else {
             // No style was passed, ask the user
+            const styleNames = Object.keys(styles).filter(style => !styles[style].hidden)
+            if (styleNames.length === 0) {
+                vscode.window.showErrorMessage(
+                    "All styles are hidden, there are no styles to pick from."
+                )
+                return;
+            }
+
             vscode.window.showQuickPick(styleNames).then((styleName) => {
                 if (!styleName) {
                     // The user didn't pick any style

@@ -132,6 +132,7 @@ Setting | Description
 `removeEmptyLines` | When set to 'true', skips drawing lines that are empty.
 `ignoreOuterIndentation` | When set to 'false', the box is placed in a way that matches the indentation of the text being commented. Works best when 'extendSelection' is enabled.
 `ignoreInnerIndentation` | When set to 'false', the text inside the box will keep the same relative indentation between the lines. Requires `textAlignment` to be set to 'left'.
+`hidden` | When set to true, this style won't appear in commands like 'using style' commands. It can still be used in 'basedOn', or with a specific keybind.
 
 
 ### Style examples

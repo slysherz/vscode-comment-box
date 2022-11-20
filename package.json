@@ -170,6 +170,11 @@
                                     }
                                 ],
                                 "description": "Name of the style or styles this one is based on. Inherits all properties from the given styles."
+                            },
+                            "hidden": {
+                                "type": "boolean",
+                                "default": false,
+                                "description": "When set to true, this style won't appear in commands like 'using style' commands. It can still be used in 'basedOn', or with a specific keybind."
                             }
                         },
                         "additionalProperties": false
