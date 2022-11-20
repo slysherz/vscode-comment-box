@@ -502,11 +502,12 @@ function convertToCommentBox(text, options) {
     const maxLineWidth = lines.reduce((max, str) => Math.max(max, stringWidth(str)), 0)
 
     const edgesWidth = stringWidth(leftEdgeToken) + stringWidth(rightEdgeToken)
+    const maxAllowedWidth = maxEndColumn === 0 ? Infinity : maxEndColumn - indentationLevel
 
     // Calculate width of the box
     const width = Math.min(
         desiredWidth || maxLineWidth + edgesWidth,
-        maxEndColumn - indentationLevel
+        maxAllowedWidth
     )
 
     const alignmentStyle = {
