@@ -282,7 +282,7 @@ suite("Comment Functions Tests", function () {
         rightEdgeToken: " *",
         fillingToken: " ",
         width: 0,
-        maxEndColumn: 120,
+        maxEndColumn: 0,
         textAlignment: "center",
         removeEmptyLines: true,
         ignoreOuterIndentation: true,

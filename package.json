@@ -86,7 +86,7 @@
                             },
                             "maxEndColumn": {
                                 "type": "number",
-                                "default": 120,
+                                "default": 0,
                                 "description": "The max column where a comment box can end at. When set to 0, it can end anywhere."
                             },
                             "extendSelection": {
