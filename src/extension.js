@@ -182,7 +182,7 @@ function userSelection(editor, selection, options, extendSelection) {
     }
 }
 
-function getLineAcess(editor) {
+function getLineAccess(editor) {
     return function getLine(n) {
         if (n < 0 || n >= editor.document.lineCount) {
             return null
@@ -198,7 +198,7 @@ function findCommentSelection(editor, selection, options, extendSelection) {
     const {
         selection: slice,
         annotatedLines
-    } = findStyledCommentBox(startLine, endLine, options, getLineAcess(editor))
+    } = findStyledCommentBox(startLine, endLine, options, getLineAccess(editor))
 
     selection = getExtendedSelection(editor, slice[0], slice[1])
 
