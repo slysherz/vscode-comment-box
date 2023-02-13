@@ -55,6 +55,7 @@
                     "default": {
                         "defaultStyle": {}
                     },
+                    "scope": "language-overridable",
                     "additionalProperties": {
                         "type": "object",
                         "properties": {

@@ -314,8 +314,7 @@ function defaultStyleCommand(transformation) {
         // Load user settings
         const oldDefaultStyle = loadOldConfiguration()
 
-        const baseConfig = vscode.workspace.getConfiguration("commentBox")
-        let newDefaultStyle = tryGetConfiguration(baseConfig, "defaultStyle")
+        let newDefaultStyle = tryGetConfiguration("defaultStyle")
 
         if (!newDefaultStyle) {
             return;
@@ -338,15 +337,16 @@ function pickedStyleCommand(transformation) {
         }
 
         // Load user settings
-        const baseConfig = vscode.workspace.getConfiguration("commentBox")
-        const styles = baseConfig.get("styles")
+        const languageId = editor.document.languageId
+        const styles = vscode.workspace.getConfiguration("commentBox", { languageId })
+            .get("styles")
 
         // Check whether the style to be used was passed as an argument
         if (args.length) {
             // We already have the style, use it
             const styleName = "" + args[0]
 
-            const style = tryGetConfiguration(baseConfig, styleName)
+            const style = tryGetConfiguration(styleName)
             if (!style) {
                 return;
             }
@@ -370,7 +370,7 @@ function pickedStyleCommand(transformation) {
                     return;
                 }
 
-                const style = tryGetConfiguration(baseConfig, styleName)
+                const style = tryGetConfiguration(styleName)
 
                 if (!style) {
                     // The user got a message something is wrong, don't do anything else
@@ -388,10 +388,9 @@ function pickedStyleCommand(transformation) {
 /**
  * Tries to find a configuration with a given name in the user settings. If it doesn't exist, an
  * error notification is shown to the user and null is returned.
- * @param {*} baseConfig 
  * @param {string} styleName
  */
-function tryGetConfiguration(baseConfig, styleName, checked = []) {
+function tryGetConfiguration(styleName, checked = []) {
     if (checked.includes(styleName)) {
         vscode.window.showErrorMessage(
             "The following styles refer to each other in a cycle: " +
@@ -401,7 +400,10 @@ function tryGetConfiguration(baseConfig, styleName, checked = []) {
         return null
     }
 
-    const style = baseConfig.get(`styles.${styleName}`)
+    const editor = vscode.window.activeTextEditor
+    const languageId = editor.document.languageId
+    const styles = vscode.workspace.getConfiguration("commentBox", { languageId }).get('styles')
+    const style = styles[styleName]
 
     if (!style) {
         if (checked.length) {
@@ -422,7 +424,7 @@ function tryGetConfiguration(baseConfig, styleName, checked = []) {
     let parentStyles = []
     checked.push(styleName)
     for (const parentStyleName of basedOn) {
-        const parentStyle = tryGetConfiguration(baseConfig, parentStyleName, checked)
+        const parentStyle = tryGetConfiguration(parentStyleName, checked)
 
         if (!parentStyle) {
             // Failed to get parent style for some reason, child also fails
