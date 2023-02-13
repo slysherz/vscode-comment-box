@@ -17,13 +17,7 @@
     ],
     "activationEvents": [
         "onCommand:extension.commentBox",
-        "onCommand:commentBox.transformUsingStyle",
-        "onCommand:commentBox.add",
-        "onCommand:commentBox.remove",
-        "onCommand:commentBox.update",
-        "onCommand:commentBox.addUsingStyle",
-        "onCommand:commentBox.removeUsingStyle",
-        "onCommand:commentBox.updateUsingStyle"
+        "onCommand:commentBox.transformUsingStyle"
     ],
     "main": "./src/extension",
     "contributes": {
