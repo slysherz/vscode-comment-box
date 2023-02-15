@@ -276,22 +276,6 @@
                     "deprecationMessage": "This works for now but it might be removed in the future. Please use instead:\n\"commentBox.styles\": {\n    \"defaultStyle\": {\n        \"ignoreInnerIndentation\": ...\n    }\n}"
                 }
             }
-        },
-        "configurationDefaults": {
-            "[bash][dockerfile][coffeescript][ignore][julia][makefile][perl][perl6][powershell][properties][python][r][ruby][shell][shellscript][yaml][yml][home]": {
-                "commentBox.styles": {
-                    "defaultStyle": {
-                        "commentStartToken": "",
-                        "commentEndToken": "##",
-                        "leftEdgeToken": "# ",
-                        "rightEdgeToken": " #",
-                        "topEdgeToken": "#",
-                        "bottomEdgeToken": "#",
-                        "topRightToken": "##",
-                        "bottomLeftToken": "##"
-                    }
-                }
-            }
         }
     },
     "scripts": {
