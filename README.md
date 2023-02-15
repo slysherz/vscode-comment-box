@@ -234,3 +234,19 @@ settings.json:
     }
 }
 ```
+
+#### Multiple language support
+```
+/***********
+ * comment *
+ ***********/
+```
+settings.json:
+```
+"[javascript][cpp][c]": {
+    "commentBox.styles": {
+        "defaultStyle": {
+            "capitalize": false
+        }
+    }
+```
