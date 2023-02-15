@@ -1,4 +1,11 @@
 # Changelog
+## [2.3.0]
+
+- Add multi-language awareness support!
+    - You can now have different styles for different languages
+    Thanks @etjones
+    Thanks @Enteleform
+
 ## [2.2.1]
 
 - The `textAlignment` option now allows aligning text to the `right`
