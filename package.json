@@ -79,6 +79,15 @@
                                 "default": 0,
                                 "description": "The width of the comment box. When set to 0, it will automatically pick the smallest possible value."
                             },
+                            "wordWrap": {
+                                "type": "string",
+                                "enum": [
+                                    "on",
+                                    "off"
+                                ],
+                                "default": "off",
+                                "description": "When set to \"on\", lines that overflow the current \"boxWidth\" wrap to the next line."
+                            },
                             "maxEndColumn": {
                                 "type": "number",
                                 "default": 0,

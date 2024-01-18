@@ -28,6 +28,7 @@ const {
  * @property {string} fillingToken
  * @property {number} boxWidth
  * @property {number} maxEndColumn
+ * @property {string} wordWrap
  * @property {string} textAlignment
  * @property {boolean} removeEmptyLines
  * @property {boolean} ignoreOuterIndentation
@@ -102,6 +103,7 @@ function mergeConfigurations(configurations) {
         textAlignment: "center",
         boxWidth: 0,
         maxEndColumn: 0,
+        wordWrap: "false",
         extendSelection: true,
         commentStartToken: "/*",
         commentEndToken: "**/",
@@ -146,6 +148,7 @@ function configurationToStyle(configuration, tabSize) {
         rightEdgeToken: configuration.rightEdgeToken,
         width: configuration.boxWidth,
         maxEndColumn: configuration.maxEndColumn,
+        wordWrap: configuration.wordWrap,
         textAlignment: configuration.textAlignment,
         removeEmptyLines: configuration.removeEmptyLines,
         ignoreOuterIndentation: configuration.ignoreOuterIndentation,

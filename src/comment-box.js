@@ -36,6 +36,7 @@
  * @property {string} fillingToken
  * @property {number} width
  * @property {number} maxEndColumn
+ * @property {string} wordWrap
  * @property {string} textAlignment
  * @property {boolean} removeEmptyLines
  * @property {boolean} ignoreOuterIndentation
@@ -439,6 +440,51 @@ function matchMidLine(line, options) {
 }
 
 /**
+ * 
+ * @param {string} line 
+ * @param {number} width 
+ * @returns 
+ */
+function wordWrapLine(line, width) {
+    if (width <= 0) {
+        return [line]
+    }
+
+    if (stringWidth(line) <= width) {
+        return [line]
+    }
+
+    const words = []
+    for (const [_, a, b] of line.matchAll(/(\s*)(\S*)/g)) {
+        if (a !== '') {
+            words.push(a)
+        }
+        if (b !== '') {
+            words.push(b)
+        }
+    }
+
+    const result = []
+    let current = ''
+    for (const word of words) {
+        if (current === '' && result.length !== 0 && word[0] === ' ') {
+            continue
+        }
+
+        const next = current + word
+        if (current !== '' && stringWidth(next) > width) {
+            result.push(current.trim())
+            current = word
+        } else {
+            current += word
+        }
+    }
+
+    result.push(current.trim())
+    return result
+}
+
+/**
  * @param {string} text
  * @param {BoxStyle} options
  */
@@ -456,6 +502,7 @@ function convertToCommentBox(text, options) {
         fillingToken,
         width: desiredWidth,
         maxEndColumn,
+        wordWrap,
         //clearAroundText,
         textAlignment,
         removeEmptyLines,
@@ -509,6 +556,17 @@ function convertToCommentBox(text, options) {
         desiredWidth || maxLineWidth + edgesWidth,
         maxAllowedWidth
     )
+
+    if (wordWrap === 'on') {
+        const maxAllowedLineWidth = width - edgesWidth
+        const newLines = []
+        for (const line of lines) {
+            for (const newLine of wordWrapLine(line, maxAllowedLineWidth)) {
+                newLines.push(newLine)
+            }
+        }
+        lines = newLines
+    }
 
     const alignmentStyle = {
         center: padToCenter,
@@ -735,6 +793,7 @@ module.exports = {
     padRight,
     padToCenter,
     widthOfLastLine,
+    wordWrapLine,
 
     // User functions
     convertToCommentBox,
