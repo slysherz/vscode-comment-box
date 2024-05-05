@@ -15,7 +15,8 @@ const {
     convertToCommentBox,
     removeStyledCommentBox,
     findStyledCommentBox,
-    dedentBy
+    dedentBy,
+    wordWrapLine,
 } = require('../../src/comment-box')
 const {
     mergeConfigurations
@@ -266,6 +267,24 @@ suite("Helper Functions Tests", function () {
             "Works with sneaky unicode characters 2.")
         assert.equal(padToCenter("--", 9, "あ"), "あ --ああ",
             "Works with sneaky unicode characters 3.")
+    })
+
+    test("wordWrap", function () {
+        assert.deepEqual(wordWrapLine("", 2), [""])
+        assert.deepEqual(wordWrapLine("1", 2), ["1"])
+        assert.deepEqual(wordWrapLine("123", 2), ["123"])
+        assert.deepEqual(wordWrapLine("12 4", 1), ["12", "4"])
+        assert.deepEqual(wordWrapLine("12 4", 3), ["12", "4"])
+        assert.deepEqual(wordWrapLine("1 34 678", 1), ["1", "34", "678"])
+        assert.deepEqual(wordWrapLine("1 34 678", 2), ["1", "34", "678"])
+        assert.deepEqual(wordWrapLine("1 34 678", 3), ["1", "34", "678"])
+        assert.deepEqual(wordWrapLine("1 34 678", 4), ["1 34", "678"])
+        assert.deepEqual(wordWrapLine("1 34 678", 5), ["1 34", "678"])
+        assert.deepEqual(wordWrapLine("1 34 678", 6), ["1 34", "678"])
+        assert.deepEqual(wordWrapLine("1 34 678", 7), ["1 34", "678"])
+        assert.deepEqual(wordWrapLine("1 34 678", 8), ["1 34 678"])
+        assert.deepEqual(wordWrapLine("1  45", 4), ["1", "45"])
+        assert.deepEqual(wordWrapLine("1  45", 5), ["1  45"])
     })
 })
 

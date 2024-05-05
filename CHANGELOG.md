@@ -1,4 +1,8 @@
 # Changelog
+## Unreleased
+
+- Add wordWrap support
+
 ## [2.3.0]
 
 - Add multi-language awareness support!

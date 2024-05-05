@@ -440,10 +440,10 @@ function matchMidLine(line, options) {
 }
 
 /**
- * 
+ * Parses a line string into a list of lines, each one having up to width characters
  * @param {string} line 
  * @param {number} width 
- * @returns 
+ * @returns {string[]}
  */
 function wordWrapLine(line, width) {
     if (width <= 0) {
@@ -467,14 +467,15 @@ function wordWrapLine(line, width) {
     const result = []
     let current = ''
     for (const word of words) {
-        if (current === '' && result.length !== 0 && word[0] === ' ') {
+        const wordIsSpace = !!word.match(/\s/)
+        if (wordIsSpace && current === '') {
             continue
         }
 
         const next = current + word
         if (current !== '' && stringWidth(next) > width) {
             result.push(current.trim())
-            current = word
+            current = wordIsSpace ? '' : word
         } else {
             current += word
         }
