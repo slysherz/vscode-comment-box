@@ -1,12 +1,13 @@
 {
-    "compilerOptions": {
-        "module": "commonjs",
-        "target": "es6",
-        "lib": [
-            "es6"
-        ]
-    },
-    "exclude": [
-        "node_modules"
-    ]
+	"compilerOptions": {
+		"module": "Node16",
+		"target": "ES2022",
+		"checkJs": true,  /* Typecheck .js files. */
+		"lib": [
+			"ES2022"
+		]
+	},
+	"exclude": [
+		"node_modules"
+	]
 }

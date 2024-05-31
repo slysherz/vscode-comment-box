@@ -17,10 +17,10 @@ const {
     findStyledCommentBox,
     dedentBy,
     wordWrapLine,
-} = require('../../src/comment-box')
+} = require('../src/comment-box')
 const {
     mergeConfigurations
-} = require('../../src/extension')
+} = require('../src/extension')
 
 function* allCombinations(variations, start) {
     if (variations.length === 0) {
