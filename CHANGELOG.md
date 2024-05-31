@@ -1,14 +1,22 @@
 # Changelog
-## Unreleased
 
-- Add wordWrap support
+## [2.4.0]
+
+### Added
+
+- `wordWrap` support
+    - When set to "on", lines overflow to the next line when they are over the `width` or `maxLineWidth` limits
+    - Defaults to "off" for now, I'll revisit this setting at a later date 
+    - Thanks @ozum
 
 ## [2.3.0]
 
-- Add multi-language awareness support!
+### Added
+
+- Multi-language awareness support!
     - You can now have different styles for different languages
-    Thanks @etjones
-    Thanks @Enteleform
+    - Thanks @etjones
+    - Thanks @Enteleform
 
 ## [2.2.1]
 

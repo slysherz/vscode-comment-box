@@ -3,7 +3,7 @@
     "displayName": "Comment Box",
     "description": "Add, remove and update highly configurable comment boxes",
     "icon": "images/comment-box-logo.png",
-    "version": "2.3.0",
+    "version": "2.4.0",
     "publisher": "SlySherZ",
     "license": "MIT",
     "repository": {
