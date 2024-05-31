@@ -395,7 +395,18 @@ suite("Comment Functions Tests", function () {
         width: 50
     })
 
-    const testCases = [{
+    const wrapStyle = extend(pythonStyle, {
+        wordWrap: 'on',
+        width: 15
+    })
+
+    const wrapStyleMax = extend(pythonStyle, {
+        wordWrap: 'on',
+        maxEndColumn: 15
+    })
+
+    const testCases = [
+        {
             name: "Default works with an empty line.",
             style: defaultStyle,
             input: "",
@@ -755,6 +766,32 @@ suite("Comment Functions Tests", function () {
 /*************************************************\n\
  *                                         hello *\n\
  *************************************************/"
+        },
+        {
+            name: "Word wrap",
+            style: wrapStyle,
+            input: "this is a\nmulti-line comment example",
+            result: "\
+###############\n\
+#  this is a  #\n\
+# multi-line  #\n\
+#   comment   #\n\
+#   example   #\n\
+###############\
+"
+        },
+        {
+            name: "Word wrap",
+            style: wrapStyleMax,
+            input: "this is a\nmulti-line comment example",
+            result: "\
+###############\n\
+#  this is a  #\n\
+# multi-line  #\n\
+#   comment   #\n\
+#   example   #\n\
+###############\
+"
         }
     ]
 
