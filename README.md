@@ -2,7 +2,7 @@
 
 Add, remove and update pretty and highly configurable comment boxes in VS Code. The Comment Box extension adds new commands to VS Code that allow you to easily manage your comment boxes.
 
-![Comment Box usage example](images/usage-example.gif)
+![Comment Box usage example](images/usage-example-faster.gif)
 
 ## Examples:
 #### Adding a simple comment (with default settings)
