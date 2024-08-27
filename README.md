@@ -118,6 +118,7 @@ Setting | Description
 --- | ---
 `capitalize` | Capitalizes the text inside the box.
 `textAlignment` | Controls how the text should be aligned. Can be 'center', 'left' or 'right'.
+`wordWrap` | When set to 'on', lines that overflow the current 'boxWidth' wrap to the next line.
 `extendSelection` | When 'true' the whole line is replaced, not just the selected part.
 `commentStartToken` | Characters that start a multi-line comment for your current language. This also defines the top left corner of the box.
 `commentEndToken` | Characters that end a multi-line comment for your current language. This also defines the bottom right corner of the box.
@@ -127,12 +128,14 @@ Setting | Description
 `bottomEdgeToken` | Characters that are used to draw bottom edge of the box. The entire bottom edge is skipped when this is set to an empty string.
 `leftEdgeToken` | Characters that are used to draw left edge of the box.
 `rightEdgeToken` | Characters that are used to draw right edge of the box.
-`boxWidth` | The width of the comment box. When set to 0, it will automatically pick the smallest possible value.
 `fillingToken` | Characters that are used to fill the space between the text and the edges.
+`boxWidth` | The width of the comment box. When set to 0, it will automatically pick the smallest possible value.
+`maxEndColumn` | The max column where a comment box can end at. When set to 0, it can end anywhere.
 `removeEmptyLines` | When set to 'true', skips drawing lines that are empty.
 `ignoreOuterIndentation` | When set to 'false', the box is placed in a way that matches the indentation of the text being commented. Works best when 'extendSelection' is enabled.
-`ignoreInnerIndentation` | When set to 'false', the text inside the box will keep the same relative indentation between the lines. Requires `textAlignment` to be set to 'left'.
+`ignoreInnerIndentation` | When set to 'false', the text inside the box will keep the same relative indentation between the lines. Requires 'textAlignment' to be set to 'left'.
 `hidden` | When set to true, this style won't appear in commands like 'using style' commands. It can still be used in 'basedOn', or with a specific keybind.
+`basedOn` | Name of the style or styles this one is based on. Inherits all properties from the given styles.
 
 
 ### Style examples
@@ -249,4 +252,5 @@ settings.json:
             "capitalize": false
         }
     }
+}
 ```
