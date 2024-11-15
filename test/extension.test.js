@@ -18,9 +18,6 @@ const {
     dedentBy,
     wordWrapLine,
 } = require('../src/comment-box')
-const {
-    mergeConfigurations
-} = require('../src/extension')
 
 function* allCombinations(variations, start) {
     if (variations.length === 0) {
@@ -133,8 +130,6 @@ function matchesProperties(properties, inObj) {
 
 // Defines a Mocha test suite to group tests of similar kind together
 suite("Helper Functions Tests", function () {
-    const eq = assert.strictEqual
-
     test("widthOfLastLine", function () {
         assert.equal(widthOfLastLine(""), 0, "Width of an empty line is 0.")
         assert.equal(widthOfLastLine("***\n"), 0, "Last line empty, width of an empty line is 0.")
