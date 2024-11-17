@@ -188,101 +188,118 @@
                     "type": "boolean",
                     "default": true,
                     "description": "Capitalizes the text inside the box.",
-                    "deprecationMessage": "This works for now but it might be removed in the future. Please use instead:\n\"commentBox.styles\": {\n    \"defaultStyle\": {\n        \"capitalize\": ...\n    }\n}"
+                    "scope": "language-overridable"
                 },
                 "commentBox.textAlignment": {
                     "type": "string",
                     "enum": [
                         "center",
-                        "left"
+                        "left",
+                        "right"
                     ],
                     "default": "center",
-                    "description": "Controls how the text should be aligned. Can be: \n- \"center\" or \n- \"left\".",
-                    "deprecationMessage": "This works for now but it might be removed in the future. Please use instead:\n\"commentBox.styles\": {\n    \"defaultStyle\": {\n        \"textAlignment\": ...\n    }\n}"
+                    "description": "Controls how the text should be aligned. Can be: \n- \"center\", \n- \"left\"\n- \"right\".",
+                    "scope": "language-overridable"
                 },
                 "commentBox.boxWidth": {
                     "type": "number",
                     "default": 0,
                     "description": "The width of the comment box. When set to 0, it will automatically pick the smallest possible value.",
-                    "deprecationMessage": "This works for now but it might be removed in the future. Please use instead:\n\"commentBox.styles\": {\n    \"defaultStyle\": {\n        \"boxWidth\": ...\n    }\n}"
+                    "scope": "language-overridable"
+                },
+                "commentBox.wordWrap": {
+                    "type": "string",
+                    "enum": [
+                        "on",
+                        "off"
+                    ],
+                    "default": "off",
+                    "description": "When set to \"on\", lines that overflow the current \"boxWidth\" wrap to the next line.",
+                    "scope": "language-overridable"
+                },
+                "commentBox.maxEndColumn": {
+                    "type": "number",
+                    "default": 0,
+                    "description": "The max column where a comment box can end at. When set to 0, it can end anywhere.",
+                    "scope": "language-overridable"
                 },
                 "commentBox.extendSelection": {
                     "type": "boolean",
                     "default": true,
                     "description": "When 'true' the whole line is replaced, not just the selected part.",
-                    "deprecationMessage": "This works for now but it might be removed in the future. Please use instead:\n\"commentBox.styles\": {\n    \"defaultStyle\": {\n        \"extendSelection\": ...\n    }\n}"
+                    "scope": "language-overridable"
                 },
                 "commentBox.commentStartToken": {
                     "type": "string",
                     "default": "/*",
                     "description": "Characters that start a multi-line comment for your current language. This also defines the top left corner of the box.",
-                    "deprecationMessage": "This works for now but it might be removed in the future. Please use instead:\n\"commentBox.styles\": {\n    \"defaultStyle\": {\n        \"commentStartToken\": ...\n    }\n}"
+                    "scope": "language-overridable"
                 },
                 "commentBox.commentEndToken": {
                     "type": "string",
                     "default": "**/",
                     "description": "Characters that end a multi-line comment for your current language. This also defines the bottom right corner of the box.",
-                    "deprecationMessage": "This works for now but it might be removed in the future. Please use instead:\n\"commentBox.styles\": {\n    \"defaultStyle\": {\n        \"commentEndToken\": ...\n    }\n}"
+                    "scope": "language-overridable"
                 },
                 "commentBox.topRightToken": {
                     "type": "string",
                     "default": "**",
                     "description": "Characters that are used to draw the top right corner of the box.",
-                    "deprecationMessage": "This works for now but it might be removed in the future. Please use instead:\n\"commentBox.styles\": {\n    \"defaultStyle\": {\n        \"topRightToken\": ...\n    }\n}"
+                    "scope": "language-overridable"
                 },
                 "commentBox.bottomLeftToken": {
                     "type": "string",
                     "default": " **",
                     "description": "Characters that are used to draw the bottom left corner of the box.",
-                    "deprecationMessage": "This works for now but it might be removed in the future. Please use instead:\n\"commentBox.styles\": {\n    \"defaultStyle\": {\n        \"bottomLeftToken\": ...\n    }\n}"
+                    "scope": "language-overridable"
                 },
                 "commentBox.topEdgeToken": {
                     "type": "string",
                     "default": "*",
                     "description": "Characters that are used to draw top edge of the box. The entire top edge is skipped when this is set to an empty string.",
-                    "deprecationMessage": "This works for now but it might be removed in the future. Please use instead:\n\"commentBox.styles\": {\n    \"defaultStyle\": {\n        \"topEdgeToken\": ...\n    }\n}"
+                    "scope": "language-overridable"
                 },
                 "commentBox.bottomEdgeToken": {
                     "type": "string",
                     "default": "*",
                     "description": "Characters that are used to draw bottom edge of the box. The entire bottom edge is skipped when this is set to an empty string.",
-                    "deprecationMessage": "This works for now but it might be removed in the future. Please use instead:\n\"commentBox.styles\": {\n    \"defaultStyle\": {\n        \"bottomEdgeToken\": ...\n    }\n}"
+                    "scope": "language-overridable"
                 },
                 "commentBox.leftEdgeToken": {
                     "type": "string",
                     "default": " * ",
                     "description": "Characters that are used to draw the left edge of the box.",
-                    "deprecationMessage": "This works for now but it might be removed in the future. Please use instead:\n\"commentBox.styles\": {\n    \"defaultStyle\": {\n        \"leftEdgeToken\": ...\n    }\n}"
+                    "scope": "language-overridable"
                 },
                 "commentBox.rightEdgeToken": {
                     "type": "string",
                     "default": " *",
                     "description": "Characters that are used to draw the right edge of the box.",
-                    "deprecationMessage": "This works for now but it might be removed in the future. Please use instead:\n\"commentBox.styles\": {\n    \"defaultStyle\": {\n        \"rightEdgeToken\": ...\n    }\n}"
+                    "scope": "language-overridable"
                 },
                 "commentBox.fillingToken": {
                     "type": "string",
                     "default": " ",
                     "description": "Characters that are used to fill the space between the text and the edges.",
-                    "deprecationMessage": "This works for now but it might be removed in the future. Please use instead:\n\"commentBox.styles\": {\n    \"defaultStyle\": {\n        \"fillingToken\": ...\n    }\n}"
+                    "scope": "language-overridable"
                 },
                 "commentBox.removeEmptyLines": {
                     "type": "boolean",
                     "default": true,
                     "description": "When set to 'true', skips drawing lines that are empty.",
-                    "deprecationMessage": "This works for now but it might be removed in the future. Please use instead:\n\"commentBox.styles\": {\n    \"defaultStyle\": {\n        \"removeEmptyLines\": ...\n    }\n}"
+                    "scope": "language-overridable"
                 },
                 "commentBox.ignoreOuterIndentation": {
                     "type": "boolean",
                     "default": true,
                     "description": "When set to 'false', the box is placed in a way that matches the indentation of the text being commented. Works best when 'extendSelection' is enabled.",
-                    "deprecationMessage": "This works for now but it might be removed in the future. Please use instead:\n\"commentBox.styles\": {\n    \"defaultStyle\": {\n        \"ignoreOuterIndentation\": ...\n    }\n}"
+                    "scope": "language-overridable"
                 },
                 "commentBox.ignoreInnerIndentation": {
                     "type": "boolean",
                     "default": true,
                     "description": "When set to 'false', the text inside the box will keep the same relative indentation between the lines. Requires 'commentBox.textAlignment' to be set to 'left'.",
-                    "deprecationMessage": "This works for now but it might be removed in the future. Please use instead:\n\"commentBox.styles\": {\n    \"defaultStyle\": {\n        \"ignoreInnerIndentation\": ...\n    }\n}"
+                    "scope": "language-overridable"
                 }
             }
         }

@@ -25,7 +25,7 @@ function ignore() {
 
 function getExtendedSelection(editor, lineStart, lineEnd) {
     let last = editor.document.lineAt(lineEnd).range.end.character
-    let selection = new(vscode.Selection)(
+    let selection = new (vscode.Selection)(
         lineStart,
         0,
         lineEnd,
@@ -81,7 +81,7 @@ function findCommentSelection(editor, selection, options, extendSelection) {
  * @param {vscode.TextEditor} editor 
  * @param {import('./configuration').StyleAndConfig} param1 
  */
-function findAndRemoveStyledComment(editor, {style, config}) {
+function findAndRemoveStyledComment(editor, { style, config }) {
     const editOperations = editor.selections.map((current) => {
         let {
             selection,
@@ -114,7 +114,7 @@ function findAndRemoveStyledComment(editor, {style, config}) {
  * @param {vscode.TextEditor} editor 
  * @param {import('./configuration').StyleAndConfig} param1 
  */
-function findAndUpdateStyledComment(editor, {style, config}) {
+function findAndUpdateStyledComment(editor, { style, config }) {
     const editOperations = editor.selections.map((current) => {
         let {
             selection,
@@ -147,14 +147,16 @@ function findAndUpdateStyledComment(editor, {style, config}) {
  * @param {vscode.TextEditor} editor 
  * @param {import('./configuration').StyleAndConfig} param1 
  */
-function addStyledComment(editor, {style, config}) {
+function addStyledComment(editor, { style, config }) {
     const editOperations = editor.selections.map((current) => {
         let {
             selection,
             selectionText: text
         } = userSelection(editor, current, style, config.extendSelection)
 
-        text = convertToCommentBox(text, style)
+        // text = convertToCommentBox(text, style)
+        text = JSON.stringify(getStyleList(), null, 4)
+        text += '\n' + JSON.stringify(style, null, 4)
 
         return {
             text,

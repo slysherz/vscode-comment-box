@@ -32,6 +32,7 @@ const vscode = require('vscode')
  */
 
 const DEFAULT_STYLE = 'defaultStyle'
+const CONFIGURATION_NAME = 'commentBox'
 
 /**
  * Find the tab size for the current document
@@ -41,6 +42,12 @@ function getTabSize() {
       return vscode.workspace
             .getConfiguration("editor", vscode.window.activeTextEditor.document.uri)
             .get("tabSize")
+}
+
+function getStylesConfiguration() {
+      const editor = vscode.window.activeTextEditor
+      const languageId = editor.document.languageId
+      return vscode.workspace.getConfiguration(CONFIGURATION_NAME, { languageId }).inspect('styles')
 }
 
 function toStringArray(value) {
@@ -59,7 +66,7 @@ function toStringArray(value) {
  * @returns {BoxStyleConfiguration} 
  */
 function loadOldConfiguration() {
-      const configuration = vscode.workspace.getConfiguration("commentBox")
+      const configuration = vscode.workspace.getConfiguration(CONFIGURATION_NAME)
 
       return mergeConfigurations([{
             capitalize: configuration.get("capitalize"),
@@ -82,8 +89,31 @@ function loadOldConfiguration() {
       }])
 }
 
-
-
+function getDefaultStyleConfiguration() {
+      const editor = vscode.window.activeTextEditor
+      const languageId = editor.document.languageId
+      const config = vscode.workspace.getConfiguration(CONFIGURATION_NAME, { languageId })
+      return mergeConfigurations([{
+            capitalize: config.get("capitalize"),
+            textAlignment: config.get("textAlignment"),
+            boxWidth: config.get("boxWidth"),
+            wordWrap: config.get("wordWrap"),
+            maxEndColumn: config.get("maxEndColumn"),
+            extendSelection: config.get("extendSelection"),
+            commentStartToken: config.get("commentStartToken"),
+            commentEndToken: config.get("commentEndToken"),
+            topRightToken: config.get("topRightToken"),
+            bottomLeftToken: config.get("bottomLeftToken"),
+            topEdgeToken: config.get("topEdgeToken"),
+            bottomEdgeToken: config.get("bottomEdgeToken"),
+            leftEdgeToken: config.get("leftEdgeToken"),
+            rightEdgeToken: config.get("rightEdgeToken"),
+            fillingToken: config.get("fillingToken"),
+            removeEmptyLines: config.get("removeEmptyLines"),
+            ignoreOuterIndentation: config.get("ignoreOuterIndentation"),
+            ignoreInnerIndentation: config.get("ignoreInnerIndentation"),
+      }])
+}
 
 /**
  * Creates a new configuration by merging a list of configurations. Each configuration might be
@@ -150,7 +180,11 @@ function getStyleConfigurationWithPriority(configuration, styleName) {
             return null
       }
 
-      return mergeConfigurations(configs.map(config => getIfExists(config, styleName)))
+      const withDefault = [
+            getDefaultStyleConfiguration(),
+            ...configs.map(config => getIfExists(config, styleName))
+      ]
+      return mergeConfigurations(withDefault)
 }
 
 /**
@@ -168,9 +202,7 @@ function tryGetConfiguration(styleName, checked = []) {
             return null
       }
 
-      const editor = vscode.window.activeTextEditor
-      const languageId = editor.document.languageId
-      const styles = vscode.workspace.getConfiguration("commentBox", { languageId }).inspect('styles')
+      const styles = getStylesConfiguration()
       const style = getStyleConfigurationWithPriority(styles, styleName)
 
       if (!style) {
@@ -269,8 +301,7 @@ function tryGetStyleAndConfig(styleName) {
 }
 
 function getStyleList() {
-      const languageId = vscode.window.activeTextEditor.document.languageId
-      const styles = vscode.workspace.getConfiguration("commentBox", { languageId }).inspect('styles')
+      const styles = getStylesConfiguration()
       const configs = [
             styles.globalValue,
             styles.workspaceFolderValue,
@@ -286,7 +317,7 @@ function getStyleList() {
       for (const config of configs) {
             if (config) {
                   for (const style in config) {
-                        if (!styles[style].hidden) {
+                        if (!config[style].hidden) {
                               styleSet.add(style)
                         }
                   }
@@ -298,6 +329,7 @@ function getStyleList() {
 }
 
 module.exports = {
+      CONFIGURATION_NAME,
       getDefaultStyleAndConfig,
       tryGetStyleAndConfig,
       getStyleList,
