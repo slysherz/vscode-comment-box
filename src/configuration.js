@@ -65,33 +65,6 @@ function toStringArray(value) {
 /**
  * @returns {BoxStyleConfiguration} 
  */
-function loadOldConfiguration() {
-      const configuration = vscode.workspace.getConfiguration(CONFIGURATION_NAME)
-
-      return mergeConfigurations([{
-            capitalize: configuration.get("capitalize"),
-            textAlignment: configuration.get("textAlignment"),
-            boxWidth: configuration.get("boxWidth"),
-            extendSelection: configuration.get("extendSelection"),
-            commentStartToken: configuration.get("commentStartToken"),
-            commentEndToken: configuration.get("commentEndToken"),
-            topRightToken: configuration.get("topRightToken"),
-            bottomLeftToken: configuration.get("bottomLeftToken"),
-            topEdgeToken: configuration.get("topEdgeToken"),
-            bottomEdgeToken: configuration.get("bottomEdgeToken"),
-            leftEdgeToken: configuration.get("leftEdgeToken"),
-            rightEdgeToken: configuration.get("rightEdgeToken"),
-            fillingToken: configuration.get("fillingToken"),
-            removeEmptyLines: configuration.get("removeEmptyLines"),
-            ignoreOuterIndentation: configuration.get("ignoreOuterIndentation"),
-            ignoreInnerIndentation: configuration.get("ignoreInnerIndentation"),
-            // clearAroundText: configuration.get("textToEdgeSpace")
-      }])
-}
-
-/**
- * @returns {BoxStyleConfiguration} 
- */
 function getDefaultStyleConfiguration() {
       const editor = vscode.window.activeTextEditor
       const languageId = editor.document.languageId
