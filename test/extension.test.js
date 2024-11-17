@@ -899,9 +899,9 @@ there
             [, {
                 text: 'this'
             }, {
-                leftFill: '    ',
-                text: 'is a big test'
-            }, ]
+                    leftFill: '    ',
+                    text: 'is a big test'
+                },]
         )
 
         testFindComment(
@@ -951,26 +951,26 @@ there
         ***********/
         `,
             [{
-                    startToken: '/*'
-                },
-                {
-                    text: 'this'
-                },
-                {
-                    text: 'is a big test'
-                },
-                {
-                    text: '    hello'
-                },
-                {
-                    text: 'this'
-                },
-                {
-                    text: 'is a big test'
-                },
-                {
-                    endToken: '**/'
-                }
+                startToken: '/*'
+            },
+            {
+                text: 'this'
+            },
+            {
+                text: 'is a big test'
+            },
+            {
+                text: '    hello'
+            },
+            {
+                text: 'this'
+            },
+            {
+                text: 'is a big test'
+            },
+            {
+                endToken: '**/'
+            }
             ]
         )
 
@@ -1065,9 +1065,9 @@ there
         ]
 
         for (const comb of objectCombinations({
-                style: styles,
-                string: strings
-            })) {
+            style: styles,
+            string: strings
+        })) {
             let {
                 style,
                 string
@@ -1121,6 +1121,16 @@ there
 
             assert.strictEqual(0, selection[0], name)
             assert.strictEqual(nbLines - 1, selection[1], name)
+
+            for (let i = 0; i < nbLines; i++) {
+                const {
+                    selection,
+                    annotatedLines
+                } = findStyledCommentBox(i, i, style, fakeDocument(result))
+
+                assert.strictEqual(0, selection[0], name)
+                assert.strictEqual(nbLines - 1, selection[1], name)
+            }
         })
     })
 })
