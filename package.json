@@ -302,6 +302,88 @@
                     "scope": "language-overridable"
                 }
             }
+        },
+        "configurationDefaults": {
+            "[bat]": {
+                "commentBox.commentStartToken": "::",
+                "commentBox.topEdgeToken": ":",
+                "commentBox.topRightToken": ":::",
+                "commentBox.leftEdgeToken": ":: ",
+                "commentBox.rightEdgeToken": " ::",
+                "commentBox.bottomLeftToken": "::",
+                "commentBox.bottomEdgeToken": ":",
+                "commentBox.commentEndToken": ":::"
+            },
+            "[python][cmake][coffeescript][dockerfile][julia][jupyter][makefile][perl][powershell][r][raku][ruby][shellscript][toml][yaml]": {
+                "commentBox.commentStartToken": "#",
+                "commentBox.topEdgeToken": "#",
+                "commentBox.topRightToken": "##",
+                "commentBox.leftEdgeToken": "# ",
+                "commentBox.rightEdgeToken": " #",
+                "commentBox.bottomLeftToken": "##",
+                "commentBox.bottomEdgeToken": "#",
+                "commentBox.commentEndToken": "##"
+            },
+            "[tex][bibtex][latex]": {
+                "commentBox.commentStartToken": "%",
+                "commentBox.topEdgeToken": "%",
+                "commentBox.topRightToken": "%%",
+                "commentBox.leftEdgeToken": "% ",
+                "commentBox.rightEdgeToken": " %",
+                "commentBox.bottomLeftToken": "%%",
+                "commentBox.bottomEdgeToken": "%",
+                "commentBox.commentEndToken": "%%"
+            },
+            "[clojure][lisp][ini]": {
+                "commentBox.commentStartToken": ";;",
+                "commentBox.topEdgeToken": ";",
+                "commentBox.topRightToken": ";;",
+                "commentBox.leftEdgeToken": "; ",
+                "commentBox.rightEdgeToken": " ;",
+                "commentBox.bottomLeftToken": ";;",
+                "commentBox.bottomEdgeToken": ";",
+                "commentBox.commentEndToken": ";;"
+            },
+            "[fsharp]": {
+                "commentBox.commentStartToken": "//",
+                "commentBox.topEdgeToken": "-",
+                "commentBox.topRightToken": "-+",
+                "commentBox.leftEdgeToken": "// ",
+                "commentBox.rightEdgeToken": " |",
+                "commentBox.bottomLeftToken": "//",
+                "commentBox.bottomEdgeToken": "-",
+                "commentBox.commentEndToken": "-+"
+            },
+            "[html][markdown]": {
+                "commentBox.commentStartToken": "<!--",
+                "commentBox.topEdgeToken": "-",
+                "commentBox.topRightToken": "- >",
+                "commentBox.leftEdgeToken": "<  ",
+                "commentBox.rightEdgeToken": "  >",
+                "commentBox.bottomLeftToken": "<-",
+                "commentBox.bottomEdgeToken": "-",
+                "commentBox.commentEndToken": "-->"
+            },
+            "[lua][sql]": {
+                "commentBox.commentStartToken": "--",
+                "commentBox.topEdgeToken": "-",
+                "commentBox.topRightToken": "---",
+                "commentBox.leftEdgeToken": "-- ",
+                "commentBox.rightEdgeToken": " --",
+                "commentBox.bottomLeftToken": "--",
+                "commentBox.bottomEdgeToken": "-",
+                "commentBox.commentEndToken": "---"
+            },
+            "[vb]": {
+                "commentBox.commentStartToken": "'",
+                "commentBox.topEdgeToken": "'",
+                "commentBox.topRightToken": "''",
+                "commentBox.leftEdgeToken": "' ",
+                "commentBox.rightEdgeToken": " '",
+                "commentBox.bottomLeftToken": "''",
+                "commentBox.bottomEdgeToken": "'",
+                "commentBox.commentEndToken": "''"
+            }
         }
     },
     "scripts": {

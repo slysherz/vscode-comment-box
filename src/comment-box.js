@@ -230,7 +230,7 @@ function padRight(string, width, token) {
  * @param {number} width    The width we want the new string to have
  * @param {string} token    The characters that will be used to extend the string
  */
- function padLeft(string, width, token) {
+function padLeft(string, width, token) {
     const tokens = splitByCharPoints(token)
     let tokensLeft = width - widthOfLastLine(string)
     let pad = ""
@@ -573,7 +573,7 @@ function convertToCommentBox(text, options) {
         center: padToCenter,
         left: padRight,
         right: padLeft
-    } [textAlignment]
+    }[textAlignment]
 
     lines = lines
         // Extend lines to match desired width, using the choosen filling token
@@ -639,19 +639,19 @@ function findStyledCommentBox(selectionStart, selectionEnd, options, getLine) {
 
     const firstTop = lineMatches.findIndex(([start, mid, end]) => start)
     const firstEnd = lineMatches.findIndex(([start, mid, end]) => end)
-    const lastTop = findLastIndex(lineMatches, ([start, mid, end]) => start)
+    // const lastTop = findLastIndex(lineMatches, ([start, mid, end]) => start)
     const lastEnd = findLastIndex(lineMatches, ([start, mid, end]) => end)
-    const anyMid = lineMatches.findIndex(([start, mid, end]) => mid)
+    // const anyMid = lineMatches.findIndex(([start, mid, end]) => mid)
 
-    const searchUp = firstTop === -1 || firstEnd !== -1 && firstTop > firstEnd
-    const searchDown = firstEnd === -1 || firstEnd < firstTop
+    const searchUp = firstTop === -1 || firstEnd !== -1 && firstTop >= firstEnd
+    const searchDown = firstEnd === -1 || firstEnd <= firstTop
 
     const lineStart = searchUp ? 0 : firstTop
     const lineEnd = searchDown ? lineMatches.length : lastEnd + 1
 
     let searchUpResult = []
     if (searchUp) {
-        for (let l = selectionStart - 1;; l--) {
+        for (let l = selectionStart - 1; ; l--) {
             let line = getLine(l)
 
             if (line === null) {
@@ -704,7 +704,7 @@ function findStyledCommentBox(selectionStart, selectionEnd, options, getLine) {
 
     let searchDownResult = []
     if (searchDown) {
-        for (let l = selectionEnd + 1;; l++) {
+        for (let l = selectionEnd + 1; ; l++) {
             let line = getLine(l)
 
             if (line === null) {

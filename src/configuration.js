@@ -9,26 +9,26 @@ const vscode = require('vscode')
  * @typedef {import('./comment-box').BoxStyle} BoxStyle
  * 
  * @typedef BoxStyleConfiguration
- * @property {boolean} capitalize
- * @property {boolean} extendSelection
- * @property {string} commentStartToken
- * @property {string} commentEndToken
- * @property {string} topRightToken
- * @property {string} bottomLeftToken
- * @property {string} topEdgeToken
- * @property {string} bottomEdgeToken
- * @property {string} leftEdgeToken
- * @property {string} rightEdgeToken
- * @property {string} fillingToken
- * @property {number} boxWidth
- * @property {number} maxEndColumn
- * @property {string} wordWrap
- * @property {string} textAlignment
- * @property {boolean} removeEmptyLines
- * @property {boolean} ignoreOuterIndentation
- * @property {boolean} ignoreInnerIndentation
- * @property {boolean} hidden
- * @property {string[]} basedOn
+ * @property {boolean} [capitalize]
+ * @property {boolean} [extendSelection]
+ * @property {string} [commentStartToken]
+ * @property {string} [commentEndToken]
+ * @property {string} [topRightToken]
+ * @property {string} [bottomLeftToken]
+ * @property {string} [topEdgeToken]
+ * @property {string} [bottomEdgeToken]
+ * @property {string} [leftEdgeToken]
+ * @property {string} [rightEdgeToken]
+ * @property {string} [fillingToken]
+ * @property {number} [boxWidth]
+ * @property {number} [maxEndColumn]
+ * @property {string} [wordWrap]
+ * @property {string} [textAlignment]
+ * @property {boolean} [removeEmptyLines]
+ * @property {boolean} [ignoreOuterIndentation]
+ * @property {boolean} [ignoreInnerIndentation]
+ * @property {boolean} [hidden]
+ * @property {string[]} [basedOn]
  */
 
 const DEFAULT_STYLE = 'defaultStyle'
@@ -89,63 +89,68 @@ function loadOldConfiguration() {
       }])
 }
 
+/**
+ * @returns {BoxStyleConfiguration} 
+ */
 function getDefaultStyleConfiguration() {
       const editor = vscode.window.activeTextEditor
       const languageId = editor.document.languageId
       const config = vscode.workspace.getConfiguration(CONFIGURATION_NAME, { languageId })
-      return mergeConfigurations([{
-            capitalize: config.get("capitalize"),
-            textAlignment: config.get("textAlignment"),
-            boxWidth: config.get("boxWidth"),
-            wordWrap: config.get("wordWrap"),
-            maxEndColumn: config.get("maxEndColumn"),
-            extendSelection: config.get("extendSelection"),
-            commentStartToken: config.get("commentStartToken"),
-            commentEndToken: config.get("commentEndToken"),
-            topRightToken: config.get("topRightToken"),
-            bottomLeftToken: config.get("bottomLeftToken"),
-            topEdgeToken: config.get("topEdgeToken"),
-            bottomEdgeToken: config.get("bottomEdgeToken"),
-            leftEdgeToken: config.get("leftEdgeToken"),
-            rightEdgeToken: config.get("rightEdgeToken"),
-            fillingToken: config.get("fillingToken"),
-            removeEmptyLines: config.get("removeEmptyLines"),
-            ignoreOuterIndentation: config.get("ignoreOuterIndentation"),
-            ignoreInnerIndentation: config.get("ignoreInnerIndentation"),
-      }])
+
+      const configNames = [
+            "capitalize",
+            "textAlignment",
+            "boxWidth",
+            "wordWrap",
+            "maxEndColumn",
+            "extendSelection",
+            "commentStartToken",
+            "commentEndToken",
+            "topRightToken",
+            "bottomLeftToken",
+            "topEdgeToken",
+            "bottomEdgeToken",
+            "leftEdgeToken",
+            "rightEdgeToken",
+            "fillingToken",
+            "removeEmptyLines",
+            "ignoreOuterIndentation",
+            "ignoreInnerIndentation",
+      ]
+
+      let result = {}
+      for (const key of configNames) {
+            const configuration = config.inspect(key)
+
+            const configs = [
+                  configuration.defaultValue,
+                  configuration.defaultLanguageValue,
+                  configuration.globalValue,
+                  configuration.workspaceFolderValue,
+                  configuration.workspaceValue,
+                  configuration.globalLanguageValue,
+                  configuration.workspaceFolderLanguageValue,
+                  configuration.workspaceLanguageValue,
+            ]
+
+            for (const config of configs) {
+                  if (config !== undefined) {
+                        result[key] = config
+                  }
+            }
+      }
+
+      return result
 }
 
 /**
  * Creates a new configuration by merging a list of configurations. Each configuration might be
- * incomplete, so when no value is provided for some setting, the default value is used
+ * incomplete
  * @param {object} configurations
  * @returns {BoxStyleConfiguration}
- * @todo Investigate if VSCode can provide these defaults for us
  */
 function mergeConfigurations(configurations) {
-      // Start with the default configuration
-      let result = {
-            capitalize: true,
-            textAlignment: "center",
-            boxWidth: 0,
-            maxEndColumn: 0,
-            wordWrap: "false",
-            extendSelection: true,
-            commentStartToken: "/*",
-            commentEndToken: "**/",
-            topRightToken: "**",
-            bottomLeftToken: " **",
-            topEdgeToken: "*",
-            bottomEdgeToken: "*",
-            leftEdgeToken: " * ",
-            rightEdgeToken: " *",
-            fillingToken: " ",
-            removeEmptyLines: true,
-            ignoreOuterIndentation: true,
-            ignoreInnerIndentation: true,
-            hidden: false,
-            basedOn: [],
-      }
+      let result = {}
 
       for (const config of configurations) {
             result = {
@@ -180,11 +185,7 @@ function getStyleConfigurationWithPriority(configuration, styleName) {
             return null
       }
 
-      const withDefault = [
-            getDefaultStyleConfiguration(),
-            ...configs.map(config => getIfExists(config, styleName))
-      ]
-      return mergeConfigurations(withDefault)
+      return mergeConfigurations(configs.map(config => getIfExists(config, styleName)))
 }
 
 /**
@@ -203,6 +204,7 @@ function tryGetConfiguration(styleName, checked = []) {
       }
 
       const styles = getStylesConfiguration()
+      const defaultConfig = getDefaultStyleConfiguration()
       const style = getStyleConfigurationWithPriority(styles, styleName)
 
       if (!style) {
@@ -236,7 +238,7 @@ function tryGetConfiguration(styleName, checked = []) {
 
       console.assert(styleName === checked.pop())
 
-      return mergeConfigurations([...parentStyles, style])
+      return mergeConfigurations([defaultConfig, ...parentStyles, style])
 }
 
 /**
