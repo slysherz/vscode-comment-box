@@ -580,12 +580,14 @@ function convertToCommentBox(text, options) {
         .map(line => alignmentStyle(line, width - edgesWidth, fillingToken))
 
     const widthWithoutRightEdge = width - stringWidth(rightEdgeToken)
+    const widthWithoutTopRightEdge = width - stringWidth(topRightToken)
+    const widthWithoutEndToken = width - stringWidth(endToken)
     const skipFirstLine = topEdgeToken === ""
     const skipLastLine = bottomEdgeToken === ""
 
     const firstLine = skipFirstLine ?
         "" :
-        padRight(startToken, widthWithoutRightEdge, topEdgeToken) + topRightToken + "\n"
+        padRight(startToken, widthWithoutTopRightEdge, topEdgeToken) + topRightToken + "\n"
 
     const midLines = lines
         .map((str, line) => {
@@ -603,7 +605,7 @@ function convertToCommentBox(text, options) {
 
     const lastLine = skipLastLine ?
         "" :
-        padRight(bottomLeftToken, widthWithoutRightEdge, bottomEdgeToken) + endToken
+        padRight(bottomLeftToken, widthWithoutEndToken, bottomEdgeToken) + endToken
 
     const result = firstLine + midLines + lastLine
 
