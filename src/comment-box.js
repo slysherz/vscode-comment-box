@@ -93,6 +93,18 @@ function splitAtLast(array, pred) {
     return [first, second]
 }
 
+/**
+ * Extracts the middle portion of a string between a start token and end token.
+ * Handles the edge case where end token is empty (where -0 would incorrectly return empty string).
+ * @param {string} string   The full string
+ * @param {number} startPos The position where the middle content starts
+ * @param {string} end      The end token to exclude from the result
+ * @returns {string}
+ */
+function sliceBetweenTokens(string, startPos, end) {
+    return end.length > 0 ? string.slice(startPos, -end.length) : string.slice(startPos)
+}
+
 function findLastIndex(array, pred) {
     for (let i = array.length - 1; i >= 0; i--) {
         if (pred(array[i])) {
@@ -306,7 +318,7 @@ function matchCommentEdge(string, start, fill, end) {
         }
     }
 
-    const mid = string.slice(index + start.length, -end.length)
+    const mid = sliceBetweenTokens(string, index + start.length, end)
     const fillCP = splitByCharPoints(fill)
 
     if (!splitByCharPoints(mid).every(cp => fillCP.includes(cp))) {
@@ -344,7 +356,7 @@ function matchCommentLine(string, start, fill, end) {
         }
     }
 
-    const mid = string.slice(index + start.length, -end.length)
+    const mid = sliceBetweenTokens(string, index + start.length, end)
     const fillCP = splitByCharPoints(fill)
     const [leftFill, rest] = splitAt(splitByCharPoints(mid), c => !fillCP.includes(c))
     const [midText, rightFill] = splitAtLast(rest, (c) => !fillCP.includes(c))

@@ -1133,6 +1133,48 @@ there
             }
         })
     })
+
+    // Bug #28: Left bar only style deletes all code
+    // When using a style with empty endToken/rightEdgeToken, the text content is lost
+    // because string.slice(start, -0) returns empty string instead of the rest of the line
+    test("removeCommentBox with left bar only style", function () {
+        const leftBarOnlyStyle = {
+            capitalize: false,
+            startToken: '// ',
+            endToken: '',
+            topRightToken: '',
+            bottomLeftToken: '',
+            topEdgeToken: '',
+            bottomEdgeToken: '',
+            leftEdgeToken: '// ',
+            rightEdgeToken: '',
+            fillingToken: ' ',
+            width: 0,
+            maxEndColumn: 0,
+            wordWrap: 'off',
+            textAlignment: 'left',
+            removeEmptyLines: true,
+            ignoreOuterIndentation: false,
+            ignoreInnerIndentation: false,
+            tabSize: 4
+        }
+
+        const input = 'hello\nworld'
+        const comment = convertToCommentBox(input, leftBarOnlyStyle)
+
+        // The comment box should look like:
+        // // hello
+        // // world
+        assert.strictEqual(comment, '// hello\n// world')
+
+        // Now find and remove the comment box
+        const box = findStyledCommentBox(0, 1, leftBarOnlyStyle, fakeDocument(comment))
+        const removed = removeStyledCommentBox(box.annotatedLines, leftBarOnlyStyle)
+
+        // The removed text should contain the original content
+        assert.strictEqual(trimLine(removed), trimLine(input),
+            'Left bar only style should preserve text content when removing comment box')
+    })
 })
 
 
