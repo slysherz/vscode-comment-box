@@ -393,10 +393,12 @@
         "@types/vscode": "^1.47",
         "@types/mocha": "^10.0.6",
         "@types/node": "18.x",
-        "eslint": "^8.57.0",
-        "typescript": "^5.4.5",
         "@vscode/test-cli": "^0.0.9",
-        "@vscode/test-electron": "^2.3.9"
+        "@vscode/test-electron": "^2.3.9",
+        "eslint": "^8.57.0",
+        "glob": "^10.3.10",
+        "mocha": "^10.2.0",
+        "typescript": "^5.4.5"
     },
     "dependencies": {
         "string-width": "^4.2.2"
