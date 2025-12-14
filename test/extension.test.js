@@ -18,6 +18,9 @@ const {
     dedentBy,
     wordWrapLine,
 } = require('../src/comment-box')
+const {
+    mergeConfigurations,
+} = require('../src/configuration')
 
 function* allCombinations(variations, start) {
     if (variations.length === 0) {
@@ -124,11 +127,174 @@ function matchesProperties(properties, inObj) {
     return true
 }
 
+/**
+ * Helper function to test configuration resolution.
+ * Simulates VS Code's configuration system with user and workspace settings,
+ * and verifies the resolved configuration matches expected values.
+ * 
+ * @typedef {Object} ConfigurationScopes
+ * @property {Object} [defaultValue] - Default values from package.json
+ * @property {Object} [globalValue] - User settings (settings.json)
+ * @property {Object} [workspaceValue] - Workspace settings (.vscode/settings.json)
+ * @property {Object} [workspaceFolderValue] - Workspace folder settings
+ * @property {Object} [defaultLanguageValue] - Default language-specific values
+ * @property {Object} [globalLanguageValue] - User language-specific settings
+ * @property {Object} [workspaceLanguageValue] - Workspace language-specific settings
+ * @property {Object} [workspaceFolderLanguageValue] - Workspace folder language-specific settings
+ * 
+ * @param {ConfigurationScopes} configScopes - Configuration values at different scopes
+ * @param {string} language - The language ID for the current document (e.g., 'javascript', 'python')
+ * @param {Object} expectedConfig - The expected resolved configuration parameters
+ * @param {string} [message] - Optional message for assertion failures
+ */
+function assertConfigurationResolves(configScopes, language, expectedConfig, message) {
+    // Build the list of configurations in priority order (lowest to highest)
+    // This mirrors VS Code's configuration resolution order
+    const configsInOrder = [
+        configScopes.defaultValue,
+        configScopes.defaultLanguageValue,
+        configScopes.globalValue,
+        configScopes.workspaceFolderValue,
+        configScopes.workspaceValue,
+        configScopes.globalLanguageValue,
+        configScopes.workspaceFolderLanguageValue,
+        configScopes.workspaceLanguageValue,
+    ].filter(config => config !== undefined)
+
+    // Merge configurations using the same function the extension uses
+    const resolvedConfig = mergeConfigurations(configsInOrder)
+
+    // Check each expected property
+    for (const key in expectedConfig) {
+        const expected = expectedConfig[key]
+        const actual = resolvedConfig[key]
+
+        const errorMessage = message
+            ? `${message} - Property '${key}' (language: ${language})`
+            : `Configuration property '${key}' mismatch (language: ${language})`
+
+        assert.deepStrictEqual(actual, expected, errorMessage)
+    }
+
+    return resolvedConfig
+}
+
 // You can import and use all API from the 'vscode' module
 // as well as import your extension to test it
 // const vscode = require('vscode')
 
 // Defines a Mocha test suite to group tests of similar kind together
+suite("Configuration Resolution Tests", function () {
+    test("uses default values when no other config is set", function () {
+        assertConfigurationResolves(
+            {
+                defaultValue: { boxWidth: 80, capitalize: false }
+            },
+            'javascript',
+            { boxWidth: 80, capitalize: false },
+            "Default values should be used"
+        )
+    })
+
+    test("global (user) settings override defaults", function () {
+        assertConfigurationResolves(
+            {
+                defaultValue: { boxWidth: 80, capitalize: false },
+                globalValue: { boxWidth: 100 }
+            },
+            'javascript',
+            { boxWidth: 100, capitalize: false },
+            "Global settings should override defaults"
+        )
+    })
+
+    test("workspace settings override global settings", function () {
+        assertConfigurationResolves(
+            {
+                defaultValue: { boxWidth: 80 },
+                globalValue: { boxWidth: 100 },
+                workspaceValue: { boxWidth: 120 }
+            },
+            'javascript',
+            { boxWidth: 120 },
+            "Workspace settings should override global"
+        )
+    })
+
+    test("language-specific global settings override workspace settings", function () {
+        assertConfigurationResolves(
+            {
+                defaultValue: { commentStartToken: '/*' },
+                workspaceValue: { commentStartToken: '//' },
+                globalLanguageValue: { commentStartToken: '#' }
+            },
+            'python',
+            { commentStartToken: '#' },
+            "Language-specific global settings should override workspace"
+        )
+    })
+
+    test("language-specific workspace settings have highest priority", function () {
+        assertConfigurationResolves(
+            {
+                defaultValue: { commentStartToken: '/*', boxWidth: 80 },
+                globalValue: { commentStartToken: '//', boxWidth: 100 },
+                workspaceValue: { commentStartToken: '--', boxWidth: 120 },
+                globalLanguageValue: { commentStartToken: '#' },
+                workspaceLanguageValue: { commentStartToken: ';;' }
+            },
+            'lisp',
+            { commentStartToken: ';;', boxWidth: 120 },
+            "Workspace language-specific should have highest priority"
+        )
+    })
+
+    test("workspace folder settings are between global and workspace", function () {
+        assertConfigurationResolves(
+            {
+                defaultValue: { boxWidth: 80 },
+                globalValue: { boxWidth: 100 },
+                workspaceFolderValue: { boxWidth: 110 },
+                workspaceValue: { boxWidth: 120 }
+            },
+            'javascript',
+            { boxWidth: 120 },
+            "Workspace should override workspace folder"
+        )
+    })
+
+    test("multiple properties merge correctly across scopes", function () {
+        assertConfigurationResolves(
+            {
+                defaultValue: {
+                    boxWidth: 80,
+                    capitalize: false,
+                    textAlignment: 'left',
+                    commentStartToken: '/*'
+                },
+                globalValue: {
+                    boxWidth: 100,
+                    capitalize: true
+                },
+                workspaceValue: {
+                    textAlignment: 'center'
+                },
+                globalLanguageValue: {
+                    commentStartToken: '//'
+                }
+            },
+            'javascript',
+            {
+                boxWidth: 100,
+                capitalize: true,
+                textAlignment: 'center',
+                commentStartToken: '//'
+            },
+            "Multiple properties should merge from different scopes"
+        )
+    })
+})
+
 suite("Helper Functions Tests", function () {
     test("widthOfLastLine", function () {
         assert.equal(widthOfLastLine(""), 0, "Width of an empty line is 0.")
