@@ -46,8 +46,8 @@ function getTabSize() {
 
 function getStylesConfiguration() {
       const editor = vscode.window.activeTextEditor
-      const languageId = editor.document.languageId
-      return vscode.workspace.getConfiguration(CONFIGURATION_NAME, { languageId }).inspect('styles')
+      // Use document URI as scope to get workspaceFolder-specific settings
+      return vscode.workspace.getConfiguration(CONFIGURATION_NAME, editor.document.uri).inspect('styles')
 }
 
 function toStringArray(value) {
@@ -99,11 +99,11 @@ function getDefaultStyleConfigurationForLanguage(languageId) {
                   configuration.defaultValue,
                   configuration.defaultLanguageValue,
                   configuration.globalValue,
-                  configuration.workspaceFolderValue,
                   configuration.workspaceValue,
+                  configuration.workspaceFolderValue,
                   configuration.globalLanguageValue,
-                  configuration.workspaceFolderLanguageValue,
                   configuration.workspaceLanguageValue,
+                  configuration.workspaceFolderLanguageValue,
             ]
 
             for (const config of configs) {
@@ -156,11 +156,11 @@ function getStyleConfigurationWithPriority(configuration, styleName) {
 
       const configs = [
             configuration.globalValue,
-            configuration.workspaceFolderValue,
             configuration.workspaceValue,
+            configuration.workspaceFolderValue,
             configuration.globalLanguageValue,
-            configuration.workspaceFolderLanguageValue,
             configuration.workspaceLanguageValue,
+            configuration.workspaceFolderLanguageValue,
       ]
 
       if (!configs.some(config => config)) {
@@ -320,11 +320,11 @@ function getStyleList() {
       const styles = getStylesConfiguration()
       const configs = [
             styles.globalValue,
-            styles.workspaceFolderValue,
             styles.workspaceValue,
+            styles.workspaceFolderValue,
             styles.globalLanguageValue,
-            styles.workspaceFolderLanguageValue,
             styles.workspaceLanguageValue,
+            styles.workspaceFolderLanguageValue,
       ]
 
       // Make a set with all the keys from the configurations
@@ -349,4 +349,5 @@ module.exports = {
       tryGetStyleAndConfig,
       getStyleList,
       mergeConfigurations,
+      CONFIGURATION_NAME,
 }
