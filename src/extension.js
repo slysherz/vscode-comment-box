@@ -154,9 +154,7 @@ function addStyledComment(editor, { style, config }) {
             selectionText: text
         } = userSelection(editor, current, style, config.extendSelection)
 
-        // text = convertToCommentBox(text, style)
-        text = JSON.stringify(getStyleList(), null, 4)
-        text += '\n' + JSON.stringify(style, null, 4)
+        text = convertToCommentBox(text, style)
 
         return {
             text,
