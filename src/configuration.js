@@ -63,11 +63,11 @@ function toStringArray(value) {
 }
 
 /**
+ * Gets the resolved configuration for a given language by merging all config scopes.
+ * @param {string} languageId - The language ID to get configuration for
  * @returns {BoxStyleConfiguration} 
  */
-function getDefaultStyleConfiguration() {
-      const editor = vscode.window.activeTextEditor
-      const languageId = editor.document.languageId
+function getDefaultStyleConfigurationForLanguage(languageId) {
       const config = vscode.workspace.getConfiguration(CONFIGURATION_NAME, { languageId })
 
       const configNames = [
@@ -114,6 +114,15 @@ function getDefaultStyleConfiguration() {
       }
 
       return result
+}
+
+/**
+ * @returns {BoxStyleConfiguration} 
+ */
+function getDefaultStyleConfiguration() {
+      const editor = vscode.window.activeTextEditor
+      const languageId = editor.document.languageId
+      return getDefaultStyleConfigurationForLanguage(languageId)
 }
 
 /**
@@ -336,7 +345,6 @@ function getStyleList() {
 }
 
 module.exports = {
-      CONFIGURATION_NAME,
       getDefaultStyleAndConfig,
       tryGetStyleAndConfig,
       getStyleList,
