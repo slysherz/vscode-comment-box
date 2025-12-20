@@ -19,6 +19,9 @@
         "onCommand:extension.commentBox",
         "onCommand:commentBox.transformUsingStyle"
     ],
+    "extensionKind": [
+        "ui"
+    ],
     "main": "./src/extension",
     "contributes": {
         "commands": [
