@@ -357,12 +357,12 @@
             "[html][markdown]": {
                 "commentBox.commentStartToken": "<!--",
                 "commentBox.topEdgeToken": "-",
-                "commentBox.topRightToken": "- >",
-                "commentBox.leftEdgeToken": "<  ",
-                "commentBox.rightEdgeToken": "  >",
-                "commentBox.bottomLeftToken": "<-",
+                "commentBox.topRightToken": "--->",
+                "commentBox.leftEdgeToken": "<!-- ",
+                "commentBox.rightEdgeToken": " -->",
+                "commentBox.bottomLeftToken": "<!--",
                 "commentBox.bottomEdgeToken": "-",
-                "commentBox.commentEndToken": "-->"
+                "commentBox.commentEndToken": "--->"
             },
             "[lua][sql]": {
                 "commentBox.commentStartToken": "--",
@@ -383,6 +383,46 @@
                 "commentBox.bottomLeftToken": "''",
                 "commentBox.bottomEdgeToken": "'",
                 "commentBox.commentEndToken": "''"
+            },
+            "[ocaml][reason]": {
+                "commentBox.commentStartToken": "(*",
+                "commentBox.topEdgeToken": "*",
+                "commentBox.topRightToken": "**)",
+                "commentBox.leftEdgeToken": "(* ",
+                "commentBox.rightEdgeToken": " *)",
+                "commentBox.bottomLeftToken": "(*",
+                "commentBox.bottomEdgeToken": "*",
+                "commentBox.commentEndToken": "**)"
+            },
+            "[fortran][fortran-modern]": {
+                "commentBox.commentStartToken": "!",
+                "commentBox.topEdgeToken": "!",
+                "commentBox.topRightToken": "!!",
+                "commentBox.leftEdgeToken": "! ",
+                "commentBox.rightEdgeToken": " !",
+                "commentBox.bottomLeftToken": "!!",
+                "commentBox.bottomEdgeToken": "!",
+                "commentBox.commentEndToken": "!!"
+            },
+            "[haskell]": {
+                "commentBox.commentStartToken": "{-",
+                "commentBox.topEdgeToken": "-",
+                "commentBox.topRightToken": "--}",
+                "commentBox.leftEdgeToken": "{- ",
+                "commentBox.rightEdgeToken": " -}",
+                "commentBox.bottomLeftToken": "{-",
+                "commentBox.bottomEdgeToken": "-",
+                "commentBox.commentEndToken": "--}"
+            },
+            "[asm][nasm][gas][arm]": {
+                "commentBox.commentStartToken": ";",
+                "commentBox.topEdgeToken": ";",
+                "commentBox.topRightToken": ";;",
+                "commentBox.leftEdgeToken": "; ",
+                "commentBox.rightEdgeToken": " ;",
+                "commentBox.bottomLeftToken": ";;",
+                "commentBox.bottomEdgeToken": ";",
+                "commentBox.commentEndToken": ";;"
             }
         }
     },

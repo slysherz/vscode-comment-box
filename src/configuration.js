@@ -162,56 +162,88 @@ function getStyleConfigurationWithPriority(configuration, styleName) {
 }
 
 /**
- * Tries to find a configuration with a given name in the user settings. If it doesn't exist, an
- * error notification is shown to the user and null is returned.
+ * Gets just the style's own properties (without defaults or parent properties)
  * @param {string} styleName
+ * @returns {BoxStyleConfiguration|null}
  */
-function tryGetConfiguration(styleName, checked = []) {
-      if (checked.includes(styleName)) {
-            vscode.window.showErrorMessage(
-                  "The following styles refer to each other in a cycle: " +
-                  checked.join(", ")
-            )
-
-            return null
-      }
-
+function getStyleProperties(styleName) {
       const styles = getStylesConfiguration()
-      const defaultConfig = getDefaultStyleConfiguration()
-      const style = getStyleConfigurationWithPriority(styles, styleName)
+      return getStyleConfigurationWithPriority(styles, styleName)
+}
 
-      if (!style) {
-            if (checked.length) {
-                  // Found a broken link
-                  const parentStyle = checked[checked.length - 1]
-                  vscode.window.showErrorMessage(
-                        `Style ${styleName} is based on ${parentStyle}, but the later doesn't exist.`)
-
-            } else {
-                  vscode.window.showErrorMessage(`Style ${styleName} doesn't exist.`)
-            }
-
-            return null
-      }
-
+/**
+ * Recursively collects all parent style properties for a given style.
+ * Returns null if any parent doesn't exist or if there's a circular dependency.
+ * @param {BoxStyleConfiguration} style
+ * @param {string} styleName - Only used for error messages
+ * @param {string[]} checked - Track visited styles to detect cycles
+ * @returns {BoxStyleConfiguration[]|null}
+ */
+function collectParentStyles(style, styleName, checked) {
       const basedOn = toStringArray(style.basedOn)
 
-      let parentStyles = []
-      checked.push(styleName)
+      let parentConfigs = []
       for (const parentStyleName of basedOn) {
-            const parentStyle = tryGetConfiguration(parentStyleName, checked)
-
-            if (!parentStyle) {
-                  // Failed to get parent style for some reason, child also fails
+            if (checked.includes(parentStyleName)) {
+                  vscode.window.showErrorMessage(
+                        "The following styles refer to each other in a cycle: " +
+                        [...checked, parentStyleName].join(", ")
+                  )
                   return null
             }
 
-            parentStyles.push(parentStyle)
+            const parentStyle = getStyleProperties(parentStyleName)
+
+            if (!parentStyle) {
+                  vscode.window.showErrorMessage(
+                        `Style '${styleName}' is based on '${parentStyleName}', but '${parentStyleName}' doesn't exist.`)
+                  return null
+            }
+
+            // Recursively collect grandparent styles
+            const grandparents = collectParentStyles(parentStyle, parentStyleName, [...checked, styleName])
+            if (grandparents === null) {
+                  return null
+            }
+
+            parentConfigs.push(...grandparents, parentStyle)
       }
 
-      console.assert(styleName === checked.pop())
+      return parentConfigs
+}
 
-      return mergeConfigurations([defaultConfig, ...parentStyles, style])
+/**
+ * Gets the complete configuration for a style by merging:
+ * 1. Top-level properties (defaults for all styles)
+ * 2. Parent styles (via basedOn)
+ * 3. The style's own properties
+ * 
+ * Returns null if the style doesn't exist or has errors.
+ * @param {string} styleName
+ * @returns {BoxStyleConfiguration|null}
+ */
+function tryGetConfiguration(styleName) {
+      const defaultConfig = getDefaultStyleConfiguration()
+      const style = getStyleProperties(styleName)
+
+      // defaultStyle is special: it always exists using just the top-level defaults
+      if (!style) {
+            if (styleName === DEFAULT_STYLE) {
+                  return defaultConfig
+            }
+
+            vscode.window.showErrorMessage(`Style '${styleName}' doesn't exist.`)
+            return null
+      }
+
+      // Collect all parent configurations
+      const parentConfigs = collectParentStyles(style, styleName, [])
+      if (parentConfigs === null) {
+            return null
+      }
+
+      // Merge: defaults -> parents (in order) -> this style
+      return mergeConfigurations([defaultConfig, ...parentConfigs, style])
 }
 
 /**
