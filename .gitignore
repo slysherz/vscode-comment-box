@@ -3,3 +3,5 @@ node_modules
 .vsix
 .vscode/
 test_workspaces/
+.nyc_output/
+coverage/
