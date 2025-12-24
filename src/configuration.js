@@ -9,7 +9,7 @@ const vscode = require('vscode')
  * @typedef {import('./comment-box').BoxStyle} BoxStyle
  * 
  * The configuration options a user can set for a box style, which will be used to create a BoxStyle
- * @typedef BoxStyleConfiguration
+ * @typedef UserStyleConfig
  * @property {boolean} [capitalize]
  * @property {boolean} [extendSelection]
  * @property {string} [commentStartToken]
@@ -31,9 +31,9 @@ const vscode = require('vscode')
  * @property {boolean} [hidden]
  * @property {string[]} [basedOn]
  * 
- * @typedef StyleAndConfig
- * @property {BoxStyle} style
- * @property {BoxStyleConfiguration} config
+ * @typedef StyleWithOptions
+ * @property {BoxStyle} style - The processed box style ready for rendering
+ * @property {boolean} extendSelection - Whether to extend the selection
  */
 
 const DEFAULT_STYLE = 'defaultStyle'
@@ -108,7 +108,7 @@ function getStyleProperty(stylesInspection, styleName, propName) {
  * 
  * Returns null if the style doesn't exist or has errors.
  * @param {string} styleName
- * @returns {BoxStyleConfiguration|null}
+ * @returns {UserStyleConfig|null}
  */
 function tryGetConfiguration(styleName) {
       const editor = vscode.window.activeTextEditor
@@ -183,30 +183,26 @@ function tryGetConfiguration(styleName) {
       let result = {}
 
       for (const propName of configNames) {
-            let found = false
-
             // Check at each priority level: style first, then top-level
             for (const key of PRIORITY_ORDER) {
-                  if (found) break
-
                   // Check styles in inheritance order (child to parent)
                   for (const styleToMerge of stylesToMerge) {
                         const styleValue = stylesInspection?.[key]?.[styleToMerge]?.[propName]
                         if (styleValue !== undefined) {
                               result[propName] = styleValue
-                              found = true
                               break
                         }
                   }
 
+                  // If we found a value in styles, stop checking lower priorities
+                  if (result[propName] !== undefined) break
+
                   // If not in style at this level, check top-level at same level
-                  if (!found) {
-                        const topLevelInspection = config.inspect(propName)
-                        const topValue = topLevelInspection?.[key]
-                        if (topValue !== undefined) {
-                              result[propName] = topValue
-                              found = true
-                        }
+                  const topLevelInspection = config.inspect(propName)
+                  const topValue = topLevelInspection?.[key]
+                  if (topValue !== undefined) {
+                        result[propName] = topValue
+                        break
                   }
             }
       }
@@ -216,7 +212,7 @@ function tryGetConfiguration(styleName) {
 
 
 /**
- * @param {BoxStyleConfiguration} configuration 
+ * @param {UserStyleConfig} configuration 
  * @param {number} tabSize 
  * @returns {BoxStyle}
  */
@@ -243,22 +239,15 @@ function configurationToStyle(configuration, tabSize) {
       }
 }
 
-function styleAndConfig(config) {
-      return {
-            style: configurationToStyle(config, getTabSize()),
-            config
-      }
-}
-
 /**
- * @returns {StyleAndConfig|null}
+ * @returns {StyleWithOptions|null}
  */
 function getDefaultStyleAndConfig() {
       return tryGetStyleAndConfig(DEFAULT_STYLE)
 }
 
 /**
- * @returns {StyleAndConfig|null}
+ * @returns {StyleWithOptions|null}
  */
 function tryGetStyleAndConfig(styleName) {
       const config = tryGetConfiguration(styleName)
@@ -267,7 +256,10 @@ function tryGetStyleAndConfig(styleName) {
             return null
       }
 
-      return styleAndConfig(config)
+      return {
+            style: configurationToStyle(config, getTabSize()),
+            extendSelection: config.extendSelection
+      }
 }
 
 function getStyleList() {

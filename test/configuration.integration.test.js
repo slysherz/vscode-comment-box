@@ -169,14 +169,14 @@ suite('Configuration Integration Tests', function () {
 
             // Verify global value is applied
             let result = getDefaultStyleAndConfig()
-            assert.strictEqual(result.config.capitalize, false, 'Global value should be applied')
+            assert.strictEqual(result.style.capitalize, false, 'Global value should be applied')
 
             // Set workspace value (should override global)
             await setConfig('capitalize', true, vscode.ConfigurationTarget.Workspace)
 
             // Verify workspace value overrides global
             result = getDefaultStyleAndConfig()
-            assert.strictEqual(result.config.capitalize, true, 'Workspace value should override global')
+            assert.strictEqual(result.style.capitalize, true, 'Workspace value should override global')
         })
 
         test('workspaceFolder value overrides workspace value for styles', async function () {
@@ -197,7 +197,7 @@ suite('Configuration Integration Tests', function () {
             // Verify workspace style is applied
             let result = tryGetStyleAndConfig('folderTestStyle')
             assert.ok(result, 'Style should be found')
-            assert.strictEqual(result.config.textAlignment, 'left', 'Workspace value should be applied')
+            assert.strictEqual(result.style.textAlignment, 'left', 'Workspace value should be applied')
 
             // Set workspaceFolder style (should override workspace)
             await setConfig('styles', {
@@ -210,7 +210,7 @@ suite('Configuration Integration Tests', function () {
             // Verify workspaceFolder value overrides workspace
             result = tryGetStyleAndConfig('folderTestStyle')
             assert.ok(result, 'Style should still be found')
-            assert.strictEqual(result.config.textAlignment, 'right', 'WorkspaceFolder value should override workspace')
+            assert.strictEqual(result.style.textAlignment, 'right', 'WorkspaceFolder value should override workspace')
         })
 
         test('full scope priority chain for styles: global < workspace < workspaceFolder', async function () {
@@ -228,7 +228,7 @@ suite('Configuration Integration Tests', function () {
             }, vscode.ConfigurationTarget.Global)
             let result = tryGetStyleAndConfig('priorityTestStyle')
             assert.ok(result, 'Style should be found')
-            assert.strictEqual(result.config.boxWidth, 100, 'Global should be applied')
+            assert.strictEqual(result.style.width, 100, 'Global should be applied')
 
             // Set workspace style (should override global)
             await setConfig('styles', {
@@ -239,7 +239,7 @@ suite('Configuration Integration Tests', function () {
             }, vscode.ConfigurationTarget.Workspace)
             result = tryGetStyleAndConfig('priorityTestStyle')
             assert.ok(result, 'Style should be found')
-            assert.strictEqual(result.config.boxWidth, 120, 'Workspace should override global')
+            assert.strictEqual(result.style.width, 120, 'Workspace should override global')
 
             // Set workspaceFolder style (should override workspace)
             await setConfig('styles', {
@@ -250,7 +250,7 @@ suite('Configuration Integration Tests', function () {
             }, vscode.ConfigurationTarget.WorkspaceFolder, folderUris[0])
             result = tryGetStyleAndConfig('priorityTestStyle')
             assert.ok(result, 'Style should be found')
-            assert.strictEqual(result.config.boxWidth, 140, 'WorkspaceFolder should override workspace')
+            assert.strictEqual(result.style.width, 140, 'WorkspaceFolder should override workspace')
         })
 
         test('complete priority chain: all scopes and language-specific settings for defaultStyle', async function () {
@@ -341,7 +341,7 @@ suite('Configuration Integration Tests', function () {
 
             // All settings present: should get '1' (workspaceFolder [python] styles.defaultStyle)
             result = getDefaultStyleAndConfig()
-            assert.strictEqual(result.config.commentStartToken, '1',
+            assert.strictEqual(result.style.startToken, '1',
                 'Priority 1: WorkspaceFolder [python] styles.defaultStyle')
 
             // Remove priority 1
@@ -349,13 +349,13 @@ suite('Configuration Integration Tests', function () {
                 defaultStyle: {}
             }, vscode.ConfigurationTarget.WorkspaceFolder, true)
             result = getDefaultStyleAndConfig()
-            assert.strictEqual(result.config.commentStartToken, '2',
+            assert.strictEqual(result.style.startToken, '2',
                 'Priority 2: WorkspaceFolder [python] top-level')
 
             // Remove priority 2
             await folderPythonConfig.update('commentStartToken', undefined, vscode.ConfigurationTarget.WorkspaceFolder, true)
             result = getDefaultStyleAndConfig()
-            assert.strictEqual(result.config.commentStartToken, '3',
+            assert.strictEqual(result.style.startToken, '3',
                 'Priority 3: Workspace [python] styles.defaultStyle')
 
             // Remove priority 3
@@ -363,13 +363,13 @@ suite('Configuration Integration Tests', function () {
                 defaultStyle: {}
             }, vscode.ConfigurationTarget.Workspace, true)
             result = getDefaultStyleAndConfig()
-            assert.strictEqual(result.config.commentStartToken, '4',
+            assert.strictEqual(result.style.startToken, '4',
                 'Priority 4: Workspace [python] top-level')
 
             // Remove priority 4
             await workspacePythonConfig.update('commentStartToken', undefined, vscode.ConfigurationTarget.Workspace, true)
             result = getDefaultStyleAndConfig()
-            assert.strictEqual(result.config.commentStartToken, '5',
+            assert.strictEqual(result.style.startToken, '5',
                 'Priority 5: Global [python] styles.defaultStyle')
 
             // Remove priority 5
@@ -377,13 +377,13 @@ suite('Configuration Integration Tests', function () {
                 defaultStyle: {}
             }, vscode.ConfigurationTarget.Global, true)
             result = getDefaultStyleAndConfig()
-            assert.strictEqual(result.config.commentStartToken, '6',
+            assert.strictEqual(result.style.startToken, '6',
                 'Priority 6: Global [python] top-level')
 
             // Remove priority 6
             await globalPythonConfig.update('commentStartToken', undefined, vscode.ConfigurationTarget.Global, true)
             result = getDefaultStyleAndConfig()
-            assert.strictEqual(result.config.commentStartToken, '7',
+            assert.strictEqual(result.style.startToken, '7',
                 'Priority 7: WorkspaceFolder styles.defaultStyle')
 
             // Remove priority 7
@@ -391,13 +391,13 @@ suite('Configuration Integration Tests', function () {
                 defaultStyle: {}
             }, vscode.ConfigurationTarget.WorkspaceFolder, folderUris[0])
             result = getDefaultStyleAndConfig()
-            assert.strictEqual(result.config.commentStartToken, '8',
+            assert.strictEqual(result.style.startToken, '8',
                 'Priority 8: WorkspaceFolder top-level')
 
             // Remove priority 8
             await setConfig('commentStartToken', undefined, vscode.ConfigurationTarget.WorkspaceFolder, folderUris[0])
             result = getDefaultStyleAndConfig()
-            assert.strictEqual(result.config.commentStartToken, '9',
+            assert.strictEqual(result.style.startToken, '9',
                 'Priority 9: Workspace styles.defaultStyle')
 
             // Remove priority 9
@@ -405,13 +405,13 @@ suite('Configuration Integration Tests', function () {
                 defaultStyle: {}
             }, vscode.ConfigurationTarget.Workspace)
             result = getDefaultStyleAndConfig()
-            assert.strictEqual(result.config.commentStartToken, '10',
+            assert.strictEqual(result.style.startToken, '10',
                 'Priority 10: Workspace top-level')
 
             // Remove priority 10
             await setConfig('commentStartToken', undefined, vscode.ConfigurationTarget.Workspace)
             result = getDefaultStyleAndConfig()
-            assert.strictEqual(result.config.commentStartToken, '11',
+            assert.strictEqual(result.style.startToken, '11',
                 'Priority 11: Global styles.defaultStyle')
 
             // Remove priority 11
@@ -419,13 +419,13 @@ suite('Configuration Integration Tests', function () {
                 defaultStyle: {}
             }, vscode.ConfigurationTarget.Global)
             result = getDefaultStyleAndConfig()
-            assert.strictEqual(result.config.commentStartToken, '12',
+            assert.strictEqual(result.style.startToken, '12',
                 'Priority 12: Global top-level')
 
             // Remove priority 12: should fall back to default
             await setConfig('commentStartToken', undefined, vscode.ConfigurationTarget.Global)
             result = getDefaultStyleAndConfig()
-            assert.strictEqual(result.config.commentStartToken, '#',
+            assert.strictEqual(result.style.startToken, '#',
                 'After all removed: should fall back to Python default (#)')
         })
     })
@@ -456,9 +456,9 @@ suite('Configuration Integration Tests', function () {
 
             const result = tryGetStyleAndConfig('testStyle')
             assert.ok(result, 'Style should be found')
-            assert.strictEqual(result.config.capitalize, false)
-            assert.strictEqual(result.config.textAlignment, 'left')
-            assert.strictEqual(result.config.boxWidth, 80)
+            assert.strictEqual(result.style.capitalize, false)
+            assert.strictEqual(result.style.textAlignment, 'left')
+            assert.strictEqual(result.style.width, 80)
         })
 
         test('style inheritance with basedOn works correctly', async function () {
@@ -477,9 +477,9 @@ suite('Configuration Integration Tests', function () {
 
             const result = tryGetStyleAndConfig('childStyle')
             assert.ok(result, 'Child style should be found')
-            assert.strictEqual(result.config.capitalize, true, 'Should inherit capitalize from parent')
-            assert.strictEqual(result.config.textAlignment, 'right', 'Should override textAlignment')
-            assert.strictEqual(result.config.boxWidth, 60, 'Should inherit boxWidth from parent')
+            assert.strictEqual(result.style.capitalize, true, 'Should inherit capitalize from parent')
+            assert.strictEqual(result.style.textAlignment, 'right', 'Should override textAlignment')
+            assert.strictEqual(result.style.width, 60, 'Should inherit boxWidth from parent')
         })
 
         test('hidden styles do not appear in getStyleList', async function () {
@@ -540,7 +540,7 @@ suite('Configuration Integration Tests', function () {
             const result = tryGetStyleAndConfig('sharedStyle')
             assert.ok(result, 'Shared style should be found')
             // Workspace value should override global for the style's properties
-            assert.strictEqual(result.config.capitalize, false, 'Workspace capitalize should override global')
+            assert.strictEqual(result.style.capitalize, false, 'Workspace capitalize should override global')
         })
     })
 
@@ -553,7 +553,7 @@ suite('Configuration Integration Tests', function () {
             const result = getDefaultStyleAndConfig()
 
             // Python defaults use # for comments (from package.json configurationDefaults)
-            assert.strictEqual(result.config.commentStartToken, '#',
+            assert.strictEqual(result.style.startToken, '#',
                 'Python should use # as comment start token')
         })
 
@@ -565,8 +565,9 @@ suite('Configuration Integration Tests', function () {
             const result = getDefaultStyleAndConfig()
 
             // JS uses /* */ style comments (default)
-            assert.strictEqual(result.config.commentStartToken, '/*',
+            assert.strictEqual(result.style.startToken, '/*',
                 'JavaScript should use /* as comment start token')
         })
     })
 })
+

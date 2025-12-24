@@ -16,7 +16,7 @@ const {
 } = require('./configuration')
 
 /**
- * @typedef {import('./configuration').StyleAndConfig} StyleAndConfig
+ * @typedef {import('./configuration').StyleWithOptions} StyleWithOptions
  */
 
 function ignore() {
@@ -79,7 +79,7 @@ function findCommentSelection(editor, selection, options, extendSelection) {
 
 /**
  * @param {vscode.TextEditor} editor 
- * @param {import('./configuration').StyleAndConfig} param1 
+ * @param {import('./configuration').StyleWithOptions} param1 
  */
 function findAndRemoveStyledComment(editor, { style, config }) {
     const editOperations = editor.selections.map((current) => {
@@ -112,7 +112,7 @@ function findAndRemoveStyledComment(editor, { style, config }) {
 
 /**
  * @param {vscode.TextEditor} editor 
- * @param {import('./configuration').StyleAndConfig} param1 
+ * @param {import('./configuration').StyleWithOptions} param1 
  */
 function findAndUpdateStyledComment(editor, { style, config }) {
     const editOperations = editor.selections.map((current) => {
@@ -145,7 +145,7 @@ function findAndUpdateStyledComment(editor, { style, config }) {
 
 /**
  * @param {vscode.TextEditor} editor 
- * @param {import('./configuration').StyleAndConfig} param1 
+ * @param {import('./configuration').StyleWithOptions} param1 
  */
 function addStyledComment(editor, { style, config }) {
     const editOperations = editor.selections.map((current) => {
