@@ -3,7 +3,7 @@
     "displayName": "Comment Box",
     "description": "Add, remove and update highly configurable comment boxes",
     "icon": "images/comment-box-logo.png",
-    "version": "2.4.0",
+    "version": "2.5.0",
     "publisher": "SlySherZ",
     "license": "MIT",
     "repository": {
@@ -88,7 +88,7 @@
                                     "on",
                                     "off"
                                 ],
-                                "default": "off",
+                                "default": "on",
                                 "description": "When set to \"on\", lines that overflow the current \"boxWidth\" wrap to the next line."
                             },
                             "maxEndColumn": {
@@ -216,7 +216,7 @@
                         "on",
                         "off"
                     ],
-                    "default": "off",
+                    "default": "on",
                     "description": "When set to \"on\", lines that overflow the current \"boxWidth\" wrap to the next line.",
                     "scope": "language-overridable"
                 },

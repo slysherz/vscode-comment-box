@@ -1,5 +1,37 @@
 # Changelog
 
+## [2.5.0] 2025-12-24 - Christmas update
+
+### Added
+
+- Language specific defaults!
+    - The default style now depends on the language you're using:
+    - In C++ it generates this:
+    ```
+    /*******************
+    * EXAMPLE COMMENT *
+    *******************/
+    ```
+    - But in python it will generate this instead:
+    ```
+    ###################
+    # EXAMPLE COMMENT #
+    ###################
+    ```
+    - No more copying the pytonic style!
+    - Thanks @etjones @Enteleform @iandotmartin
+
+### Changed
+
+- The `wordWrap` default is now `on`
+    - no more overly long lines :P
+
+### Fixed
+
+- You can now use the extension without having to install in the SSH machine :D
+- Fixed a bug where left bar updates were not working properly
+    - Thanks @ShuguangSun
+
 ## [2.4.0]
 
 ### Added

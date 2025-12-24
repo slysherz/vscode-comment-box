@@ -1,11 +1,11 @@
 # Comment Box for Visual Studio Code
 
-Add, remove and update pretty and highly configurable comment boxes in VS Code. The Comment Box extension adds new commands to VS Code that allow you to easily manage your comment boxes.
+Add, remove and update pretty (and configurable!) comment boxes for every language in VS Code. The Comment Box extension adds new commands to VS Code that allow you to easily manage your comment boxes.
 
 ![Comment Box usage example](images/usage-example-faster.gif)
 
 ## Examples:
-#### Adding a simple comment (with default settings)
+#### Adding a simple comment (default settings)
 
 ```
 my comment
@@ -13,14 +13,14 @@ my comment
 
 turns into:
 
-```
+```cpp
 /**************
  * MY COMMENT *
  **************/
 ```
 
 
-#### Adding a multiple line comment (with default settings)
+#### Adding a multiple line comment (default settings)
 ```
 could you
 comment box this?
@@ -28,7 +28,7 @@ pretty please (*.*)
 ```
 turns into:
 
-```
+```cpp
 /***********************
  *      COULD YOU      *
  *  COMMENT BOX THIS?  *
@@ -36,6 +36,19 @@ turns into:
  ***********************/
 ```
 
+
+#### Adding a comment in Python (default settings)
+```
+my comment
+```
+
+turns into:
+
+```python
+###################
+#    MY COMMENT   #
+###################
+```
 
 ## Usage
 Select the text that you want to comment, then call the command bar with:
@@ -141,7 +154,7 @@ Setting | Description
 ### Style examples
 
 #### Don't mess with my text
-```
+```c++
     /**********************************************
      * try to:                                    *
      *    - preserve inner and outer indentation; *
@@ -151,7 +164,7 @@ Setting | Description
      **********************************************/
 ```
 settings.json:
-```
+```json
 "commentBox.styles": {
     "defaultStyle": {
         "capitalize": false,
@@ -164,7 +177,7 @@ settings.json:
 ```
 
 #### Pythonic style
-```
+```python
 ##############################
 #         THIS IS A          #
 # MULTI-LINE COMMENT EXAMPLE #
@@ -173,7 +186,7 @@ settings.json:
 
 
 settings.json: 
-```
+```json
 "commentBox.styles": {
     "defaultStyle": {
         "commentStartToken": "",
@@ -189,14 +202,14 @@ settings.json:
 ```
 
 #### Just a left bar
-```
+```c++
 /* Just a left bar
  * is enough.     
  */
  ```
 
 settings.json: 
-```
+```json
 "commentBox.styles": {
     "defaultStyle": {
         "commentStartToken": "/* ",
@@ -215,14 +228,14 @@ settings.json:
 
 
 #### I Live on the Edge
-```
+```c++
 /*==================+
  |I LIVE ON THE EDGE|
  |~-~-~-~SEE?~-~-~-~|
  +==================*/
  ```
  settings.json: 
-```
+```json
 "commentBox.styles": {
     "defaultStyle": {
         "commentStartToken": "/*",
@@ -238,15 +251,39 @@ settings.json:
 }
 ```
 
-#### Multiple language support
+### Overriding EVERY style
+If don't like any of the defaults, you can change them globally everywhere, and for every language, like so:
+```json
+    "commentBox.capitalize": false,
+    "commentBox.maxEndColumn": 20,
+    "commentBox.textAlignment": "left"
+
 ```
-/***********
- * comment *
- ***********/
+Will generate boxes like these
+```c++
+/*******************
+ * this is a long  *
+ * line just to    *
+ * test            *
+ *******************/
 ```
-settings.json:
+```python
+####################
+# this is a long   #
+# line just to     #
+# test             #
+####################
 ```
+
+
+### Overriding language-specific defaults
+If the built-in defaults don't suit your needs, you can override them per language:
+```javascript
 "[javascript][cpp][c]": {
+    // For all styles in these languages
+    "commentBox.capitalize": false,
+
+    // Just for the default style
     "commentBox.styles": {
         "defaultStyle": {
             "capitalize": false

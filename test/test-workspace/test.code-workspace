@@ -1,7 +1,11 @@
 {
     "folders": [
-        { "path": "folder-a" },
-        { "path": "folder-b" }
+        {
+            "path": "folder-a"
+        },
+        {
+            "path": "folder-b"
+        }
     ],
     "settings": {
         "[python]": {

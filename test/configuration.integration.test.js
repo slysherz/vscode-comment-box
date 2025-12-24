@@ -520,6 +520,37 @@ suite('Configuration Integration Tests', function () {
             assert.ok(styleList.includes('workspaceStyle'), 'Workspace style should be available')
         })
 
+        test('getStyleList picks up styles from all 3 scopes', async function () {
+            if (folderUris.length < 1) {
+                this.skip()
+                return
+            }
+
+            // Add unique style at each scope
+            await setConfig('styles', {
+                globalLevelStyle: {
+                    capitalize: true
+                }
+            }, vscode.ConfigurationTarget.Global)
+
+            await setConfig('styles', {
+                workspaceLevelStyle: {
+                    capitalize: false
+                }
+            }, vscode.ConfigurationTarget.Workspace)
+
+            await setConfig('styles', {
+                folderLevelStyle: {
+                    textAlignment: 'right'
+                }
+            }, vscode.ConfigurationTarget.WorkspaceFolder, folderUris[0])
+
+            const styleList = getStyleList()
+            assert.ok(styleList.includes('globalLevelStyle'), 'Style from global scope should be in list')
+            assert.ok(styleList.includes('workspaceLevelStyle'), 'Style from workspace scope should be in list')
+            assert.ok(styleList.includes('folderLevelStyle'), 'Style from workspaceFolder scope should be in list')
+        })
+
         test('workspace style overrides global style with same name', async function () {
             // Add style at global level
             await setConfig('styles', {
