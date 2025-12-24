@@ -252,6 +252,182 @@ suite('Configuration Integration Tests', function () {
             assert.ok(result, 'Style should be found')
             assert.strictEqual(result.config.boxWidth, 140, 'WorkspaceFolder should override workspace')
         })
+
+        test('complete priority chain: all scopes and language-specific settings for defaultStyle', async function () {
+            if (folderUris.length < 1) {
+                this.skip()
+                return
+            }
+
+            // Open a Python file for language-specific testing
+            await openTestDocument('sample.py')
+
+            // ACTUAL VS CODE PRIORITY ORDER (verified with editor.rulers):
+            // Language-specific settings have higher priority than scope-specific settings!
+            // Priority: language > scope > source
+            //
+            //   1. WorkspaceFolder [python] styles.defaultStyle (1.1)
+            //   2. WorkspaceFolder [python] top-level (1.2)
+            //   3. Workspace [python] styles.defaultStyle (2.1)
+            //   4. Workspace [python] top-level (2.2)
+            //   5. Global [python] styles.defaultStyle (3.1)
+            //   6. Global [python] top-level (3.2)
+            //   7. WorkspaceFolder styles.defaultStyle (4.1)
+            //   8. WorkspaceFolder top-level (4.2)
+            //   9. Workspace styles.defaultStyle (5.1)
+            //  10. Workspace top-level (5.2)
+            //  11. Global styles.defaultStyle (6.1)
+            //  12. Global top-level (6.2)
+
+            // Global settings
+            await setConfig('commentStartToken', '12', vscode.ConfigurationTarget.Global)
+            await setConfig('styles', {
+                defaultStyle: {
+                    commentStartToken: '11',
+                }
+            }, vscode.ConfigurationTarget.Global)
+
+            // Global Python-specific settings (using overrideInLanguage=true)
+            const globalPythonConfig = vscode.workspace.getConfiguration(CONFIGURATION_NAME, { languageId: 'python' })
+            await globalPythonConfig.update('commentStartToken', '6', vscode.ConfigurationTarget.Global, true)
+            await globalPythonConfig.update('styles', {
+                defaultStyle: {
+                    commentStartToken: '5',
+                }
+            }, vscode.ConfigurationTarget.Global, true)
+
+            // Workspace settings
+            await setConfig('commentStartToken', '10', vscode.ConfigurationTarget.Workspace)
+            await setConfig('styles', {
+                defaultStyle: {
+                    commentStartToken: '9',
+                }
+            }, vscode.ConfigurationTarget.Workspace)
+
+            // Workspace Python-specific settings (using overrideInLanguage=true)
+            const workspacePythonConfig = vscode.workspace.getConfiguration(CONFIGURATION_NAME, { languageId: 'python' })
+            await workspacePythonConfig.update('commentStartToken', '4', vscode.ConfigurationTarget.Workspace, true)
+            await workspacePythonConfig.update('styles', {
+                defaultStyle: {
+                    commentStartToken: '3',
+                }
+            }, vscode.ConfigurationTarget.Workspace, true)
+
+            // WorkspaceFolder settings
+            await setConfig('commentStartToken', '8', vscode.ConfigurationTarget.WorkspaceFolder, folderUris[0])
+            await setConfig('styles', {
+                defaultStyle: {
+                    commentStartToken: '7',
+                }
+            }, vscode.ConfigurationTarget.WorkspaceFolder, folderUris[0])
+
+            // WorkspaceFolder Python-specific settings (using overrideInLanguage=true)
+            const folderPythonConfig = vscode.workspace.getConfiguration(CONFIGURATION_NAME, {
+                uri: folderUris[0],
+                languageId: 'python'
+            })
+            await folderPythonConfig.update('commentStartToken', '2', vscode.ConfigurationTarget.WorkspaceFolder, true)
+            await folderPythonConfig.update('styles', {
+                defaultStyle: {
+                    commentStartToken: '1',
+                }
+            }, vscode.ConfigurationTarget.WorkspaceFolder, true)
+
+            // Wait for settings to be persisted
+            await new Promise(resolve => setTimeout(resolve, 200))
+
+            // Test priority by removing settings from highest to lowest
+            let result
+
+            // All settings present: should get '1' (workspaceFolder [python] styles.defaultStyle)
+            result = getDefaultStyleAndConfig()
+            assert.strictEqual(result.config.commentStartToken, '1',
+                'Priority 1: WorkspaceFolder [python] styles.defaultStyle')
+
+            // Remove priority 1
+            await folderPythonConfig.update('styles', {
+                defaultStyle: {}
+            }, vscode.ConfigurationTarget.WorkspaceFolder, true)
+            result = getDefaultStyleAndConfig()
+            assert.strictEqual(result.config.commentStartToken, '2',
+                'Priority 2: WorkspaceFolder [python] top-level')
+
+            // Remove priority 2
+            await folderPythonConfig.update('commentStartToken', undefined, vscode.ConfigurationTarget.WorkspaceFolder, true)
+            result = getDefaultStyleAndConfig()
+            assert.strictEqual(result.config.commentStartToken, '3',
+                'Priority 3: Workspace [python] styles.defaultStyle')
+
+            // Remove priority 3
+            await workspacePythonConfig.update('styles', {
+                defaultStyle: {}
+            }, vscode.ConfigurationTarget.Workspace, true)
+            result = getDefaultStyleAndConfig()
+            assert.strictEqual(result.config.commentStartToken, '4',
+                'Priority 4: Workspace [python] top-level')
+
+            // Remove priority 4
+            await workspacePythonConfig.update('commentStartToken', undefined, vscode.ConfigurationTarget.Workspace, true)
+            result = getDefaultStyleAndConfig()
+            assert.strictEqual(result.config.commentStartToken, '5',
+                'Priority 5: Global [python] styles.defaultStyle')
+
+            // Remove priority 5
+            await globalPythonConfig.update('styles', {
+                defaultStyle: {}
+            }, vscode.ConfigurationTarget.Global, true)
+            result = getDefaultStyleAndConfig()
+            assert.strictEqual(result.config.commentStartToken, '6',
+                'Priority 6: Global [python] top-level')
+
+            // Remove priority 6
+            await globalPythonConfig.update('commentStartToken', undefined, vscode.ConfigurationTarget.Global, true)
+            result = getDefaultStyleAndConfig()
+            assert.strictEqual(result.config.commentStartToken, '7',
+                'Priority 7: WorkspaceFolder styles.defaultStyle')
+
+            // Remove priority 7
+            await setConfig('styles', {
+                defaultStyle: {}
+            }, vscode.ConfigurationTarget.WorkspaceFolder, folderUris[0])
+            result = getDefaultStyleAndConfig()
+            assert.strictEqual(result.config.commentStartToken, '8',
+                'Priority 8: WorkspaceFolder top-level')
+
+            // Remove priority 8
+            await setConfig('commentStartToken', undefined, vscode.ConfigurationTarget.WorkspaceFolder, folderUris[0])
+            result = getDefaultStyleAndConfig()
+            assert.strictEqual(result.config.commentStartToken, '9',
+                'Priority 9: Workspace styles.defaultStyle')
+
+            // Remove priority 9
+            await setConfig('styles', {
+                defaultStyle: {}
+            }, vscode.ConfigurationTarget.Workspace)
+            result = getDefaultStyleAndConfig()
+            assert.strictEqual(result.config.commentStartToken, '10',
+                'Priority 10: Workspace top-level')
+
+            // Remove priority 10
+            await setConfig('commentStartToken', undefined, vscode.ConfigurationTarget.Workspace)
+            result = getDefaultStyleAndConfig()
+            assert.strictEqual(result.config.commentStartToken, '11',
+                'Priority 11: Global styles.defaultStyle')
+
+            // Remove priority 11
+            await setConfig('styles', {
+                defaultStyle: {}
+            }, vscode.ConfigurationTarget.Global)
+            result = getDefaultStyleAndConfig()
+            assert.strictEqual(result.config.commentStartToken, '12',
+                'Priority 12: Global top-level')
+
+            // Remove priority 12: should fall back to default
+            await setConfig('commentStartToken', undefined, vscode.ConfigurationTarget.Global)
+            result = getDefaultStyleAndConfig()
+            assert.strictEqual(result.config.commentStartToken, '#',
+                'After all removed: should fall back to Python default (#)')
+        })
     })
 
     suite('Custom Styles', function () {

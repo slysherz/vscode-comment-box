@@ -4,5 +4,10 @@
         { "path": "folder-b" }
     ],
     "settings": {
+        "[python]": {
+            "commentBox.styles": {
+                "defaultStyle": {}
+            }
+        }
     }
 }

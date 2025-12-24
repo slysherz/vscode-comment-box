@@ -8,6 +8,7 @@ const vscode = require('vscode')
  * Define JSDoc types
  * @typedef {import('./comment-box').BoxStyle} BoxStyle
  * 
+ * The configuration options a user can set for a box style, which will be used to create a BoxStyle
  * @typedef BoxStyleConfiguration
  * @property {boolean} [capitalize]
  * @property {boolean} [extendSelection]
@@ -29,46 +30,94 @@ const vscode = require('vscode')
  * @property {boolean} [ignoreInnerIndentation]
  * @property {boolean} [hidden]
  * @property {string[]} [basedOn]
+ * 
+ * @typedef StyleAndConfig
+ * @property {BoxStyle} style
+ * @property {BoxStyleConfiguration} config
  */
 
 const DEFAULT_STYLE = 'defaultStyle'
 const CONFIGURATION_NAME = 'commentBox'
+
+// VS Code's configuration priority order (verified empirically)
+// Language-specific settings have higher priority: language > scope > source
+// Listed from HIGHEST to LOWEST priority
+const PRIORITY_ORDER = [
+      'workspaceFolderLanguageValue',
+      'workspaceLanguageValue',
+      'globalLanguageValue',
+      'workspaceFolderValue',
+      'workspaceValue',
+      'globalValue',
+      'defaultLanguageValue',
+      'defaultValue',
+]
 
 /**
  * Find the tab size for the current document
  * @returns {number}
  */
 function getTabSize() {
+      const editor = vscode.window.activeTextEditor
+      const languageId = editor.document.languageId
       return vscode.workspace
-            .getConfiguration("editor", vscode.window.activeTextEditor.document.uri)
+            .getConfiguration("editor", { uri: editor.document.uri, languageId })
             .get("tabSize")
 }
 
 function getStylesConfiguration() {
       const editor = vscode.window.activeTextEditor
-      // Use document URI as scope to get workspaceFolder-specific settings
-      return vscode.workspace.getConfiguration(CONFIGURATION_NAME, editor.document.uri).inspect('styles')
-}
-
-function toStringArray(value) {
-      if (typeof value === "string") {
-            return [value]
-      }
-
-      if (!value) {
-            return []
-      }
-
-      return value
+      const languageId = editor.document.languageId
+      // Use both document URI and languageId as scope to get language-specific settings
+      return vscode.workspace.getConfiguration(CONFIGURATION_NAME, {
+            uri: editor.document.uri,
+            languageId
+      }).inspect('styles')
 }
 
 /**
- * Gets the resolved configuration for a given language by merging all config scopes.
- * @param {string} languageId - The language ID to get configuration for
- * @returns {BoxStyleConfiguration} 
+ * Normalizes basedOn value to an array of style names
+ * @param {string|string[]|undefined} value - The basedOn value
+ * @returns {string[]} Array of parent style names
  */
-function getDefaultStyleConfigurationForLanguage(languageId) {
-      const config = vscode.workspace.getConfiguration(CONFIGURATION_NAME, { languageId })
+function normalizeBasedOn(value) {
+      if (!value) return []
+      return Array.isArray(value) ? value : [value]
+}
+
+/**
+ * Helper to get a property value from a style object at the highest priority level.
+ * @param {any} stylesInspection - inspection result for styles
+ * @param {string} styleName - the style name
+ * @param {string} propName - the property name
+ * @returns {any} The value or undefined
+ */
+function getStyleProperty(stylesInspection, styleName, propName) {
+      for (const key of PRIORITY_ORDER) {
+            const styleObj = stylesInspection?.[key]?.[styleName]
+            if (styleObj?.[propName] !== undefined) {
+                  return styleObj[propName]
+            }
+      }
+      return undefined
+}
+
+/**
+ * Gets the complete configuration for a style by merging top-level and style-specific settings.
+ * For each property, follows VS Code's priority order across both top-level and style settings.
+ * 
+ * Returns null if the style doesn't exist or has errors.
+ * @param {string} styleName
+ * @returns {BoxStyleConfiguration|null}
+ */
+function tryGetConfiguration(styleName) {
+      const editor = vscode.window.activeTextEditor
+      const languageId = editor.document.languageId
+      const uri = editor.document.uri
+      const scope = { uri, languageId }
+
+      // Get inspections for both top-level and style properties
+      const config = vscode.workspace.getConfiguration(CONFIGURATION_NAME, scope)
 
       const configNames = [
             "capitalize",
@@ -91,24 +140,73 @@ function getDefaultStyleConfigurationForLanguage(languageId) {
             "ignoreInnerIndentation",
       ]
 
+      // Check if style exists
+      const stylesInspection = config.inspect('styles')
+      const styleExists = [
+            stylesInspection.globalValue,
+            stylesInspection.workspaceValue,
+            stylesInspection.workspaceFolderValue,
+            stylesInspection.globalLanguageValue,
+            stylesInspection.workspaceLanguageValue,
+            stylesInspection.workspaceFolderLanguageValue,
+      ].some(val => val && val[styleName])
+
+      if (!styleExists && styleName !== DEFAULT_STYLE) {
+            vscode.window.showErrorMessage(`Style '${styleName}' doesn't exist.`)
+            return null
+      }
+
+      // Collect basedOn inheritance chain (supports arrays of parents)
+      const stylesToMerge = []
+      const visitedStyles = new Set()
+      const toProcess = [styleName]
+
+      while (toProcess.length > 0) {
+            const currentStyleName = toProcess.shift()
+
+            if (visitedStyles.has(currentStyleName)) {
+                  vscode.window.showErrorMessage(`Circular style inheritance detected: ${styleName}`)
+                  return null
+            }
+            visitedStyles.add(currentStyleName)
+            stylesToMerge.push(currentStyleName)
+
+            // Check if this style has basedOn property (can be string or array)
+            const basedOnValue = getStyleProperty(stylesInspection, currentStyleName, 'basedOn')
+            const parents = normalizeBasedOn(basedOnValue)
+
+            // Add parents to process queue (they will be checked after current style)
+            toProcess.push(...parents)
+      }
+
+      // Merge properties: check each property with proper priority
       let result = {}
-      for (const key of configNames) {
-            const configuration = config.inspect(key)
 
-            const configs = [
-                  configuration.defaultValue,
-                  configuration.defaultLanguageValue,
-                  configuration.globalValue,
-                  configuration.workspaceValue,
-                  configuration.workspaceFolderValue,
-                  configuration.globalLanguageValue,
-                  configuration.workspaceLanguageValue,
-                  configuration.workspaceFolderLanguageValue,
-            ]
+      for (const propName of configNames) {
+            let found = false
 
-            for (const config of configs) {
-                  if (config !== undefined) {
-                        result[key] = config
+            // Check at each priority level: style first, then top-level
+            for (const key of PRIORITY_ORDER) {
+                  if (found) break
+
+                  // Check styles in inheritance order (child to parent)
+                  for (const styleToMerge of stylesToMerge) {
+                        const styleValue = stylesInspection?.[key]?.[styleToMerge]?.[propName]
+                        if (styleValue !== undefined) {
+                              result[propName] = styleValue
+                              found = true
+                              break
+                        }
+                  }
+
+                  // If not in style at this level, check top-level at same level
+                  if (!found) {
+                        const topLevelInspection = config.inspect(propName)
+                        const topValue = topLevelInspection?.[key]
+                        if (topValue !== undefined) {
+                              result[propName] = topValue
+                              found = true
+                        }
                   }
             }
       }
@@ -116,144 +214,6 @@ function getDefaultStyleConfigurationForLanguage(languageId) {
       return result
 }
 
-/**
- * @returns {BoxStyleConfiguration} 
- */
-function getDefaultStyleConfiguration() {
-      const editor = vscode.window.activeTextEditor
-      const languageId = editor.document.languageId
-      return getDefaultStyleConfigurationForLanguage(languageId)
-}
-
-/**
- * Creates a new configuration by merging a list of configurations. Each configuration might be
- * incomplete
- * @param {object} configurations
- * @returns {BoxStyleConfiguration}
- */
-function mergeConfigurations(configurations) {
-      let result = {}
-
-      for (const config of configurations) {
-            result = {
-                  ...result,
-                  ...config
-            }
-      }
-
-      return result
-}
-
-
-function getStyleConfigurationWithPriority(configuration, styleName) {
-      function getIfExists(config, key) {
-            if (config && config.hasOwnProperty(key)) {
-                  return config[key]
-            }
-
-            return {}
-      }
-
-      const configs = [
-            configuration.globalValue,
-            configuration.workspaceValue,
-            configuration.workspaceFolderValue,
-            configuration.globalLanguageValue,
-            configuration.workspaceLanguageValue,
-            configuration.workspaceFolderLanguageValue,
-      ]
-
-      if (!configs.some(config => config)) {
-            return null
-      }
-
-      return mergeConfigurations(configs.map(config => getIfExists(config, styleName)))
-}
-
-/**
- * Gets just the style's own properties (without defaults or parent properties)
- * @param {string} styleName
- * @returns {BoxStyleConfiguration|null}
- */
-function getStyleProperties(styleName) {
-      const styles = getStylesConfiguration()
-      return getStyleConfigurationWithPriority(styles, styleName)
-}
-
-/**
- * Recursively collects all parent style properties for a given style.
- * Returns null if any parent doesn't exist or if there's a circular dependency.
- * @param {BoxStyleConfiguration} style
- * @param {string} styleName - Only used for error messages
- * @param {string[]} checked - Track visited styles to detect cycles
- * @returns {BoxStyleConfiguration[]|null}
- */
-function collectParentStyles(style, styleName, checked) {
-      const basedOn = toStringArray(style.basedOn)
-
-      let parentConfigs = []
-      for (const parentStyleName of basedOn) {
-            if (checked.includes(parentStyleName)) {
-                  vscode.window.showErrorMessage(
-                        "The following styles refer to each other in a cycle: " +
-                        [...checked, parentStyleName].join(", ")
-                  )
-                  return null
-            }
-
-            const parentStyle = getStyleProperties(parentStyleName)
-
-            if (!parentStyle) {
-                  vscode.window.showErrorMessage(
-                        `Style '${styleName}' is based on '${parentStyleName}', but '${parentStyleName}' doesn't exist.`)
-                  return null
-            }
-
-            // Recursively collect grandparent styles
-            const grandparents = collectParentStyles(parentStyle, parentStyleName, [...checked, styleName])
-            if (grandparents === null) {
-                  return null
-            }
-
-            parentConfigs.push(...grandparents, parentStyle)
-      }
-
-      return parentConfigs
-}
-
-/**
- * Gets the complete configuration for a style by merging:
- * 1. Top-level properties (defaults for all styles)
- * 2. Parent styles (via basedOn)
- * 3. The style's own properties
- * 
- * Returns null if the style doesn't exist or has errors.
- * @param {string} styleName
- * @returns {BoxStyleConfiguration|null}
- */
-function tryGetConfiguration(styleName) {
-      const defaultConfig = getDefaultStyleConfiguration()
-      const style = getStyleProperties(styleName)
-
-      // defaultStyle is special: it always exists using just the top-level defaults
-      if (!style) {
-            if (styleName === DEFAULT_STYLE) {
-                  return defaultConfig
-            }
-
-            vscode.window.showErrorMessage(`Style '${styleName}' doesn't exist.`)
-            return null
-      }
-
-      // Collect all parent configurations
-      const parentConfigs = collectParentStyles(style, styleName, [])
-      if (parentConfigs === null) {
-            return null
-      }
-
-      // Merge: defaults -> parents (in order) -> this style
-      return mergeConfigurations([defaultConfig, ...parentConfigs, style])
-}
 
 /**
  * @param {BoxStyleConfiguration} configuration 
@@ -290,12 +250,6 @@ function styleAndConfig(config) {
       }
 }
 
-/** 
- * @typedef StyleAndConfig
- * @property {BoxStyle} style
- * @property {BoxStyleConfiguration} config
- */
-
 /**
  * @returns {StyleAndConfig|null}
  */
@@ -320,10 +274,10 @@ function getStyleList() {
       const styles = getStylesConfiguration()
       const configs = [
             styles.globalValue,
-            styles.workspaceValue,
-            styles.workspaceFolderValue,
             styles.globalLanguageValue,
+            styles.workspaceValue,
             styles.workspaceLanguageValue,
+            styles.workspaceFolderValue,
             styles.workspaceFolderLanguageValue,
       ]
 
@@ -348,6 +302,5 @@ module.exports = {
       getDefaultStyleAndConfig,
       tryGetStyleAndConfig,
       getStyleList,
-      mergeConfigurations,
       CONFIGURATION_NAME,
 }

@@ -23,6 +23,7 @@
  */
 
 /**
+ * The style options required to turn a piece of text into a comment box
  * @typedef BoxStyle
  * @property {boolean} capitalize
  * @property {string} startToken
