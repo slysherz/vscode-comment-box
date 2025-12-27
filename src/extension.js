@@ -81,13 +81,13 @@ function findCommentSelection(editor, selection, options, extendSelection) {
  * @param {vscode.TextEditor} editor 
  * @param {import('./configuration').StyleWithOptions} param1 
  */
-function findAndRemoveStyledComment(editor, { style, config }) {
+function findAndRemoveStyledComment(editor, { style, extendSelection }) {
     const editOperations = editor.selections.map((current) => {
         let {
             selection,
             selectionText: text,
             annotatedLines
-        } = findCommentSelection(editor, current, style, config.extendSelection)
+        } = findCommentSelection(editor, current, style, extendSelection)
 
         text = removeStyledCommentBox(annotatedLines, style)
 
@@ -114,13 +114,13 @@ function findAndRemoveStyledComment(editor, { style, config }) {
  * @param {vscode.TextEditor} editor 
  * @param {import('./configuration').StyleWithOptions} param1 
  */
-function findAndUpdateStyledComment(editor, { style, config }) {
+function findAndUpdateStyledComment(editor, { style, extendSelection }) {
     const editOperations = editor.selections.map((current) => {
         let {
             selection,
             selectionText: text,
             annotatedLines
-        } = findCommentSelection(editor, current, style, config.extendSelection)
+        } = findCommentSelection(editor, current, style, extendSelection)
 
         text = updateStyledCommentBox(annotatedLines, style)
 
@@ -147,12 +147,12 @@ function findAndUpdateStyledComment(editor, { style, config }) {
  * @param {vscode.TextEditor} editor 
  * @param {import('./configuration').StyleWithOptions} param1 
  */
-function addStyledComment(editor, { style, config }) {
+function addStyledComment(editor, { style, extendSelection }) {
     const editOperations = editor.selections.map((current) => {
         let {
             selection,
             selectionText: text
-        } = userSelection(editor, current, style, config.extendSelection)
+        } = userSelection(editor, current, style, extendSelection)
 
         text = convertToCommentBox(text, style)
 
